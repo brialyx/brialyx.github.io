@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 02 — Modèle OSI 7 couches · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  /* MASTERY */
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  /* SECTION */
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  /* CALLOUTS */
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  /* VOCAB */
+  .vocab { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; }
+  .vocab-term { font-family: 'IBM Plex Mono', monospace; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+
+  /* OSI STACK — the visual centerpiece */
+  .osi-stack { display: flex; flex-direction: column; gap: 6px; margin: 20px 0; }
+  .osi-layer {
+    display: flex;
+    align-items: stretch;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .osi-layer:hover { transform: translateX(4px); box-shadow: -4px 0 0 var(--accent); }
+  .osi-num {
+    width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.1rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    color: #fff;
+  }
+  .osi-main { flex: 1; padding: 14px 18px; background: var(--bg2); }
+  .osi-name { font-weight: 800; font-size: 0.95rem; margin-bottom: 4px; }
+  .osi-role { font-size: 0.8rem; color: var(--muted); font-family: 'IBM Plex Mono', monospace; margin-bottom: 6px; }
+  .osi-examples { font-size: 0.78rem; color: var(--text); }
+  .osi-pdu { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-top: 6px; }
+  .osi-devices { font-size: 0.75rem; color: var(--amber); margin-top: 4px; }
+
+  /* TABLE */
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  /* MNEMO */
+  .mnemo-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; font-family: 'IBM Plex Mono', monospace; font-size: 0.9rem; line-height: 2.2; margin: 14px 0; }
+  .mnemo-letter { color: var(--accent); font-weight: 700; font-size: 1.1rem; }
+  .mnemo-word { color: var(--text); }
+  .mnemo-layer { color: var(--muted); font-size: 0.75rem; }
+
+  /* EXERCISES */
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  /* KEY POINTS */
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  /* NAV */
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.prev:hover { border-color: var(--muted); color: var(--text); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Phase 1 — Fondamentaux</span> &nbsp;›&nbsp; Cours 02</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 1 · C02</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡☆☆ Facile</span>
+  </div>
+
+  <h1>Modèle <span>OSI</span></h1>
+  <span class="tagline">// Le cadre de référence universel — 7 couches que tout technicien réseau doit connaître</span>
+
+  <!-- MASTERY -->
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais les 7 couches dans l'ordre (1 à 7) sans regarder mes notes</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je sais quel PDU correspond à chaque couche (bit, trame, paquet…)</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je sais quel équipement réseau opère à quelle couche</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. C'EST QUOI -->
+  <div class="section">
+    <div class="section-label">Avant de commencer</div>
+    <h2>C'est quoi le modèle OSI — et pourquoi ça existe ?</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">📬</span>
+      <div class="callout-body">
+        <strong>Analogie — envoyer un colis international</strong>
+        Quand tu envoies un colis, tu ne te demandes pas comment l'avion vole ou comment le camion de livraison est dispatché. Chaque étape du processus (emballage → étiquette → transport → douane → livraison) est gérée par une équipe différente. Chaque équipe fait son travail sans se soucier des autres. C'est exactement ce que fait le modèle OSI pour les données réseau.
+      </div>
+    </div>
+
+    <p>Le modèle OSI (<strong>Open Systems Interconnection</strong>) est un cadre théorique créé en 1984 par l'ISO pour standardiser la façon dont les ordinateurs communiquent entre eux. Il divise la communication réseau en <strong>7 couches</strong>, chacune ayant un rôle précis.</p>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pourquoi c'est critique pour Network+ ?</strong>
+        Le modèle OSI est la référence pour le dépannage réseau. Quand tu as un problème, tu le localises couche par couche. L'examen te demande souvent "à quelle couche OSI opère tel protocole/équipement ?" — c'est du quasi-certain.
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. VOCABULAIRE -->
+  <div class="section">
+    <div class="section-label">Vocabulaire à connaître d'abord</div>
+    <h2>Les mots clés de ce cours</h2>
+
+    <div class="vocab">
+      <div class="vocab-term">Protocole</div>
+      <div>Un ensemble de règles que deux machines suivent pour communiquer. Comme une langue commune — si les deux parlent le même protocole, elles se comprennent.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">PDU — Protocol Data Unit</div>
+      <div>Le "nom" des données à chaque couche. Les données changent de nom et de forme en passant d'une couche à l'autre. Ex : à la couche 3, les données s'appellent un <strong>paquet</strong>.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Encapsulation</div>
+      <div>Quand les données descendent les couches OSI (à l'envoi), chaque couche <strong>ajoute un en-tête</strong> (header) qui contient des informations supplémentaires. C'est comme emballer un colis dans une boîte, puis mettre cette boîte dans une autre boîte plus grande.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Décapsulation</div>
+      <div>L'inverse — quand les données <strong>montent</strong> les couches OSI (à la réception), chaque couche enlève son en-tête et passe les données à la couche supérieure.</div>
+    </div>
+  </div>
+
+  <!-- 3. LES 7 COUCHES — VISUEL CENTRAL -->
+  <div class="section">
+    <div class="section-label">Les 7 couches — de haut en bas</div>
+    <h2>Le modèle OSI — vue complète</h2>
+    <p>Clique sur une couche pour voir ses détails ↓</p>
+
+    <div class="osi-stack">
+
+      <div class="osi-layer" onclick="toggleLayer(this)">
+        <div class="osi-num" style="background:linear-gradient(180deg,#a78bfa,#7c3aed)">7</div>
+        <div class="osi-main">
+          <div class="osi-name">Application</div>
+          <div class="osi-role">Interface avec l'utilisateur — ce que tu vois et utilises</div>
+          <div class="osi-examples" style="display:none">
+            <br>
+            <strong>Ce que fait cette couche :</strong> Elle fournit les services réseau directement aux applications. C'est la seule couche visible par l'utilisateur.<br><br>
+            <strong>Protocoles :</strong> HTTP, HTTPS, FTP, SMTP, DNS, DHCP, SSH, Telnet, POP3, IMAP, SNMP<br><br>
+            <strong>Exemple concret :</strong> Quand tu ouvres Chrome et tu tapes une URL, le navigateur utilise HTTP/HTTPS — c'est la couche 7 en action.<br><br>
+            <div class="osi-pdu" style="background:rgba(167,139,250,0.15);color:#a78bfa;border:1px solid rgba(167,139,250,0.3)">PDU → Données (Data)</div>
+            <div class="osi-devices">⚙️ Équipement : Applications, Pare-feux applicatifs (NGFW)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="osi-layer" onclick="toggleLayer(this)">
+        <div class="osi-num" style="background:linear-gradient(180deg,#818cf8,#6366f1)">6</div>
+        <div class="osi-main">
+          <div class="osi-name">Présentation</div>
+          <div class="osi-role">Traduction, chiffrement, compression des données</div>
+          <div class="osi-examples" style="display:none">
+            <br>
+            <strong>Ce que fait cette couche :</strong> Elle traduit les données dans un format compréhensible par l'application. Elle gère aussi le chiffrement (SSL/TLS) et la compression.<br><br>
+            <strong>Formats gérés :</strong> JPEG, PNG, MP4, ASCII, Unicode, SSL/TLS (chiffrement), GZIP (compression)<br><br>
+            <strong>Exemple concret :</strong> Quand tu visites un site en HTTPS, le chiffrement TLS opère à la couche 6 — tes données sont converties en texte chiffré illisible pour un intrus.<br><br>
+            <div class="osi-pdu" style="background:rgba(129,140,248,0.15);color:#818cf8;border:1px solid rgba(129,140,248,0.3)">PDU → Données (Data)</div>
+            <div class="osi-devices">⚙️ Équipement : Applications</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="osi-layer" onclick="toggleLayer(this)">
+        <div class="osi-num" style="background:linear-gradient(180deg,#38bdf8,#0284c7)">5</div>
+        <div class="osi-main">
+          <div class="osi-name">Session</div>
+          <div class="osi-role">Ouvre, gère et ferme les sessions de communication</div>
+          <div class="osi-examples" style="display:none">
+            <br>
+            <strong>Ce que fait cette couche :</strong> Elle établit, maintient et termine les sessions entre deux applications. Pense à une session comme une "conversation" — elle a un début, un milieu et une fin.<br><br>
+            <strong>Protocoles :</strong> NetBIOS, RPC, SQL, NFS, SMB (en partie)<br><br>
+            <strong>Exemple concret :</strong> Quand tu te connectes à ta banque en ligne, la couche 5 maintient ta session active tant que tu navigues. Si tu restes inactif trop longtemps, la session expire et tu es déconnecté.<br><br>
+            <div class="osi-pdu" style="background:rgba(56,189,248,0.12);color:#38bdf8;border:1px solid rgba(56,189,248,0.3)">PDU → Données (Data)</div>
+            <div class="osi-devices">⚙️ Équipement : Applications, Serveurs</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="osi-layer" onclick="toggleLayer(this)">
+        <div class="osi-num" style="background:linear-gradient(180deg,#22d3a0,#059669)">4</div>
+        <div class="osi-main">
+          <div class="osi-name">Transport</div>
+          <div class="osi-role">Livraison fiable ou rapide — TCP ou UDP</div>
+          <div class="osi-examples" style="display:none">
+            <br>
+            <strong>Ce que fait cette couche :</strong> Elle garantit (ou non) la livraison des données entre deux hôtes. Elle découpe les données en segments et gère la retransmission si un segment est perdu.<br><br>
+            <strong>Protocoles :</strong> TCP (fiable, avec accusé de réception), UDP (rapide, sans garantie)<br><br>
+            <strong>Exemple concret :</strong> Quand tu télécharges un fichier → TCP s'assure que chaque morceau arrive. Quand tu fais un appel vidéo → UDP envoie les images rapidement sans attendre confirmation (un peu de perte est acceptable).<br><br>
+            <strong>Concepts clés :</strong> Ports (80, 443, 22…), segmentation, numéros de séquence, contrôle de flux<br><br>
+            <div class="osi-pdu" style="background:rgba(34,211,160,0.12);color:#22d3a0;border:1px solid rgba(34,211,160,0.3)">PDU → Segment (TCP) / Datagramme (UDP)</div>
+            <div class="osi-devices">⚙️ Équipement : Pare-feux, Load balancers</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="osi-layer" onclick="toggleLayer(this)">
+        <div class="osi-num" style="background:linear-gradient(180deg,#fbbf24,#d97706)">3</div>
+        <div class="osi-main">
+          <div class="osi-name">Réseau</div>
+          <div class="osi-role">Adressage logique et routage — trouver le chemin</div>
+          <div class="osi-examples" style="display:none">
+            <br>
+            <strong>Ce que fait cette couche :</strong> Elle détermine le meilleur chemin pour envoyer les données d'un réseau à un autre. Elle utilise les adresses IP pour identifier les appareils à travers plusieurs réseaux.<br><br>
+            <strong>Protocoles :</strong> IP (IPv4 et IPv6), ICMP, OSPF, BGP, RIP, ARP (en partie)<br><br>
+            <strong>Exemple concret :</strong> Quand tu envoies un email depuis Paris à quelqu'un à Tokyo, la couche 3 décide par quels routeurs les données vont passer pour trouver le chemin le plus efficace.<br><br>
+            <strong>Concepts clés :</strong> Adresses IP, masques de sous-réseau, routage, TTL, NAT<br><br>
+            <div class="osi-pdu" style="background:rgba(251,191,36,0.12);color:#fbbf24;border:1px solid rgba(251,191,36,0.3)">PDU → Paquet (Packet)</div>
+            <div class="osi-devices">⚙️ Équipement : Routeur, Switch Layer 3, Firewall</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="osi-layer" onclick="toggleLayer(this)">
+        <div class="osi-num" style="background:linear-gradient(180deg,#f87171,#dc2626)">2</div>
+        <div class="osi-main">
+          <div class="osi-name">Liaison de données</div>
+          <div class="osi-role">Adressage physique — communication sur le même réseau local</div>
+          <div class="osi-examples" style="display:none">
+            <br>
+            <strong>Ce que fait cette couche :</strong> Elle gère la communication entre deux appareils directement connectés (même réseau local). Elle utilise les adresses MAC pour identifier les appareils sur le réseau local.<br><br>
+            <strong>Protocoles :</strong> Ethernet, Wi-Fi (802.11), PPP, VLAN (802.1Q), STP<br><br>
+            <strong>Exemple concret :</strong> Dans ton bureau, quand ton ordinateur envoie des données à l'imprimante réseau à côté, c'est la couche 2 qui gère ça en utilisant leurs adresses MAC.<br><br>
+            <strong>Concepts clés :</strong> Adresses MAC, trames Ethernet, VLAN, STP, switches<br><br>
+            <strong>Deux sous-couches :</strong> LLC (Logical Link Control) et MAC (Media Access Control)<br><br>
+            <div class="osi-pdu" style="background:rgba(248,113,113,0.12);color:#f87171;border:1px solid rgba(248,113,113,0.3)">PDU → Trame (Frame)</div>
+            <div class="osi-devices">⚙️ Équipement : Switch (Layer 2), Bridge, Carte réseau (NIC)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="osi-layer" onclick="toggleLayer(this)">
+        <div class="osi-num" style="background:linear-gradient(180deg,#94a3b8,#475569)">1</div>
+        <div class="osi-main">
+          <div class="osi-name">Physique</div>
+          <div class="osi-role">Transmission des bits bruts — câbles, signaux, électricité</div>
+          <div class="osi-examples" style="display:none">
+            <br>
+            <strong>Ce que fait cette couche :</strong> Elle s'occupe de la transmission physique des bits (0 et 1) sous forme de signaux électriques, lumineux (fibre) ou radio (Wi-Fi). Elle ne comprend pas le sens des données — juste des 0 et des 1.<br><br>
+            <strong>Technologies :</strong> Câble Ethernet (RJ-45), fibre optique, Wi-Fi (ondes radio), Bluetooth, câble coaxial<br><br>
+            <strong>Exemple concret :</strong> Le câble Ethernet branché dans ton PC c'est la couche 1 — il transporte des impulsions électriques qui représentent des 0 et des 1.<br><br>
+            <strong>Concepts clés :</strong> Débits (bandwidth), atténuation, bruit, topologies physiques, connecteurs<br><br>
+            <div class="osi-pdu" style="background:rgba(148,163,184,0.12);color:#94a3b8;border:1px solid rgba(148,163,184,0.3)">PDU → Bit</div>
+            <div class="osi-devices">⚙️ Équipement : Hub, Répéteur, Câbles, Connecteurs, Carte réseau (NIC)</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>Direction du flux</strong>
+        À l'<strong>envoi</strong> : les données descendent de la couche 7 vers la couche 1 (encapsulation — on ajoute des en-têtes).<br>
+        À la <strong>réception</strong> : les données montent de la couche 1 vers la couche 7 (décapsulation — on enlève les en-têtes).
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. TABLEAU RÉCAP -->
+  <div class="section">
+    <div class="section-label">Récapitulatif</div>
+    <h2>Les 7 couches — tableau complet</h2>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>#</th><th>Nom</th><th>Rôle</th><th>PDU</th><th>Protocoles clés</th><th>Équipement</th></tr>
+        <tr><td><strong>7</strong></td><td><strong>Application</strong></td><td>Services réseau pour l'utilisateur</td><td>Données</td><td>HTTP, DNS, FTP, SSH, SMTP</td><td>Applications</td></tr>
+        <tr><td><strong>6</strong></td><td><strong>Présentation</strong></td><td>Traduction, chiffrement, compression</td><td>Données</td><td>SSL/TLS, JPEG, ASCII</td><td>Applications</td></tr>
+        <tr><td><strong>5</strong></td><td><strong>Session</strong></td><td>Ouverture/fermeture des sessions</td><td>Données</td><td>NetBIOS, RPC, SQL</td><td>Serveurs</td></tr>
+        <tr><td><strong>4</strong></td><td><strong>Transport</strong></td><td>Livraison fiable ou rapide</td><td>Segment / Datagramme</td><td>TCP, UDP</td><td>Pare-feux, LB</td></tr>
+        <tr><td><strong>3</strong></td><td><strong>Réseau</strong></td><td>Adressage IP et routage</td><td>Paquet</td><td>IP, ICMP, OSPF, BGP</td><td>Routeur, Switch L3</td></tr>
+        <tr><td><strong>2</strong></td><td><strong>Liaison</strong></td><td>Adressage MAC, réseau local</td><td>Trame</td><td>Ethernet, 802.11, VLAN</td><td>Switch L2, Bridge</td></tr>
+        <tr><td><strong>1</strong></td><td><strong>Physique</strong></td><td>Transmission des bits bruts</td><td>Bit</td><td>—</td><td>Hub, câbles, NIC</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 5. MNÉMONIQUES -->
+  <div class="section">
+    <div class="section-label">Mémorisation</div>
+    <h2>Les mnémoniques — retenir l'ordre</h2>
+    <p>Il y a deux sens à mémoriser : du bas vers le haut (couche 1 → 7) et du haut vers le bas (7 → 1).</p>
+
+    <h3>// De bas en haut (1 → 7) — "Please Do Not Throw Sausage Pizza Away"</h3>
+    <div class="mnemo-box">
+      <span class="mnemo-letter">P</span><span class="mnemo-word">lease </span><span class="mnemo-layer">→ Physical (1)</span><br>
+      <span class="mnemo-letter">D</span><span class="mnemo-word">o </span><span class="mnemo-layer">→ Data Link (2)</span><br>
+      <span class="mnemo-letter">N</span><span class="mnemo-word">ot </span><span class="mnemo-layer">→ Network (3)</span><br>
+      <span class="mnemo-letter">T</span><span class="mnemo-word">hrow </span><span class="mnemo-layer">→ Transport (4)</span><br>
+      <span class="mnemo-letter">S</span><span class="mnemo-word">ausage </span><span class="mnemo-layer">→ Session (5)</span><br>
+      <span class="mnemo-letter">P</span><span class="mnemo-word">izza </span><span class="mnemo-layer">→ Presentation (6)</span><br>
+      <span class="mnemo-letter">A</span><span class="mnemo-word">way </span><span class="mnemo-layer">→ Application (7)</span>
+    </div>
+
+    <h3>// De haut en bas (7 → 1) — "All People Seem To Need Data Processing"</h3>
+    <div class="mnemo-box">
+      <span class="mnemo-letter">A</span><span class="mnemo-word">ll </span><span class="mnemo-layer">→ Application (7)</span><br>
+      <span class="mnemo-letter">P</span><span class="mnemo-word">eople </span><span class="mnemo-layer">→ Presentation (6)</span><br>
+      <span class="mnemo-letter">S</span><span class="mnemo-word">eem </span><span class="mnemo-layer">→ Session (5)</span><br>
+      <span class="mnemo-letter">T</span><span class="mnemo-word">o </span><span class="mnemo-layer">→ Transport (4)</span><br>
+      <span class="mnemo-letter">N</span><span class="mnemo-word">eed </span><span class="mnemo-layer">→ Network (3)</span><br>
+      <span class="mnemo-letter">D</span><span class="mnemo-word">ata </span><span class="mnemo-layer">→ Data Link (2)</span><br>
+      <span class="mnemo-letter">P</span><span class="mnemo-word">rocessing </span><span class="mnemo-layer">→ Physical (1)</span>
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">🇫🇷</span>
+      <div class="callout-body">
+        <strong>Version française — "Pour De Nouvelles Technologies Sans Problèmes Apparents"</strong>
+        <strong>P</strong>our → Physique (1) · <strong>D</strong>e → Données/Liaison (2) · <strong>N</strong>ouvelles → Réseau/Network (3) · <strong>T</strong>echnologies → Transport (4) · <strong>S</strong>ans → Session (5) · <strong>P</strong>roblèmes → Présentation (6) · <strong>A</strong>pparents → Application (7)
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. ENCAPSULATION -->
+  <div class="section">
+    <div class="section-label">Concept fondamental</div>
+    <h2>Encapsulation — comment les données voyagent</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">📦</span>
+      <div class="callout-body">
+        <strong>Analogie — les poupées russes</strong>
+        À l'envoi, chaque couche emballe les données dans une enveloppe avec une étiquette (en-tête). À la réception, le destinataire ouvre chaque enveloppe et lit l'étiquette correspondante.
+      </div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Couche</th><th>Action à l'envoi</th><th>PDU créé</th><th>Ce qui est ajouté</th></tr>
+        <tr><td>7-5 Application/Session/Présentation</td><td>Crée les données</td><td>Données</td><td>Contenu du message</td></tr>
+        <tr><td>4 Transport</td><td>Segmente</td><td>Segment / Datagramme</td><td>Port source/destination, n° séquence</td></tr>
+        <tr><td>3 Réseau</td><td>Encapsule en paquet</td><td>Paquet</td><td>IP source et destination</td></tr>
+        <tr><td>2 Liaison</td><td>Encapsule en trame</td><td>Trame</td><td>MAC source et destination, FCS</td></tr>
+        <tr><td>1 Physique</td><td>Convertit en bits</td><td>Bits (0 et 1)</td><td>Signal électrique/lumineux/radio</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 7. PIÈGES -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges fréquents</div>
+    <h2>Ce qui trompe les candidats Network+</h2>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Piège 1 — Hub vs Switch vs Routeur</strong>
+        Un <strong>Hub</strong> = couche 1 (physique) — il envoie les données à tout le monde.<br>
+        Un <strong>Switch</strong> = couche 2 (liaison) — il utilise les adresses MAC.<br>
+        Un <strong>Routeur</strong> = couche 3 (réseau) — il utilise les adresses IP.<br>
+        CompTIA adore tester cette différence !
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Piège 2 — ARP à quelle couche ?</strong>
+        ARP (Address Resolution Protocol) traduit une adresse IP en adresse MAC. Il opère entre la couche 2 et la couche 3 — CompTIA le considère généralement comme couche 2, mais certaines questions le placent à la couche 3. Retiens : ARP = couche 2/3 (frontière).
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Piège 3 — SSL/TLS à quelle couche ?</strong>
+        SSL/TLS (le chiffrement HTTPS) opère à la couche 4 selon certains modèles, couche 5/6 selon d'autres. Pour Network+, retiens : <strong>couche 5 ou 6</strong> selon la question. Si on te parle de "présentation des données chiffrées" → couche 6.
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Piège 4 — Les couches 5, 6, 7 semblent "vides"</strong>
+        En pratique, les couches 5, 6, 7 sont souvent regroupées dans les applications modernes. Dans le modèle TCP/IP (le vrai protocole d'Internet), elles forment une seule couche "Application". Le modèle OSI reste une <strong>référence théorique</strong> pour comprendre et dépanner.
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">À quelle couche opère un routeur ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Couche <strong>3 — Réseau</strong>. Le routeur utilise les adresses IP pour acheminer les paquets entre réseaux différents.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">Quel est le PDU de la couche Transport ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Segment</strong> (pour TCP) ou <strong>Datagramme</strong> (pour UDP).</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">Un switch standard (Layer 2) opère à quelle couche OSI ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Couche <strong>2 — Liaison de données</strong>. Il utilise les adresses MAC pour commuter les trames.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">HTTP et DNS opèrent à quelle couche ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Couche <strong>7 — Application</strong>. Ce sont des protocoles qui fournissent des services directement aux applications.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">Cite les 7 couches OSI de mémoire, de la couche 1 à 7.</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">1 - Physique<br>2 - Liaison de données (Data Link)<br>3 - Réseau (Network)<br>4 - Transport<br>5 - Session<br>6 - Présentation (Presentation)<br>7 - Application<br><br>Mnémonique : <strong>Please Do Not Throw Sausage Pizza Away</strong></div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">Un technicien constate que deux ordinateurs ne peuvent pas communiquer même sur le même réseau local. À quelle couche OSI commence-t-il le diagnostic ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Il commence par la <strong>couche 1 (Physique)</strong> — méthode bottom-up. D'abord vérifier les câbles, puis les adresses MAC (couche 2), puis les adresses IP (couche 3).<br><br>C'est la méthode de dépannage OSI standard que CompTIA teste.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">Le chiffrement HTTPS (TLS) opère à quelle couche OSI ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Couche <strong>5 ou 6</strong> selon le contexte :<br>- Couche 6 (Présentation) si la question parle de chiffrement/traduction des données<br>- Couche 5 (Session) si la question parle d'établissement de session sécurisée<br><br>Pour Network+ : retenir <strong>couche 5/6</strong>, avec SSL/TLS souvent cité à la couche 6.</div>
+  </div>
+
+  <!-- 9. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span>7 couches : Physique (1) · Liaison (2) · Réseau (3) · Transport (4) · Session (5) · Présentation (6) · Application (7)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>PDU par couche : Bit (1) · Trame (2) · Paquet (3) · Segment/Datagramme (4) · Données (5-6-7)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Équipements : Hub = L1 · Switch = L2 · Routeur = L3 · Pare-feux = L3-L7</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Encapsulation (envoi) = descendre 7→1 en ajoutant des en-têtes. Décapsulation (réception) = monter 1→7 en les retirant.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Mnémonique haut→bas : <strong>All People Seem To Need Data Processing</strong></span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Dépannage : toujours commencer par la couche 1 (physique) et monter — méthode bottom-up.</span></div>
+    </div>
+  </div>
+
+  <!-- 10. QUESTIONS EXAM -->
+  <div class="section">
+    <div class="section-label">Questions type examen</div>
+    <h2>❓ Ce que CompTIA peut te poser</h2>
+    <div class="callout exam"><span class="callout-icon">🎯</span><div class="callout-body"><strong>Q : À quelle couche OSI opère un switch Layer 2 ?</strong>Couche <strong>2 — Liaison de données</strong>. Il utilise les adresses MAC.</div></div>
+    <div class="callout exam"><span class="callout-icon">🎯</span><div class="callout-body"><strong>Q : Un technicien reçoit une trame corrompue (erreur FCS). À quelle couche se situe le problème ?</strong>Couche <strong>2 — Liaison de données</strong>. Le FCS (Frame Check Sequence) est un mécanisme de détection d'erreurs de la trame Ethernet.</div></div>
+    <div class="callout exam"><span class="callout-icon">🎯</span><div class="callout-body"><strong>Q : Quel protocole de la couche 4 garantit la livraison des données ?</strong><strong>TCP</strong> (Transport Control Protocol) — avec accusé de réception et retransmission en cas de perte.</div></div>
+    <div class="callout exam"><span class="callout-icon">🎯</span><div class="callout-body"><strong>Q : Quel est le nom des données à la couche 3 ?</strong>Un <strong>paquet</strong> (packet). Couche 2 = trame. Couche 4 = segment.</div></div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn prev" href="#">← Cours 01 : Binaire & Numérotation</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">C02 · Phase 1</span>
+    <a class="nav-btn next" href="#">Cours 03 : Encapsulation / Décapsulation →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_c02_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleLayer(layerEl) {
+  const detail = layerEl.querySelector('.osi-examples');
+  const isOpen = detail.style.display === 'block';
+  // Close all
+  document.querySelectorAll('.osi-examples').forEach(d => d.style.display = 'none');
+  // Open this one unless it was already open
+  if(!isOpen) detail.style.display = 'block';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>

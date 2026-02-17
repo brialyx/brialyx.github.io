@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 03 — Encapsulation & Décapsulation · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  /* MASTERY */
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  /* SECTION */
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  /* CALLOUTS */
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  /* VOCAB */
+  .vocab { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; }
+  .vocab-term { font-family: 'IBM Plex Mono', monospace; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+
+  /* TABLE */
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  /* ── ENCAPSULATION ANIMATION ── */
+  .encap-demo { margin: 20px 0; }
+  .encap-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+  .encap-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .encap-stack { display: flex; flex-direction: column; gap: 6px; }
+  .encap-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+  .encap-row.visible { opacity: 1; transform: translateY(0); }
+  .encap-layer-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #fff;
+  }
+  .encap-box {
+    flex: 1;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.82rem;
+    font-family: 'IBM Plex Mono', monospace;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    border: 1px solid transparent;
+    transition: border-color 0.3s;
+  }
+  .encap-header {
+    font-weight: 700;
+    font-size: 0.75rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .encap-data { color: var(--muted); font-size: 0.75rem; }
+  .encap-pdu { font-size: 0.65rem; color: var(--muted); white-space: nowrap; margin-left: auto; }
+
+  .encap-btn {
+    background: rgba(56,189,248,0.08);
+    border: 1px solid rgba(56,189,248,0.25);
+    color: var(--accent);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 16px 0 8px;
+    transition: all 0.2s;
+    display: inline-block;
+  }
+  .encap-btn:hover { background: rgba(56,189,248,0.16); }
+
+  /* DECAP */
+  .decap-stack { display: flex; flex-direction: column; gap: 6px; }
+
+  /* KEY POINTS */
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  /* EXERCISES */
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  /* NAV */
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Phase 1 — Fondamentaux</span> &nbsp;›&nbsp; Cours 03</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 1 · C03</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡☆ Moyen</span>
+  </div>
+
+  <h1>Encapsulation &amp; <span>Décapsulation</span></h1>
+  <span class="tagline">// Comment les données se transforment couche par couche pour traverser un réseau</span>
+
+  <!-- MASTERY -->
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends la différence entre encapsulation et décapsulation</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais les 5 PDU et leur couche OSI respective</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je sais ce qu'un en-tête contient à chaque couche</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. C'EST QUOI -->
+  <div class="section">
+    <div class="section-label">Avant de commencer</div>
+    <h2>C'est quoi l'encapsulation — en une image</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">📬</span>
+      <div class="callout-body">
+        <strong>Analogie — envoyer une lettre internationale</strong>
+        Tu écris une lettre (tes données). Tu la mets dans une enveloppe avec l'adresse du destinataire. Tu mets cette enveloppe dans un colis pour la Poste. La Poste met le colis dans un container pour l'avion. L'avion transporte le container.
+        <br><br>
+        À chaque étape, quelqu'un <strong>ajoute son propre emballage</strong> avec ses propres informations. À la réception, chaque intermédiaire <strong>enlève son emballage</strong> et passe le reste au suivant. C'est exactement ce que font les couches OSI avec les données réseau.
+      </div>
+    </div>
+
+    <p><strong>Encapsulation</strong> = à l'envoi, les données descendent les couches OSI de 7 vers 1. Chaque couche <strong>ajoute son en-tête</strong> (et parfois un trailer) autour des données.</p>
+    <p><strong>Décapsulation</strong> = à la réception, les données montent les couches OSI de 1 vers 7. Chaque couche <strong>lit puis enlève son en-tête</strong> et transmet le reste à la couche supérieure.</p>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pourquoi c'est important pour l'examen ?</strong>
+        L'encapsulation explique pourquoi les données ont un nom différent à chaque couche (bit, trame, paquet, segment). CompTIA te pose des questions sur ces noms et sur ce qu'un en-tête contient. C'est aussi la base pour comprendre Wireshark et le dépannage réseau.
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. VOCABULAIRE -->
+  <div class="section">
+    <div class="section-label">Vocabulaire essentiel</div>
+    <h2>Les mots clés de ce cours</h2>
+
+    <div class="vocab">
+      <div class="vocab-term">En-tête (Header)</div>
+      <div>Information ajoutée <strong>au début</strong> des données par une couche OSI. Contient des métadonnées comme l'adresse source, l'adresse destination, le numéro de port, etc.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Trailer (ou Queue)</div>
+      <div>Information ajoutée <strong>à la fin</strong> des données par une couche. Utilisé principalement à la couche 2 pour la détection d'erreurs (FCS = Frame Check Sequence).</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">PDU — Protocol Data Unit</div>
+      <div>Le nom donné aux données à chaque couche. Les données changent de nom à chaque couche car leur structure change (un en-tête est ajouté ou retiré).</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Payload (charge utile)</div>
+      <div>La partie utile des données — c'est-à-dire le contenu réel du message, sans les en-têtes. À chaque couche, le payload = les données venant de la couche supérieure + leurs en-têtes.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">FCS — Frame Check Sequence</div>
+      <div>Un code ajouté à la fin d'une trame Ethernet (trailer couche 2) qui permet au destinataire de vérifier que la trame n'a pas été corrompue pendant la transmission.</div>
+    </div>
+  </div>
+
+  <!-- 3. LES 5 PDU -->
+  <div class="section">
+    <div class="section-label">Les noms des données par couche</div>
+    <h2>Les 5 PDU — à connaître par cœur</h2>
+    <p>À chaque couche, les données portent un nom spécifique. Ce nom change car la structure des données change (un en-tête est ajouté ou retiré).</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Couche OSI</th><th>Nom (PDU)</th><th>Ce que ça contient</th><th>En français courant</th></tr>
+        <tr>
+          <td><strong>7 - 5</strong> Application / Session / Présentation</td>
+          <td><strong style="color:var(--purple)">Données (Data)</strong></td>
+          <td>Le message original de l'utilisateur</td>
+          <td>"Le contenu"</td>
+        </tr>
+        <tr>
+          <td><strong>4</strong> Transport</td>
+          <td><strong style="color:var(--green)">Segment</strong> (TCP) <br><strong style="color:var(--green)">Datagramme</strong> (UDP)</td>
+          <td>Données + en-tête TCP/UDP (ports, numéro de séquence…)</td>
+          <td>"Le morceau découpé"</td>
+        </tr>
+        <tr>
+          <td><strong>3</strong> Réseau</td>
+          <td><strong style="color:var(--amber)">Paquet (Packet)</strong></td>
+          <td>Segment + en-tête IP (IP source, IP destination, TTL…)</td>
+          <td>"L'enveloppe avec l'adresse postale"</td>
+        </tr>
+        <tr>
+          <td><strong>2</strong> Liaison</td>
+          <td><strong style="color:var(--red)">Trame (Frame)</strong></td>
+          <td>Paquet + en-tête Ethernet (MAC source, MAC dest) + FCS trailer</td>
+          <td>"Le colis pour la livraison locale"</td>
+        </tr>
+        <tr>
+          <td><strong>1</strong> Physique</td>
+          <td><strong style="color:var(--muted)">Bits</strong></td>
+          <td>La trame convertie en 0 et 1 (signaux électriques/lumineux/radio)</td>
+          <td>"Le signal sur le câble"</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">🔑</span>
+      <div class="callout-body">
+        <strong>Mnémonique PDU — "Des Singes Pandas Très Bien"</strong>
+        <strong>D</strong>onnées (L7-5) · <strong>S</strong>egment (L4) · <strong>P</strong>aquet (L3) · <strong>T</strong>rame (L2) · <strong>B</strong>its (L1)
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. ENCAPSULATION INTERACTIVE -->
+  <div class="section">
+    <div class="section-label">Visualisation interactive</div>
+    <h2>L'encapsulation — étape par étape</h2>
+    <p>Voici ce qui se passe quand tu envoies un email. Clique sur le bouton pour voir chaque couche ajouter son en-tête.</p>
+
+    <button class="encap-btn" onclick="animateEncap()">▶ Lancer l'animation d'encapsulation</button>
+
+    <div class="encap-demo">
+      <div class="encap-title">Envoi — couche 7 → couche 1</div>
+      <div class="encap-stack" id="encapStack">
+
+        <div class="encap-row" id="row7">
+          <div class="encap-layer-badge" style="background:linear-gradient(135deg,#a78bfa,#7c3aed)">7</div>
+          <div class="encap-box" style="background:rgba(167,139,250,0.08);border-color:rgba(167,139,250,0.2)">
+            <span class="encap-header" style="background:rgba(167,139,250,0.2);color:#a78bfa">En-tête HTTP</span>
+            <span class="encap-data">[ Corps de l'email — le texte que tu as écrit ]</span>
+            <span class="encap-pdu">PDU → Données</span>
+          </div>
+        </div>
+
+        <div class="encap-row" id="row4">
+          <div class="encap-layer-badge" style="background:linear-gradient(135deg,#22d3a0,#059669)">4</div>
+          <div class="encap-box" style="background:rgba(34,211,160,0.06);border-color:rgba(34,211,160,0.2)">
+            <span class="encap-header" style="background:rgba(34,211,160,0.2);color:#22d3a0">En-tête TCP</span>
+            <span class="encap-data" style="font-size:0.7rem">Port src:54321 · Port dst:25 · Seq:1 · Ack:0</span>
+            <span class="encap-data">[ En-tête HTTP + Email ]</span>
+            <span class="encap-pdu">PDU → Segment</span>
+          </div>
+        </div>
+
+        <div class="encap-row" id="row3">
+          <div class="encap-layer-badge" style="background:linear-gradient(135deg,#fbbf24,#d97706)">3</div>
+          <div class="encap-box" style="background:rgba(251,191,36,0.06);border-color:rgba(251,191,36,0.2)">
+            <span class="encap-header" style="background:rgba(251,191,36,0.2);color:#fbbf24">En-tête IP</span>
+            <span class="encap-data" style="font-size:0.7rem">IP src: 192.168.1.10 · IP dst: 93.184.216.34 · TTL:64</span>
+            <span class="encap-data">[ Segment TCP ]</span>
+            <span class="encap-pdu">PDU → Paquet</span>
+          </div>
+        </div>
+
+        <div class="encap-row" id="row2">
+          <div class="encap-layer-badge" style="background:linear-gradient(135deg,#f87171,#dc2626)">2</div>
+          <div class="encap-box" style="background:rgba(248,113,113,0.06);border-color:rgba(248,113,113,0.2)">
+            <span class="encap-header" style="background:rgba(248,113,113,0.2);color:#f87171">En-tête Ethernet</span>
+            <span class="encap-data" style="font-size:0.7rem">MAC src: A4:83:E7:2C:11:01 · MAC dst: FF:FF:FF:FF:FF:01</span>
+            <span class="encap-data">[ Paquet IP ]</span>
+            <span class="encap-header" style="background:rgba(248,113,113,0.1);color:#f87171;margin-left:auto">FCS ✓</span>
+            <span class="encap-pdu">PDU → Trame</span>
+          </div>
+        </div>
+
+        <div class="encap-row" id="row1">
+          <div class="encap-layer-badge" style="background:linear-gradient(135deg,#94a3b8,#475569)">1</div>
+          <div class="encap-box" style="background:rgba(148,163,184,0.06);border-color:rgba(148,163,184,0.2)">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted)">10110001 01001010 11000011 00101101 10110001 01001010…</span>
+            <span class="encap-pdu">PDU → Bits</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. DÉCAPSULATION -->
+  <div class="section">
+    <div class="section-label">À la réception</div>
+    <h2>La décapsulation — l'opération inverse</h2>
+    <p>À la réception, chaque couche OSI lit l'en-tête qui lui est destiné, vérifie les informations, puis <strong>enlève l'en-tête</strong> avant de passer les données à la couche supérieure.</p>
+
+    <button class="encap-btn" onclick="animateDecap()">▶ Lancer l'animation de décapsulation</button>
+
+    <div class="encap-demo">
+      <div class="encap-title">Réception — couche 1 → couche 7</div>
+      <div class="decap-stack" id="decapStack">
+
+        <div class="encap-row" id="drow1">
+          <div class="encap-layer-badge" style="background:linear-gradient(135deg,#94a3b8,#475569)">1</div>
+          <div class="encap-box" style="background:rgba(148,163,184,0.06);border-color:rgba(148,163,184,0.2)">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted)">10110001 01001010 … reçus sur le câble</span>
+            <span class="encap-pdu">Reçoit : Bits → convertit en Trame</span>
+          </div>
+        </div>
+
+        <div class="encap-row" id="drow2">
+          <div class="encap-layer-badge" style="background:linear-gradient(135deg,#f87171,#dc2626)">2</div>
+          <div class="encap-box" style="background:rgba(248,113,113,0.06);border-color:rgba(248,113,113,0.2)">
+            <span class="encap-data">Lit l'en-tête Ethernet · Vérifie FCS · Retire l'en-tête</span>
+            <span class="encap-pdu">Passe le Paquet IP à la couche 3 ↑</span>
+          </div>
+        </div>
+
+        <div class="encap-row" id="drow3">
+          <div class="encap-layer-badge" style="background:linear-gradient(135deg,#fbbf24,#d97706)">3</div>
+          <div class="encap-box" style="background:rgba(251,191,36,0.06);border-color:rgba(251,191,36,0.2)">
+            <span class="encap-data">Lit l'en-tête IP · Vérifie IP destination · Retire l'en-tête</span>
+            <span class="encap-pdu">Passe le Segment TCP à la couche 4 ↑</span>
+          </div>
+        </div>
+
+        <div class="encap-row" id="drow4">
+          <div class="encap-layer-badge" style="background:linear-gradient(135deg,#22d3a0,#059669)">4</div>
+          <div class="encap-box" style="background:rgba(34,211,160,0.06);border-color:rgba(34,211,160,0.2)">
+            <span class="encap-data">Lit l'en-tête TCP · Vérifie le port · Réassemble les segments · Retire l'en-tête</span>
+            <span class="encap-pdu">Passe les Données HTTP à la couche 7 ↑</span>
+          </div>
+        </div>
+
+        <div class="encap-row" id="drow7">
+          <div class="encap-layer-badge" style="background:linear-gradient(135deg,#a78bfa,#7c3aed)">7</div>
+          <div class="encap-box" style="background:rgba(167,139,250,0.08);border-color:rgba(167,139,250,0.3)">
+            <span style="color:var(--green);font-weight:700">✅ Email affiché dans ton application !</span>
+            <span class="encap-pdu">Données reconstituées</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. CE QUE CONTIENT CHAQUE EN-TÊTE -->
+  <div class="section">
+    <div class="section-label">Dans le détail</div>
+    <h2>Ce que contient chaque en-tête</h2>
+    <p>C'est ce que CompTIA teste : savoir <em>quelle information</em> se trouve dans l'en-tête de <em>quelle couche</em>.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Couche</th><th>En-tête ajouté</th><th>Informations clés contenues</th></tr>
+        <tr>
+          <td><strong>4</strong> Transport</td>
+          <td>En-tête TCP ou UDP</td>
+          <td>Port source · Port destination · Numéro de séquence (TCP) · Numéro d'accusé de réception (TCP) · Flags (SYN, ACK, FIN…)</td>
+        </tr>
+        <tr>
+          <td><strong>3</strong> Réseau</td>
+          <td>En-tête IP</td>
+          <td>Adresse IP source · Adresse IP destination · TTL (Time To Live) · Protocole (TCP=6, UDP=17, ICMP=1)</td>
+        </tr>
+        <tr>
+          <td><strong>2</strong> Liaison</td>
+          <td>En-tête + Trailer Ethernet</td>
+          <td>Adresse MAC source · Adresse MAC destination · EtherType · FCS (Frame Check Sequence — détection d'erreurs)</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>Règle simple à retenir :</strong><br>
+        En-tête <strong>couche 4</strong> = adresses de <strong>port</strong> (quel service ?)<br>
+        En-tête <strong>couche 3</strong> = adresses <strong>IP</strong> (quel ordinateur sur Internet ?)<br>
+        En-tête <strong>couche 2</strong> = adresses <strong>MAC</strong> (quel appareil sur le réseau local ?)
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. EXEMPLE CONCRET COMPLET -->
+  <div class="section">
+    <div class="section-label">Exemple concret</div>
+    <h2>Que se passe-t-il quand tu ouvres google.com ?</h2>
+
+    <p>Tu tapes <code>google.com</code> dans Chrome. Voici exactement ce qui se passe couche par couche :</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Couche</th><th>Action</th><th>Ce qui est ajouté</th></tr>
+        <tr><td><strong>7</strong> Application</td><td>Chrome crée une requête HTTP GET</td><td>Requête : <code>GET / HTTP/1.1 Host: google.com</code></td></tr>
+        <tr><td><strong>4</strong> Transport</td><td>TCP découpe la requête et prépare la connexion</td><td>En-tête TCP : port src 52000, port dst <strong>443</strong> (HTTPS)</td></tr>
+        <tr><td><strong>3</strong> Réseau</td><td>IP prépare le routage vers Google</td><td>En-tête IP : IP src <code>192.168.1.10</code>, IP dst <code>142.250.74.46</code></td></tr>
+        <tr><td><strong>2</strong> Liaison</td><td>Ethernet prépare la livraison vers ta box</td><td>En-tête : MAC src (ton PC), MAC dst (ta box) + FCS</td></tr>
+        <tr><td><strong>1</strong> Physique</td><td>Conversion en signaux</td><td>Bits envoyés sur le câble ou en Wi-Fi</td></tr>
+      </table>
+    </div>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🌍</span>
+      <div class="callout-body">
+        <strong>Remarque importante sur les adresses MAC</strong>
+        L'adresse MAC change à chaque "saut" (hop) entre routeurs. L'adresse IP, elle, reste la même de bout en bout. C'est pourquoi on a besoin des deux : l'IP pour trouver la destination finale sur Internet, la MAC pour le tronçon local actuel.
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. PIÈGES -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges fréquents</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Piège 1 — Confondre Segment et Paquet</strong>
+        Segment = couche <strong>4</strong> (Transport, TCP/UDP).<br>
+        Paquet = couche <strong>3</strong> (Réseau, IP).<br>
+        Un paquet <strong>contient</strong> un segment. Un segment ne contient pas de paquet.
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Piège 2 — L'adresse IP dans l'en-tête couche 2 ?</strong>
+        Non ! L'en-tête Ethernet (couche 2) contient les <strong>adresses MAC</strong>, pas les adresses IP. Les adresses IP sont dans l'en-tête couche 3. Très fréquent à l'examen.
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Piège 3 — Le FCS est un en-tête ?</strong>
+        Non ! Le FCS est un <strong>trailer</strong> (il est ajouté à la <em>fin</em> de la trame, pas au début). C'est le seul trailer important à l'examen Network+.
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Piège 4 — "Datagramme" c'est quoi ?</strong>
+        Datagramme = le PDU de la couche 4 pour <strong>UDP</strong> (comme Segment l'est pour TCP). Les deux mots désignent le PDU de la couche Transport — mais Segment = TCP, Datagramme = UDP.
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">Quel est le nom des données à la couche 3 (Réseau) ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Paquet</strong> (Packet). Couche 2 = Trame, Couche 4 = Segment.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">Quelle information trouve-t-on dans l'en-tête de la couche 2 (Liaison) ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">L'en-tête Ethernet (couche 2) contient :<br>• Adresse <strong>MAC source</strong><br>• Adresse <strong>MAC destination</strong><br>• EtherType (type de protocole couche 3)<br>• FCS (trailer — détection d'erreurs)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">Un technicien analyse un paquet réseau et voit "IP src: 10.0.0.1, IP dst: 8.8.8.8". À quelle couche appartient cette information ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Couche <strong>3 — Réseau</strong>. Les adresses IP font partie de l'en-tête IP de la couche 3.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">Dans quel sens se fait l'encapsulation ? Et la décapsulation ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Encapsulation = <strong>7 → 1</strong> (envoi) — on ajoute des en-têtes en descendant.<br>Décapsulation = <strong>1 → 7</strong> (réception) — on enlève des en-têtes en montant.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">Cite les 5 PDU dans l'ordre, de la couche 7 à la couche 1.</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Données (L7-5) → Segment/Datagramme (L4) → Paquet (L3) → Trame (L2) → Bits (L1)<br><br>Mnémonique : <strong>"Des Singes Pandas Très Bien"</strong></div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">Question type examen : Un analyste réseau voit des "runts" (trames trop courtes) dans ses captures. À quelle couche OSI se situe ce problème ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Couche <strong>2 — Liaison de données</strong>. Les runts sont des trames Ethernet dont la taille est inférieure au minimum de 64 octets. Le FCS de la trame le détecte. C'est un problème couche 2.</div>
+  </div>
+
+  <!-- 10. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Encapsulation</strong> = envoi, 7→1, chaque couche ajoute un en-tête.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Décapsulation</strong> = réception, 1→7, chaque couche lit et enlève son en-tête.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>PDU : Données (L7-5) · Segment/Datagramme (L4) · Paquet (L3) · Trame (L2) · Bits (L1)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>En-tête L4 = <strong>ports</strong> · En-tête L3 = <strong>adresses IP</strong> · En-tête L2 = <strong>adresses MAC</strong> + FCS</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Le FCS est un <strong>trailer</strong> (fin de trame), pas un en-tête.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>L'adresse MAC change à chaque routeur (hop). L'adresse IP reste la même de bout en bout.</span></div>
+    </div>
+  </div>
+
+  <!-- 11. EXAM -->
+  <div class="section">
+    <div class="section-label">Questions type examen</div>
+    <h2>❓ Ce que CompTIA peut te poser</h2>
+    <div class="callout exam"><span class="callout-icon">🎯</span><div class="callout-body"><strong>Q : Quel PDU est créé à la couche Transport par le protocole TCP ?</strong>Un <strong>Segment</strong>.</div></div>
+    <div class="callout exam"><span class="callout-icon">🎯</span><div class="callout-body"><strong>Q : Un utilisateur ne peut pas accéder à un serveur web. Le technicien capture le trafic et voit que les paquets quittent le poste mais aucune réponse n'arrive. À quelle couche est le problème ?</strong>Couche <strong>3 (Réseau)</strong> ou au-delà — les paquets IP partent mais la réponse ne revient pas. Problème de routage ou de pare-feu.</div></div>
+    <div class="callout exam"><span class="callout-icon">🎯</span><div class="callout-body"><strong>Q : Quelle information l'en-tête IP (couche 3) contient-il que l'en-tête Ethernet (couche 2) ne contient pas ?</strong>L'<strong>adresse IP source et destination</strong>. L'en-tête Ethernet contient les adresses MAC, pas les adresses IP.</div></div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 02 : Modèle OSI</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">C03 · Phase 1</span>
+    <a class="nav-btn next" href="#">Cours 04 : Modèle TCP/IP →</a>
+  </div>
+
+</div>
+<script>
+// Mastery
+const MKEY = 'netplus_c03_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+
+// Encapsulation animation
+function animateEncap() {
+  const rows = ['row7','row4','row3','row2','row1'];
+  rows.forEach(id => document.getElementById(id).classList.remove('visible'));
+  rows.forEach((id, i) => {
+    setTimeout(() => document.getElementById(id).classList.add('visible'), i * 500);
+  });
+}
+
+// Decapsulation animation
+function animateDecap() {
+  const rows = ['drow1','drow2','drow3','drow4','drow7'];
+  rows.forEach(id => document.getElementById(id).classList.remove('visible'));
+  rows.forEach((id, i) => {
+    setTimeout(() => document.getElementById(id).classList.add('visible'), i * 500);
+  });
+}
+
+// Exercise reveal
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+
+initMastery();
+</script>
+</body>
+</html>

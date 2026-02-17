@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 01 — Binaire & Numérotation · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826; --card2: #161f2e;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  /* MASTERY */
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  /* SECTION */
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  /* CALLOUTS */
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip    { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn   { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam   { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok     { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  /* VOCAB */
+  .vocab { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; }
+  .vocab-term { font-family: 'IBM Plex Mono', monospace; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+
+  /* BIN BLOCK */
+  .bin-block { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; font-family: 'IBM Plex Mono', monospace; font-size: 0.82rem; line-height: 2; margin: 14px 0; overflow-x: auto; }
+  .bin-block .lbl { color: var(--muted); }
+  .bin-block .on  { color: var(--accent); font-weight: 700; }
+  .bin-block .off { color: var(--muted); }
+  .bin-block .res { color: var(--green); font-weight: 700; }
+
+  /* TABLE */
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  /* STEPS */
+  .steps { display: flex; flex-direction: column; gap: 8px; margin: 14px 0; }
+  .step { display: flex; gap: 14px; align-items: flex-start; padding: 12px 16px; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; }
+  .step-num { font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--accent); background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.2); border-radius: 6px; padding: 2px 8px; flex-shrink: 0; font-weight: 600; min-width: 38px; text-align: center; }
+  .step-text { font-size: 0.88rem; line-height: 1.6; }
+  .step-text .yes { color: var(--green); font-weight: 700; }
+  .step-text .no  { color: var(--red);   font-weight: 700; }
+
+  /* EXERCISES */
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { color: var(--muted); min-width: 24px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { color: var(--muted); font-size: 0.7rem; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-family: 'IBM Plex Mono', monospace; font-size: 0.82rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  /* KEY POINTS */
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  /* NAV */
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Phase 1 — Fondamentaux</span> &nbsp;›&nbsp; Cours 01</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 1 · C01</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡☆☆ Facile</span>
+  </div>
+
+  <h1>Binaire &amp; <span>Numérotation</span></h1>
+  <span class="tagline">// La base de tout en réseau — sans ça, le subnetting est impossible</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais les 8 valeurs binaires par cœur (128, 64, 32, 16, 8, 4, 2, 1)</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je convertis binaire → décimal sans regarder mes notes</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je convertis décimal → binaire sans regarder mes notes</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans calculatrice</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. CONTEXTE -->
+  <div class="section">
+    <div class="section-label">Avant de commencer</div>
+    <h2>C'est quoi une adresse IP — et pourquoi le binaire ?</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🏠</span>
+      <div class="callout-body">
+        <strong>Analogie — l'adresse postale</strong>
+        Sur un réseau, chaque appareil (ordinateur, téléphone, imprimante…) a une adresse unique qu'on appelle <strong>adresse IP</strong>. Elle ressemble à ça : <code>192.168.1.10</code>. C'est exactement comme un numéro de rue — ça permet de savoir à qui envoyer les données.
+      </div>
+    </div>
+
+    <p>Ces 4 nombres séparés par des points sont lisibles pour toi et moi. Mais les ordinateurs, eux, ne comprennent que deux états : <strong>courant électrique = 1</strong> ou <strong>pas de courant = 0</strong>. C'est ça le binaire.</p>
+    <p>Donc quand un ordinateur lit <code>192</code>, il le transforme en <code>11000000</code> pour faire ses calculs. C'est avec cette représentation qu'il décide si deux appareils sont sur le même réseau ou non — et c'est exactement ce que l'examen va te demander.</p>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pourquoi c'est dans l'examen Network+ ?</strong>
+        Toutes les questions de sous-réseaux (subnetting) reposent sur le binaire. Maîtrise ce cours et tu seras à l'aise sur environ 30% des questions de l'exam.
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. VOCABULAIRE -->
+  <div class="section">
+    <div class="section-label">Vocabulaire — à lire avant tout</div>
+    <h2>Les mots clés de ce cours</h2>
+
+    <div class="vocab">
+      <div class="vocab-term">Bit</div>
+      <div>Le plus petit élément en informatique. Un bit vaut <strong>0</strong> ou <strong>1</strong>, rien d'autre. C'est comme un interrupteur : éteint (0) ou allumé (1).</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Octet (= Byte en anglais)</div>
+      <div>Un groupe de <strong>8 bits</strong>. C'est l'unité de base d'une adresse IP. Un octet peut valoir entre 0 (= <code>00000000</code>) et 255 (= <code>11111111</code>).</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Adresse IP</div>
+      <div><strong>4 octets</strong> séparés par des points. Exemple : <code>192.168.1.10</code>. Chaque nombre entre les points est un octet — donc une valeur entre 0 et 255.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Binaire</div>
+      <div>Système de numérotation qui utilise uniquement <strong>0 et 1</strong>. C'est le "langage" natif des ordinateurs.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Décimal</div>
+      <div>Le système qu'on utilise tous les jours : chiffres de <strong>0 à 9</strong>. Les adresses IP s'écrivent en décimal pour qu'on puisse les lire facilement.</div>
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>Retiens ça :</strong> <code>192.168.1.10</code> = 4 octets = 32 bits au total (4 × 8 bits). Une adresse IP, c'est juste <strong>32 interrupteurs</strong> allumés ou éteints.
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. LES 3 SYSTÈMES -->
+  <div class="section">
+    <div class="section-label">Les systèmes de numérotation</div>
+    <h2>Décimal, Binaire, Hexadécimal</h2>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Système</th><th>Base</th><th>Chiffres disponibles</th><th>Où on le voit en réseau</th></tr>
+        <tr><td><strong>Décimal</strong></td><td>10</td><td>0, 1, 2, 3, 4, 5, 6, 7, 8, 9</td><td>Adresses IP : <code>192.168.1.1</code></td></tr>
+        <tr><td><strong>Binaire</strong></td><td>2</td><td>0, 1 seulement</td><td>Masques de sous-réseau, calculs internes</td></tr>
+        <tr><td><strong>Hexadécimal</strong></td><td>16</td><td>0–9, puis A, B, C, D, E, F</td><td>Adresses MAC, adresses IPv6</td></tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">📌</span>
+      <div class="callout-body">
+        <strong>Focus sur Décimal ↔ Binaire pour l'instant.</strong>
+        L'hexadécimal, tu n'auras qu'à reconnaître le format (lettres + chiffres) — pas besoin de calculer.
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. COMMENT ÇA MARCHE -->
+  <div class="section">
+    <div class="section-label">Le concept fondamental</div>
+    <h2>Comment fonctionne le binaire</h2>
+
+    <p>Imagine <strong>8 interrupteurs alignés</strong>. L'interrupteur tout à droite vaut <strong>1</strong>. En allant vers la gauche, chaque interrupteur vaut <strong>le double du précédent</strong> :</p>
+
+    <div class="bin-block">
+      <span class="lbl">Interrupteur n°  :</span>  8 &nbsp;&nbsp;&nbsp; 7 &nbsp;&nbsp;&nbsp; 6 &nbsp;&nbsp;&nbsp; 5 &nbsp;&nbsp;&nbsp; 4 &nbsp;&nbsp;&nbsp; 3 &nbsp;&nbsp;&nbsp; 2 &nbsp;&nbsp;&nbsp; 1<br>
+      <span class="lbl">Valeur          :</span> <span class="on">128</span> &nbsp;&nbsp; <span class="on">64</span> &nbsp;&nbsp; <span class="on">32</span> &nbsp;&nbsp; <span class="on">16</span> &nbsp;&nbsp; <span class="on"> 8</span> &nbsp;&nbsp; <span class="on"> 4</span> &nbsp;&nbsp; <span class="on"> 2</span> &nbsp;&nbsp; <span class="on"> 1</span>
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">🔑</span>
+      <div class="callout-body">
+        <strong>La règle unique — retiens ça par cœur :</strong><br>
+        Bit à <strong>1</strong> (interrupteur allumé) → tu <strong>additionnes</strong> sa valeur.<br>
+        Bit à <strong>0</strong> (interrupteur éteint) → tu <strong>ignores</strong>, ça vaut 0.
+      </div>
+    </div>
+
+    <h3>// Exemple 1 — Lire 11000000 en décimal</h3>
+    <p>Les deux premiers interrupteurs (128 et 64) sont allumés, les six autres éteints :</p>
+    <div class="bin-block">
+      <span class="lbl">Valeur :</span> <span class="on">128</span> &nbsp; <span class="on">64</span> &nbsp; <span class="off">32</span> &nbsp; <span class="off">16</span> &nbsp; <span class="off">8</span> &nbsp; <span class="off">4</span> &nbsp; <span class="off">2</span> &nbsp; <span class="off">1</span><br>
+      <span class="lbl">Bit    :</span>  <span class="on"> 1</span> &nbsp;&nbsp; <span class="on"> 1</span> &nbsp;&nbsp; <span class="off"> 0</span> &nbsp;&nbsp; <span class="off"> 0</span> &nbsp; <span class="off">0</span> &nbsp; <span class="off">0</span> &nbsp; <span class="off">0</span> &nbsp; <span class="off">0</span><br>
+      <span class="lbl">Calcul :</span>  128 + 64 = <span class="res">192 ✅</span>
+    </div>
+
+    <h3>// Exemple 2 — Lire 10101000 en décimal</h3>
+    <p>Les interrupteurs 128, 32 et 8 sont allumés :</p>
+    <div class="bin-block">
+      <span class="lbl">Valeur :</span> <span class="on">128</span> &nbsp; <span class="off">64</span> &nbsp; <span class="on">32</span> &nbsp; <span class="off">16</span> &nbsp; <span class="on">8</span> &nbsp; <span class="off">4</span> &nbsp; <span class="off">2</span> &nbsp; <span class="off">1</span><br>
+      <span class="lbl">Bit    :</span>  <span class="on"> 1</span> &nbsp;&nbsp; <span class="off"> 0</span> &nbsp;&nbsp; <span class="on"> 1</span> &nbsp;&nbsp; <span class="off"> 0</span> &nbsp; <span class="on">1</span> &nbsp; <span class="off">0</span> &nbsp; <span class="off">0</span> &nbsp; <span class="off">0</span><br>
+      <span class="lbl">Calcul :</span>  128 + 32 + 8 = <span class="res">168 ✅</span>
+    </div>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🏠</span>
+      <div class="callout-body">
+        <strong>192.168 — ce n'est pas un hasard !</strong>
+        Ta box internet utilise sûrement des adresses qui commencent par <code>192.168</code>. C'est la plage d'adresses privées la plus courante. Maintenant tu sais : 192 = <code>11000000</code>, 168 = <code>10101000</code>.
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. DÉCIMAL → BINAIRE -->
+  <div class="section">
+    <div class="section-label">Dans l'autre sens</div>
+    <h2>Convertir un nombre décimal en binaire</h2>
+    <p>C'est la direction la plus importante pour l'examen. La méthode est simple : tu testes chaque valeur de gauche à droite (128, 64, 32…) et tu te demandes à chaque fois <em>"est-ce que ce nombre rentre ?"</em>. Si oui → bit 1 et tu soustrais. Si non → bit 0 et tu passes au suivant.</p>
+
+    <h3>// Convertir 172 pas à pas</h3>
+    <div class="steps">
+      <div class="step"><span class="step-num">128</span><span class="step-text">172 ≥ 128 ? <span class="yes">Oui ✅</span> → bit = 1 · Reste : 172 − 128 = <strong>44</strong></span></div>
+      <div class="step"><span class="step-num"> 64</span><span class="step-text">44 ≥ 64 ? <span class="no">Non ❌</span> → bit = 0 · Reste : toujours <strong>44</strong></span></div>
+      <div class="step"><span class="step-num"> 32</span><span class="step-text">44 ≥ 32 ? <span class="yes">Oui ✅</span> → bit = 1 · Reste : 44 − 32 = <strong>12</strong></span></div>
+      <div class="step"><span class="step-num"> 16</span><span class="step-text">12 ≥ 16 ? <span class="no">Non ❌</span> → bit = 0 · Reste : toujours <strong>12</strong></span></div>
+      <div class="step"><span class="step-num">  8</span><span class="step-text">12 ≥ 8 ? <span class="yes">Oui ✅</span> → bit = 1 · Reste : 12 − 8 = <strong>4</strong></span></div>
+      <div class="step"><span class="step-num">  4</span><span class="step-text">4 ≥ 4 ? <span class="yes">Oui ✅</span> → bit = 1 · Reste : 4 − 4 = <strong>0</strong></span></div>
+      <div class="step"><span class="step-num">  2</span><span class="step-text">0 ≥ 2 ? <span class="no">Non ❌</span> → bit = 0</span></div>
+      <div class="step"><span class="step-num">  1</span><span class="step-text">0 ≥ 1 ? <span class="no">Non ❌</span> → bit = 0</span></div>
+    </div>
+    <div class="bin-block"><span class="res">172 = 10101100 ✅</span></div>
+
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>Astuce :</strong> Dès que le reste tombe à 0, tous les bits restants sont automatiquement 0. Inutile de continuer les calculs.
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. TABLE CLÉS -->
+  <div class="section">
+    <div class="section-label">À mémoriser — priorité absolue</div>
+    <h2>Les conversions qui reviennent à l'examen</h2>
+    <p>Ces valeurs apparaissent constamment dans les questions de sous-réseaux. Apprends-les comme une table de multiplication.</p>
+
+    <div class="bin-block"><span class="lbl">La table :</span> &nbsp; <span class="on">128</span> | <span class="on">64</span> | <span class="on">32</span> | <span class="on">16</span> | <span class="on">8</span> | <span class="on">4</span> | <span class="on">2</span> | <span class="on">1</span></div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Binaire</th><th>Décimal</th><th>Ce que ça représente</th></tr>
+        <tr><td><code>11111111</code></td><td><strong>255</strong></td><td>Masque complet (tous les bits à 1) — très fréquent</td></tr>
+        <tr><td><code>11111110</code></td><td><strong>254</strong></td><td>Nombre max d'hôtes sur un réseau /24</td></tr>
+        <tr><td><code>11000000</code></td><td><strong>192</strong></td><td>1er octet d'une adresse classe C / masque /26</td></tr>
+        <tr><td><code>10101000</code></td><td><strong>168</strong></td><td>2ème octet de 192.<strong>168</strong>.x.x</td></tr>
+        <tr><td><code>10000000</code></td><td><strong>128</strong></td><td>Masque /25</td></tr>
+        <tr><td><code>11100000</code></td><td><strong>224</strong></td><td>Masque /27</td></tr>
+        <tr><td><code>11110000</code></td><td><strong>240</strong></td><td>Masque /28</td></tr>
+        <tr><td><code>11111000</code></td><td><strong>248</strong></td><td>Masque /29</td></tr>
+        <tr><td><code>11111100</code></td><td><strong>252</strong></td><td>Masque /30 — 2 hôtes seulement</td></tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">📌</span>
+      <div class="callout-body">
+        <strong>C'est quoi un masque de sous-réseau ?</strong>
+        C'est un nombre qui indique quelle partie d'une adresse IP désigne le réseau et quelle partie désigne l'appareil. Tu l'étudies en détail dans le cours Subnetting. Pour l'instant, retiens juste les valeurs binaires ↔ décimales.
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. HEXA -->
+  <div class="section">
+    <div class="section-label">Bonus</div>
+    <h2>L'hexadécimal — juste ce qu'il faut savoir</h2>
+    <p>Le système hexadécimal (base 16) utilise 0 à 9 puis les lettres A à F pour représenter 10 à 15 :</p>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Décimal</th><th>9</th><th>10</th><th>11</th><th>12</th><th>13</th><th>14</th><th>15</th></tr>
+        <tr><td><strong>Hexa</strong></td><td>9</td><td>A</td><td>B</td><td>C</td><td>D</td><td>E</td><td>F</td></tr>
+      </table>
+    </div>
+    <p><strong>1 chiffre hexa = 4 bits.</strong> Donc 2 chiffres hexa = 1 octet. Une adresse MAC s'écrit en hexa : <code>A4:83:E7:2C:11:FF</code> = 6 octets = 48 bits.</p>
+    <div class="callout ok">
+      <span class="callout-icon">🔑</span>
+      <div class="callout-body">
+        <strong>Ce que tu dois retenir pour l'exam :</strong> <code>FF</code> (hexa) = <code>11111111</code> (binaire) = <strong>255</strong> (décimal). C'est tout.
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. PIÈGES -->
+  <div class="section">
+    <div class="section-label">⚠️ Attention</div>
+    <h2>Les pièges qui font rater les candidats</h2>
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Piège 1 — Oublier les zéros à gauche</strong>
+        Un octet a toujours <strong>exactement 8 bits</strong>. Si tu convertis 10 en binaire, tu obtiens <code>1010</code> — mais en réseau tu dois écrire <code>00001010</code>. Les 4 zéros devant sont obligatoires. Sans eux, le masque sera faux.
+      </div>
+    </div>
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Piège 2 — Confondre 254 et 255</strong>
+        <code>11111111</code> = <strong>255</strong> = masque complet (tous les bits à 1).<br>
+        <code>11111110</code> = <strong>254</strong> = nb max d'hôtes utilisables sur un /24 (256 adresses − 1 réseau − 1 broadcast = 254).
+      </div>
+    </div>
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Piège 3 — Additions trop rapides</strong>
+        128 + 64 = <strong>192</strong> ✅ &nbsp;|&nbsp; 128 + 32 = <strong>160</strong> (pas 180 !) ✅ &nbsp;|&nbsp; 64 + 32 + 16 = <strong>112</strong> ✅<br>
+        Entraîne-toi jusqu'à ce que ces additions soient aussi instinctives que 2 + 2.
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans calculatrice</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique sur une question pour voir la réponse avec le détail du calcul.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">11001100 → décimal ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Bits à 1 : positions 128, 64, 8, 4<br>128 + 64 + 8 + 4 = <strong>204</strong></div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">10110101 → décimal ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Bits à 1 : positions 128, 32, 16, 4, 1<br>128 + 32 + 16 + 4 + 1 = <strong>181</strong></div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">200 → binaire ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">200 ≥ 128 ? Oui → 1, reste 72<br>72 ≥ 64 ? Oui → 1, reste 8<br>8 ≥ 32 ? Non → 0<br>8 ≥ 16 ? Non → 0<br>8 ≥ 8 ? Oui → 1, reste 0<br>Tout le reste = 0<br><br>Résultat : <strong>11001000</strong></div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">255 → binaire ? (sans calcul — tu dois le savoir par cœur)</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">255 = 128+64+32+16+8+4+2+1 → tous les bits à 1<br><br>Résultat : <strong>11111111</strong> — à mémoriser absolument !</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">172 → binaire ? (refais de mémoire sans regarder le cours)</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">172−128=44 → 1 | 44&lt;64 → 0 | 44−32=12 → 1 | 12&lt;16 → 0<br>12−8=4 → 1 | 4−4=0 → 1 | 0&lt;2 → 0 | 0&lt;1 → 0<br><br>Résultat : <strong>10101100</strong></div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">Question type examen : le masque /28, quelle est sa valeur décimale pour le 4ème octet ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">/28 = 28 bits à 1 au total.<br>3 premiers octets = 24 bits → tous à 1 = 255.255.255<br>Il reste 4 bits pour le 4ème octet → 11110000<br>128 + 64 + 32 + 16 = <strong>240</strong><br><br>Masque /28 complet : <strong>255.255.255.240</strong></div>
+  </div>
+
+  <!-- 10. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span>Une adresse IP = 4 octets (ex: <code>192.168.1.10</code>). Chaque octet = 8 bits, valeur entre 0 et 255.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Table à connaître par cœur : <strong>128 | 64 | 32 | 16 | 8 | 4 | 2 | 1</strong></span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Binaire → Décimal : additionner les valeurs des bits à 1.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Décimal → Binaire : soustraire les valeurs de gauche à droite, bit = 1 si ça rentre, 0 sinon.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Un octet = toujours 8 bits. Si ta conversion donne 6 chiffres → ajoute 2 zéros à gauche.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><code>11111111</code> = 255 | <code>11111100</code> = 252 | <code>FF</code> (hexa) = 255</span></div>
+    </div>
+  </div>
+
+  <!-- 11. EXAM -->
+  <div class="section">
+    <div class="section-label">Questions type examen</div>
+    <h2>❓ Ce que CompTIA peut te poser</h2>
+    <div class="callout exam"><span class="callout-icon">🎯</span><div class="callout-body"><strong>Q : Quelle est la valeur décimale de 11110000 ?</strong>128 + 64 + 32 + 16 = <strong>240</strong> → c'est le 4ème octet du masque /28.</div></div>
+    <div class="callout exam"><span class="callout-icon">🎯</span><div class="callout-body"><strong>Q : Combien d'hôtes utilisables sur un réseau /30 ?</strong>4ème octet = <code>11111100</code> = 252. Taille du bloc = 256−252 = 4 adresses. Moins réseau + broadcast = <strong>2 hôtes</strong>.</div></div>
+    <div class="callout exam"><span class="callout-icon">🎯</span><div class="callout-body"><strong>Q : Le 1er octet de 192.168.1.0 en binaire ?</strong>192 = 128 + 64 = <strong>11000000</strong>.</div></div>
+  </div>
+
+  <div class="nav-footer">
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">C01 · Phase 1 — Fondamentaux</span>
+    <a class="nav-btn next" href="#">Cours suivant : Modèle OSI — 7 couches →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_c01_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>
