@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CompTIA Network+ N10-009 — Plan d'étude v2</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f;
+    --bg2: #0d1117;
+    --card: #111826;
+    --card2: #161f2e;
+    --border: #1c2a3a;
+    --text: #dde4f0;
+    --muted: #536070;
+    --accent: #38bdf8;
+    --green: #22d3a0;
+    --amber: #fbbf24;
+    --red: #f87171;
+    --purple: #a78bfa;
+    --pink: #f472b6;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Epilogue', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* Subtle dot grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px);
+    background-size: 28px 28px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap { max-width: 980px; margin: 0 auto; padding: 48px 20px 80px; position: relative; z-index: 1; }
+
+  /* ── HEADER ── */
+  header { margin-bottom: 48px; }
+  .header-top { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 20px; margin-bottom: 24px; }
+  .version-pill {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: rgba(56,189,248,0.08);
+    border: 1px solid rgba(56,189,248,0.2);
+    padding: 5px 12px;
+    border-radius: 6px;
+  }
+  h1 {
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -1px;
+  }
+  h1 span { color: var(--accent); }
+  .tagline {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+  .exam-pills { display: flex; flex-wrap: wrap; gap: 10px; }
+  .exam-pill {
+    text-align: center;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 18px;
+  }
+  .exam-pill .val { display: block; font-family: 'IBM Plex Mono', monospace; font-size: 1.1rem; font-weight: 600; color: var(--accent); }
+  .exam-pill .lbl { display: block; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+
+  /* ── LEGEND ── */
+  .legend {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 22px;
+    margin-bottom: 28px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+  }
+  .legend-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-family: 'IBM Plex Mono', monospace; }
+  .legend-items { display: flex; flex-wrap: wrap; gap: 10px; }
+  .ltag { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; font-weight: 600; padding: 3px 9px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* ── GLOBAL PROGRESS ── */
+  .global-prog {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 26px;
+    margin-bottom: 36px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .gp-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; }
+  .bar-wrap { flex: 1; height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+  .bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+  .gp-pct { font-family: 'IBM Plex Mono', monospace; font-size: 1rem; font-weight: 600; color: var(--green); min-width: 42px; text-align: right; }
+  .gp-count { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; color: var(--muted); white-space: nowrap; }
+
+  /* ── PHASE LABEL ── */
+  .phase-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 4px;
+    margin: 36px 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .phase-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* ── DOMAIN ── */
+  .domain {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .domain:hover { border-color: rgba(56,189,248,0.15); }
+
+  .dom-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 22px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+  }
+  .dom-head:hover { background: rgba(255,255,255,0.02); }
+
+  .dom-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .dom-info { flex: 1; min-width: 0; }
+  .dom-name { font-weight: 700; font-size: 0.95rem; margin-bottom: 3px; }
+  .dom-sub { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); }
+  .dom-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .dom-weight { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; color: var(--amber); background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.2); padding: 3px 8px; border-radius: 5px; }
+  .dom-prog-mini { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); }
+  .chevron { color: var(--muted); font-size: 0.7rem; margin-left: 6px; transition: transform 0.3s; flex-shrink: 0; }
+  .domain.open .chevron { transform: rotate(180deg); }
+  .domain.open .dom-head { background: rgba(56,189,248,0.03); }
+
+  /* Domain progress strip */
+  .dom-prog-strip { height: 3px; background: var(--border); }
+  .dom-prog-inner { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); transition: width 0.4s; }
+
+  /* ── TOPICS ── */
+  .topics { display: none; border-top: 1px solid var(--border); }
+  .domain.open .topics { display: block; }
+
+  .topic {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 13px 22px;
+    border-bottom: 1px solid rgba(28,42,58,0.7);
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .topic:last-child { border-bottom: none; }
+  .topic:hover { background: rgba(56,189,248,0.03); }
+
+  .chk {
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid var(--border);
+    border-radius: 5px;
+    flex-shrink: 0;
+    margin-top: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.18s;
+    font-size: 10px;
+    color: transparent;
+  }
+  .chk.done { background: var(--green); border-color: var(--green); color: #fff; }
+
+  .topic-body { flex: 1; }
+  .topic-name { font-size: 0.88rem; font-weight: 600; margin-bottom: 3px; transition: color 0.2s; }
+  .topic.done .topic-name { color: var(--muted); text-decoration: line-through; text-decoration-color: rgba(83,96,112,0.5); }
+  .topic-desc { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; color: var(--muted); line-height: 1.55; }
+  .tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
+  .tag { font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; font-weight: 600; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.3px; }
+  .tag-key  { background: rgba(167,139,250,0.12); color: #a78bfa; border: 1px solid rgba(167,139,250,0.25); }
+  .tag-exam { background: rgba(248,113,113,0.10); color: #f87171; border: 1px solid rgba(248,113,113,0.25); }
+  .tag-lab  { background: rgba(34,211,160,0.10); color: #22d3a0; border: 1px solid rgba(34,211,160,0.25); }
+  .tag-proto{ background: rgba(56,189,248,0.09); color: #67e8f9; border: 1px solid rgba(56,189,248,0.2); }
+  .tag-new  { background: rgba(251,191,36,0.10); color: #fbbf24; border: 1px solid rgba(251,191,36,0.25); }
+
+  /* ── DIFFICULTY indicator ── */
+  .diff { display: flex; gap: 2px; margin-left: auto; padding-left: 12px; flex-shrink: 0; }
+  .diff-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--border); }
+  .diff-dot.on { background: var(--amber); }
+
+  /* ── RESET ── */
+  .bottom { display: flex; justify-content: center; margin-top: 40px; }
+  .reset-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    padding: 9px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .reset-btn:hover { border-color: var(--red); color: var(--red); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="header-top">
+      <div>
+        <div class="version-pill">N10-009 · Juin 2024</div>
+        <h1>CompTIA<br><span>Network+</span></h1>
+        <p class="tagline">// Plan d'étude complet — progression pédagogique</p>
+      </div>
+      <div class="exam-pills">
+        <div class="exam-pill"><span class="val">90</span><span class="lbl">minutes</span></div>
+        <div class="exam-pill"><span class="val">≤90</span><span class="lbl">questions</span></div>
+        <div class="exam-pill"><span class="val">720</span><span class="lbl">score min</span></div>
+        <div class="exam-pill"><span class="val">3 ans</span><span class="lbl">renouvellement</span></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="legend">
+    <span class="legend-label">Tags</span>
+    <div class="legend-items">
+      <span class="ltag tag-key">KEY — sujet clé / très fréquent</span>
+      <span class="ltag tag-exam">EXAM — souvent piégeux</span>
+      <span class="ltag tag-lab">LAB — pratique recommandée</span>
+      <span class="ltag tag-proto">PROTO — protocole à mémoriser</span>
+      <span class="ltag tag-new">NEW — ajouté en N10-009</span>
+    </div>
+    <span style="margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:0.65rem;color:var(--muted)">● difficulté estimée</span>
+  </div>
+
+  <div class="global-prog">
+    <span class="gp-label">Progression</span>
+    <div class="bar-wrap"><div class="bar-fill" id="gBar"></div></div>
+    <span class="gp-count" id="gCount">0 / 0</span>
+    <span class="gp-pct" id="gPct">0%</span>
+  </div>
+
+  <div id="app"></div>
+
+  <div class="bottom">
+    <button class="reset-btn" onclick="resetAll()">↺ Réinitialiser la progression</button>
+  </div>
+
+</div>
+<script>
+// ─────────────────────────────────────────
+// PLAN D'ÉTUDE — PROGRESSION PÉDAGOGIQUE
+// ─────────────────────────────────────────
+// Chaque domaine correspond à une PHASE d'apprentissage.
+// L'ordre intra-domaine va du plus simple au plus complexe.
+// ─────────────────────────────────────────
+
+const PLAN = [
+  {
+    phase: "Phase 1 — Fondamentaux théoriques",
+    domains: [
+      {
+        id: "D1",
+        icon: "🧱",
+        name: "1.0 Concepts réseau",
+        weight: "23%",
+        color: "#38bdf8",
+        bgColor: "rgba(56,189,248,0.10)",
+        note: "Point de départ absolu — tout repose sur ces bases",
+        topics: [
+          // COUCHE PAR COUCHE (bas vers haut = progression OSI)
+          { id:"c01", name:"Binaire & systèmes de numérotation",     desc:"Binaire, décimal, hexadécimal — conversions indispensables pour le subnetting", tags:["key","exam"], diff:1 },
+          { id:"c02", name:"Modèle OSI — 7 couches",                 desc:"Physique→Liaison→Réseau→Transport→Session→Présentation→Application ; mnémoniques", tags:["key","exam"], diff:1 },
+          { id:"c03", name:"Encapsulation / Décapsulation",          desc:"Comment les données sont encapsulées couche par couche (PDU : bit, trame, paquet, segment, donnée)", tags:["key","exam"], diff:2 },
+          { id:"c04", name:"Modèle TCP/IP — 4 couches",              desc:"Lien réseau / Internet / Transport / Application — comparaison avec OSI", tags:["key","exam"], diff:1 },
+          // COUCHE PHYSIQUE
+          { id:"c05", name:"Types de câblage cuivre",                desc:"UTP Cat5e/Cat6/Cat6a, STP, coaxial — débit, portée, blindage, connecteur RJ-45", tags:["key","lab"], diff:1 },
+          { id:"c06", name:"Câblage fibre optique",                  desc:"Monomode (SMF) vs Multimode (MMF), connecteurs LC/SC/ST/MTP, pertes", tags:["key","lab"], diff:2 },
+          { id:"c07", name:"Connecteurs & transceivers",             desc:"SFP, SFP+, QSFP, DAC, BiDi, GBIC — formats et cas d'usage", tags:["proto"], diff:2 },
+          { id:"c08", name:"Standards Ethernet IEEE 802.3",          desc:"10/100/1G/10GBase-T, Half/Full-duplex, Auto-negociation, PoE 802.3af/at/bt", tags:["key","proto"], diff:2 },
+          { id:"c08b", name:"Structure de la trame Ethernet",          desc:"Préambule (7B) + SFD (1B), MAC destination (6B), MAC source (6B), EtherType/Length (2B), Payload (46-1500B), FCS (4B) — taille min 64B, max 1518B", tags:["key","exam"], diff:2 },
+          { id:"c09", name:"MTU et fragmentation IP",                desc:"MTU = 1500 octets par défaut, fragmentation, PMTUD, problèmes jumbo frames", tags:["key","exam"], diff:2 },
+          // COUCHE LIAISON
+          { id:"c10", name:"Topologies réseau",                      desc:"Bus, Étoile, Étoile étendue, Anneau, Maillé (full/partial), Point-à-Point, Hub-and-Spoke", tags:["key"], diff:1 },
+          { id:"c11", name:"Switching — bases",                      desc:"MAC address table, forwarding/filtering, flooding, collision domain vs broadcast domain", tags:["key","lab"], diff:2 },
+          { id:"c12", name:"VLAN — configuration",                   desc:"Access vs Trunk ports, 802.1Q tagging, Native VLAN, VLAN voix, VLAN management", tags:["key","lab","exam"], diff:2 },
+          { id:"c13", name:"STP / RSTP — Spanning Tree",             desc:"Root Bridge election, port states (Block/Listen/Learn/Forward), BPDU, portfast, BPDU Guard", tags:["key","exam"], diff:3 },
+          { id:"c14", name:"Aggregation de liens (LACP)",            desc:"802.3ad, port-channel, active/passive, load balancing", tags:["key","lab"], diff:2 },
+          { id:"c15", name:"CDP / LLDP",                             desc:"Protocoles de découverte de voisins — utiles pour la cartographie réseau et le dépannage", tags:["proto","lab"], diff:1 },
+          // COUCHE RÉSEAU
+          { id:"c16", name:"Adressage IPv4 — bases",                 desc:"Classes A/B/C/D/E, adresses privées RFC 1918, loopback 127.0.0.1, broadcast", tags:["key","exam"], diff:1 },
+          { id:"c16b", name:"Default Gateway — rôle précis",           desc:"Quand un hôte envoie vers une IP hors de son sous-réseau, il envoie au gateway. L'hôte compare dst IP + masque avec sa propre IP — si réseau différent → gateway. Sans gateway = pas de communication inter-réseau.", tags:["key","exam"], diff:1 },
+          { id:"c17", name:"CIDR et sous-réseaux (Subnetting)",      desc:"Masques /8 à /30, calcul réseau/broadcast/hôtes, notation CIDR, tableaux de sous-réseaux", tags:["key","exam"], diff:3 },
+          { id:"c18", name:"VLSM — sous-réseaux à longueur variable", desc:"Optimiser l'espace d'adressage, résoudre des scénarios de conception réseau", tags:["key","exam"], diff:3 },
+          { id:"c19", name:"Adresses spéciales IPv4",                desc:"APIPA 169.254.x.x, RFC 1918 privées, loopback, multicast 224.x, broadcast limité 255.255.255.255", tags:["exam"], diff:2 },
+          { id:"c20", name:"NAT / PAT",                              desc:"Static NAT, Dynamic NAT, PAT (overload) — tables de traduction, intérieur/extérieur, troubleshooting", tags:["key","exam","lab"], diff:2 },
+          { id:"c21", name:"Adressage IPv6 — bases",                 desc:"Format 128 bits, notation abrégée (:: et groupes nuls), types d'adresses, préfixes courants", tags:["key","proto"], diff:2 },
+          { id:"c22", name:"IPv6 — configuration et transition",     desc:"EUI-64, SLAAC, DHCPv6 stateful/stateless, dual-stack, tunneling 6to4, NAT64", tags:["key","lab"], diff:3 },
+          { id:"c23", name:"ICMP et ICMPv6",                         desc:"Types/codes ICMP, ping (echo request/reply), TTL, traceroute, Destination Unreachable, Redirect", tags:["key","exam","proto"], diff:2 },
+          // COUCHE TRANSPORT
+          { id:"c24", name:"TCP — protocole orienté connexion",      desc:"3-way handshake (SYN/SYN-ACK/ACK), fenêtrage, contrôle de flux, numéros de séquence, retransmission", tags:["key","exam"], diff:2 },
+          { id:"c25", name:"UDP — protocole sans connexion",         desc:"Caractéristiques, cas d'usage (streaming, VoIP, DNS, DHCP), comparaison TCP vs UDP", tags:["key","exam"], diff:1 },
+          { id:"c26", name:"Ports et numéros de service",            desc:"Ports bien connus 0-1023, enregistrés 1024-49151 — mémoriser les 20+ ports clés CompTIA", tags:["key","exam","proto"], diff:2 },
+          // COUCHE APPLICATION
+          { id:"c27", name:"DNS — Résolution de noms",               desc:"Processus de résolution, récursif vs itératif, cache, enregistrements A/AAAA/CNAME/MX/PTR/SOA/NS/TXT/SRV", tags:["key","lab","exam","proto"], diff:2 },
+          { id:"c28", name:"DHCP — Attribution automatique",         desc:"Processus DORA, scope, bail, réservation, exclusion, DHCP relay (ip helper-address), failover", tags:["key","lab","exam"], diff:2 },
+          { id:"c29", name:"Protocoles web et transfert",            desc:"HTTP (port 80) / HTTPS (port 443) / FTP (20/21) / SFTP (22) / FTPS / TFTP (69) / SMB (445)", tags:["key","proto"], diff:1 },
+          { id:"c30", name:"Protocoles de messagerie et admin",      desc:"SMTP(25/587) / IMAP(143/993) / POP3(110/995) / SSH(22) / Telnet(23) / RDP(3389) / SNMP(161/162) / NTP(123)", tags:["key","proto","exam"], diff:2 },
+        ]
+      }
+    ]
+  },
+  {
+    phase: "Phase 2 — Implémentation & Infrastructure",
+    domains: [
+      {
+        id: "D2",
+        icon: "🏗️",
+        name: "2.0 Implémentation réseau",
+        weight: "20%",
+        color: "#a78bfa",
+        bgColor: "rgba(167,139,250,0.10)",
+        note: "On applique les concepts de Phase 1 à de vraies infrastructures",
+        topics: [
+          // ROUTING
+          { id:"i01", name:"Routage — concepts fondamentaux",        desc:"Table de routage, routes statiques, routes par défaut, distance administrative, métrique", tags:["key","exam"], diff:2 },
+          { id:"i02", name:"Protocoles de routage dynamique",        desc:"RIP v2, OSPF (link-state), EIGRP (Cisco), BGP (inter-AS) — comparaison et cas d'usage", tags:["key","exam","proto"], diff:3 },
+          { id:"i03", name:"Routage inter-VLAN",                     desc:"Router-on-a-stick (sous-interfaces), Layer 3 Switch (SVI), avantages/inconvénients", tags:["key","lab","exam"], diff:2 },
+          // SWITCHING AVANCÉ
+          { id:"i04", name:"DHCP Snooping & DAI",                   desc:"DHCP Snooping (ports trusted/untrusted), Dynamic ARP Inspection — sécurité switching", tags:["key","exam"], diff:3 },
+          { id:"i05", name:"Port Security",                          desc:"Sticky MAC, violation modes (shutdown/restrict/protect), max MAC addresses — exam très fréquent", tags:["key","exam","lab"], diff:2 },
+          { id:"i06", name:"VxLAN",                                  desc:"Virtual Extensible LAN — overlay réseau pour datacenters, VTEP, encapsulation UDP port 4789", tags:["new","key"], diff:3 },
+          // SANS-FIL
+          { id:"i07", name:"Wi-Fi — Standards 802.11",               desc:"802.11a/b/g/n/ac/ax (Wi-Fi 6/6E), bandes 2.4GHz vs 5GHz, débits théoriques, MIMO", tags:["key","proto"], diff:2 },
+          { id:"i08", name:"Wi-Fi — Canaux et fréquences",           desc:"Canaux non-chevauchants (1/6/11 sur 2.4GHz), canaux 5GHz, interférences, RSSI, SNR", tags:["key","exam","lab"], diff:2 },
+          { id:"i09", name:"Wi-Fi — Architectures",                  desc:"BSS/ESS/IBSS, SSID, BSSID, cellules, WLC (contrôleur), CAPWAP, AP autonome vs léger", tags:["key","exam"], diff:2 },
+          { id:"i10", name:"Wi-Fi — Sécurité sans-fil",              desc:"WEP (vulnérable), WPA/WPA2/WPA3, EAP, PEAP, TKIP vs AES/CCMP, Personal vs Enterprise", tags:["key","exam"], diff:2 },
+          // ÉQUIPEMENTS
+          { id:"i11", name:"Équipements réseau et leurs rôles",      desc:"Hub (L1), Switch (L2/L3), Routeur (L3), Firewall, WAP, Proxy, Load Balancer, IDS/IPS", tags:["key","exam"], diff:1 },
+          { id:"i12", name:"Pare-feux (Firewall)",                   desc:"Stateless vs Stateful, NGFW, zones (Inside/DMZ/Outside), ACL, règles — directionnel", tags:["key","lab","exam"], diff:2 },
+          { id:"i13", name:"IDS / IPS",                              desc:"Inline (IPS) vs passif (IDS), signature-based vs anomaly-based, false positives, SIEM", tags:["key","exam"], diff:2 },
+          { id:"i14", name:"Load Balancer & Proxy",                  desc:"Round-robin, least-connection, persistence de session ; Forward vs Reverse proxy, transparent", tags:["key","exam"], diff:2 },
+          // WAN & CONNECTIVITY
+          { id:"i15", name:"Technologies WAN",                       desc:"MPLS, SD-WAN, Metro Ethernet, circuit dédié, leased line, SONET/SDH, comparaison", tags:["key","exam"], diff:2 },
+          { id:"i16", name:"Accès Internet",                         desc:"DSL (ADSL/VDSL), câble (DOCSIS), fibre (GPON), satellite, cellulaire (4G LTE / 5G NR)", tags:["key"], diff:1 },
+          { id:"i17", name:"VPN — Types et protocoles",              desc:"IPsec (tunnel/transport), SSL/TLS VPN, split tunneling, full tunneling, site-to-site vs remote-access", tags:["key","lab","exam"], diff:2 },
+          { id:"i18", name:"SD-WAN",                                 desc:"Agrégation de liens WAN, zero-touch provisioning, application-aware routing, centralized policy", tags:["new","key"], diff:3 },
+          // CLOUD & VIRTUALISATION
+          { id:"i19", name:"Cloud — Concepts et modèles",            desc:"IaaS/PaaS/SaaS, cloud public/privé/hybride/multi-cloud, modèle de responsabilité partagée", tags:["key","exam"], diff:2 },
+          { id:"i20", name:"Infrastructure Cloud réseau",            desc:"VPC, sous-réseaux cloud, Security Groups, Direct Connect, VPN Gateway, peering", tags:["new","key"], diff:2 },
+          { id:"i21", name:"Virtualisation et conteneurs",           desc:"Hyperviseurs Type 1/2, VMware/Hyper-V, vSwitch, vNIC, Docker, containers vs VMs", tags:["key","lab"], diff:2 },
+          { id:"i22", name:"SDN — Software Defined Networking",      desc:"Plan de contrôle vs plan de données, OpenFlow, NFV, découplage, avantages en datacenter", tags:["key","new"], diff:3 },
+          // QoS / VOIP
+          { id:"i22b", name:"802.1p CoS — Class of Service",          desc:"3 bits dans le header 802.1Q (0=Best Effort → 7=Network Control), marquage au niveau Liaison de données, priorité de trafic avant DSCP (couche 3), utilisé pour VoIP (CoS 5) et signalisation (CoS 3)", tags:["key","exam","proto"], diff:2 },
+          { id:"i23", name:"VoIP et qualité de service (QoS)",       desc:"DSCP, CoS 802.1p, marquage, file d'attente prioritaire, jitter (<50ms), latence, gigue, SIP/RTP", tags:["key","proto","exam"], diff:2 },
+          // PHYSIQUE
+          { id:"i24", name:"Installation physique — MDF/IDF",        desc:"Main Distribution Frame, Intermediate Distribution Frame, patch panels, armoires, gestion des câbles", tags:["new","key"], diff:1 },
+          { id:"i25", name:"Infrastructure as Code (IaC)",           desc:"Ansible, Terraform — automatisation de la configuration réseau, reproductibilité", tags:["new"], diff:2 },
+        ]
+      }
+    ]
+  },
+  {
+    phase: "Phase 3 — Opérations & Surveillance",
+    domains: [
+      {
+        id: "D3",
+        icon: "⚙️",
+        name: "3.0 Opérations réseau",
+        weight: "19%",
+        color: "#22d3a0",
+        bgColor: "rgba(34,211,160,0.10)",
+        note: "Maintenir et surveiller un réseau en production",
+        topics: [
+          { id:"o01", name:"Documentation réseau",                   desc:"Diagrammes logiques vs physiques, inventaire des équipements, schémas de câblage, baseline", tags:["key","exam"], diff:1 },
+          { id:"o02", name:"Change Management (gestion des changements)", desc:"Processus RFC, approbation, fenêtre de maintenance, rollback plan, CMDB", tags:["key","exam"], diff:2 },
+          { id:"o03", name:"Gestion des adresses IP (IPAM)",         desc:"Suivi des plages, conflits d'adresses, outils IPAM, documentation des VLAN", tags:["key","lab"], diff:1 },
+          { id:"o04", name:"Monitoring réseau — SNMP",               desc:"SNMP v1/v2c/v3, OID, MIB, traps, polling — v3 = sécurisé (authPriv)", tags:["key","lab","proto"], diff:2 },
+          { id:"o05", name:"Monitoring — NetFlow & sFlow",           desc:"Analyse de flux, comptabilité trafic, détection anomalies, collecteurs NetFlow", tags:["key","lab"], diff:2 },
+          { id:"o06", name:"Logging & Syslog",                       desc:"Niveaux de sévérité (0=Emergency à 7=Debug), centralisation, syslog server, timestamps", tags:["key","exam","proto"], diff:2 },
+          { id:"o07", name:"SIEM",                                   desc:"Security Information & Event Management — corrélation d'événements, alertes, forensics", tags:["key","new"], diff:2 },
+          { id:"o08", name:"Haute disponibilité (HA) — concepts",    desc:"MTTR, MTBF, RTO, RPO, SLA, uptime 99.999% — calculs et définitions", tags:["key","exam"], diff:2 },
+          { id:"o09", name:"Haute disponibilité — FHRP",             desc:"HSRP (Cisco), VRRP (standard), GLBP — active/standby, VIP, priority, preemption", tags:["key","exam","proto"], diff:3 },
+          { id:"o10", name:"Plan de reprise après sinistre (DR)",    desc:"Sauvegardes full/incrémentale/différentielle, sites chauds/tièdes/froids, failover, failback", tags:["key","exam"], diff:2 },
+          { id:"o11", name:"Patch Management",                       desc:"Processus de mise à jour, tests en lab avant prod, risques, validation, rollback", tags:["key"], diff:1 },
+          { id:"o12", name:"Accès distant et gestion out-of-band",   desc:"Console ports, OOBM, Jump server/Bastion host, terminal server, KVM over IP", tags:["key","exam"], diff:2 },
+          { id:"o13", name:"Authentification réseau",                desc:"RADIUS (UDP 1812/1813), TACACS+ (TCP 49), 802.1X, NAC, EAP — AAA complet", tags:["key","exam","proto"], diff:2 },
+          { id:"o14", name:"Gestion des configurations",             desc:"Backup de configs, versioning, templates, dérive de configuration (configuration drift)", tags:["key","new"], diff:2 },
+        ]
+      }
+    ]
+  },
+  {
+    phase: "Phase 4 — Sécurité réseau",
+    domains: [
+      {
+        id: "D4",
+        icon: "🔒",
+        name: "4.0 Sécurité réseau",
+        weight: "14%",
+        color: "#f87171",
+        bgColor: "rgba(248,113,113,0.10)",
+        note: "Moins pondéré qu'avant mais toujours essentiel — focus sur les menaces et contre-mesures",
+        topics: [
+          { id:"s01", name:"Types d'attaques réseau — vue d'ensemble", desc:"Reconnaissance, scanning, exploitation, post-exploitation — kill chain réseau", tags:["key","exam"], diff:2 },
+          { id:"s02", name:"Attaques DoS et DDoS",                   desc:"SYN flood, amplification DNS/NTP, Smurf, Ping of Death, volumétrique vs applicatif", tags:["key","exam"], diff:2 },
+          { id:"s03", name:"Attaques Man-in-the-Middle (MitM)",      desc:"ARP Poisoning / Spoofing, DNS Spoofing, SSL Stripping, VLAN Hopping, Replay Attack", tags:["key","exam"], diff:3 },
+          { id:"s04", name:"Attaques sans-fil",                      desc:"Evil Twin, Deauthentication attack, WPS attack, Wardriving, Rogue AP, Karma attack", tags:["key","exam"], diff:2 },
+          { id:"s05", name:"Social Engineering",                     desc:"Phishing / Spear phishing / Whaling, Vishing, Smishing, Tailgating, Impersonation, Pretexting", tags:["key","exam"], diff:1 },
+          { id:"s06", name:"Chiffrement symétrique / asymétrique",   desc:"Symétrique (AES, DES, 3DES) vs Asymétrique (RSA, ECC), clés publiques/privées", tags:["key","exam","proto"], diff:2 },
+          { id:"s07", name:"PKI — Infrastructure à clés publiques",  desc:"Certificats X.509, CA racine/intermédiaire, CRL, OCSP, CSR, chaîne de confiance", tags:["key","exam"], diff:3 },
+          { id:"s08", name:"TLS / SSL",                              desc:"TLS 1.2 vs 1.3, handshake, cipher suites, HTTPS, certificats serveur, SNI", tags:["key","exam","proto"], diff:2 },
+          { id:"s09", name:"AAA et contrôle d'accès",               desc:"RADIUS, TACACS+, 802.1X, MFA/2FA, NAC — différences clés pour l'examen", tags:["key","exam"], diff:2 },
+          { id:"s10", name:"Access Control Lists (ACL)",             desc:"Standard (source IP) vs Extended (src/dst/port), ordre des règles, implicit deny, wildcard masks", tags:["key","lab","exam"], diff:3 },
+          { id:"s11", name:"Architecture de sécurité réseau",        desc:"DMZ, segmentation, zones de confiance, principe du moindre privilège, defense in depth", tags:["key","exam"], diff:2 },
+          { id:"s12", name:"VLAN — sécurité avancée",               desc:"VLAN Hopping (double-tagging, switch spoofing), DHCP Snooping, Port Security, DAI", tags:["key","exam"], diff:3 },
+          { id:"s13", name:"Hardening des équipements",              desc:"SSH vs Telnet, désactiver services non nécessaires, SNMPv3, bannières, comptes locaux", tags:["key","lab"], diff:2 },
+          { id:"s14", name:"Zero Trust Architecture",                desc:"Never trust, always verify — microsegmentation, identity-based access, SASE/SSE", tags:["new","key"], diff:2 },
+        ]
+      }
+    ]
+  },
+  {
+    phase: "Phase 5 — Dépannage (le plus pondéré !)",
+    domains: [
+      {
+        id: "D5",
+        icon: "🔧",
+        name: "5.0 Dépannage réseau",
+        weight: "24%",
+        color: "#fbbf24",
+        bgColor: "rgba(251,191,36,0.10)",
+        note: "⚠️ Domaine le plus important de l'examen — maîtriser la méthode ET les outils",
+        topics: [
+          // MÉTHODE AVANT TOUT
+          { id:"tr01", name:"Méthodologie CompTIA — 7 étapes",       desc:"1.Identifier→2.Théorie→3.Tester→4.Plan d'action→5.Implémenter→6.Vérifier→7.Documenter", tags:["key","exam"], diff:1 },
+          { id:"tr02", name:"Approches top-down / bottom-up / divide-and-conquer", desc:"Utiliser le modèle OSI pour localiser un problème — savoir quelle approche choisir", tags:["key","exam"], diff:2 },
+          // COUCHE 1
+          { id:"tr03", name:"Problèmes couche Physique",             desc:"Câble défectueux, pinout incorrect (straight-through vs crossover), EMI, boucle réseau", tags:["key","lab","exam"], diff:2 },
+          { id:"tr04", name:"Erreurs d'interface Ethernet",          desc:"CRC errors, runts (<64B), giants (>1518B), collisions, late collisions, input/output errors", tags:["key","exam"], diff:2 },
+          { id:"tr05", name:"Duplex mismatch",                       desc:"Symptômes (late collisions, mauvais débit), cause, résolution par auto-negociation", tags:["key","exam"], diff:2 },
+          { id:"tr06", name:"Problèmes fibre optique",               desc:"Connecteur sale/cassé, mauvais type (SMF vs MMF), budget optique, OTDR", tags:["key","lab"], diff:2 },
+          // COUCHE 2
+          { id:"tr07", name:"Problèmes VLAN et switching",           desc:"VLAN mal configuré, native VLAN mismatch, STP loop, MAC flooding, port en err-disabled", tags:["key","lab","exam"], diff:3 },
+          { id:"tr08", name:"Boucles réseau (Loops)",                desc:"Symptômes (CPU 100%, broadcast storm), cause (STP absent), solution STP/RSTP, PortFast", tags:["key","exam"], diff:2 },
+          // COUCHE 3
+          { id:"tr09", name:"Problèmes d'adressage IP",              desc:"Conflit d'adresses IP, APIPA, mauvais masque, mauvaise passerelle par défaut", tags:["key","lab","exam"], diff:2 },
+          { id:"tr10", name:"Problèmes de routage",                  desc:"Route manquante, route incorrecte, routing loop, black hole, asymmetric routing", tags:["key","exam"], diff:3 },
+          { id:"tr11", name:"NAT — problèmes de traduction",         desc:"Pool épuisé, mauvais sens (inside/outside), overload mal configuré, connexions qui échouent", tags:["key","exam"], diff:2 },
+          // DNS/DHCP
+          { id:"tr12", name:"Problèmes DNS",                         desc:"Pas de résolution nom→IP, mauvais serveur DNS, cache empoisonné, TTL trop court/long", tags:["key","lab","exam"], diff:2 },
+          { id:"tr13", name:"Problèmes DHCP",                        desc:"Pool épuisé, bail expiré, adresse en conflit, DHCP rogue, relay agent mal configuré", tags:["key","lab","exam"], diff:2 },
+          // WI-FI
+          { id:"tr14", name:"Dépannage Wi-Fi",                       desc:"Signal faible (RSSI < -70dBm), interférences canal, Evil Twin, mauvais SSID, certificat WPA3", tags:["key","lab","exam"], diff:2 },
+          // WAN / VPN
+          { id:"tr15", name:"Dépannage WAN & VPN",                   desc:"Perte de paquets, congestion, latence élevée, VPN qui ne monte pas, MTU/fragmentation IPsec", tags:["key","exam"], diff:3 },
+          // OUTILS
+          { id:"tr16", name:"Commandes de diagnostic — Windows/Linux", desc:"ping, traceroute/tracert, pathping, nslookup, dig, ipconfig/ifconfig/ip, netstat, arp, route, nmap", tags:["key","lab","exam"], diff:2 },
+          { id:"tr17", name:"Outils matériels de dépannage",         desc:"Câble tester, toner probe, certifier câble (Fluke), OTDR, loopback adapter, multimètre, Wi-Fi analyzer", tags:["key","lab"], diff:1 },
+          { id:"tr18", name:"Capture et analyse de trafic",          desc:"Wireshark — filtres de capture, lecture d'une capture, identification d'anomalies, protocoles", tags:["key","lab","exam"], diff:3 },
+          { id:"tr19", name:"Logs système et réseau",                desc:"Lire des logs syslog, identifier des patterns, corréler avec des événements réseau", tags:["key","lab"], diff:2 },
+          // PERFORMANCE
+          { id:"tr20", name:"Problèmes de performance réseau",       desc:"Jitter, latence, gigue, perte de paquets, débit, bande passante — outils de mesure (iperf)", tags:["key","exam"], diff:2 },
+        ]
+      }
+    ]
+  }
+];
+
+// ─── Storage ───
+const STORE_KEY = 'netplus_v2';
+let state = {};
+try { state = JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); } catch(e) {}
+
+function save() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+
+// ─── Count all topics ───
+let allTopics = [];
+PLAN.forEach(ph => ph.domains.forEach(d => d.topics.forEach(t => allTopics.push(t))));
+
+// ─── Render ───
+function render() {
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+
+  PLAN.forEach(phase => {
+    const phaseEl = document.createElement('div');
+    phaseEl.innerHTML = `<div class="phase-label">${phase.phase}</div>`;
+    app.appendChild(phaseEl);
+
+    phase.domains.forEach(domain => {
+      const done = domain.topics.filter(t => state[t.id]).length;
+      const total = domain.topics.length;
+      const pct = total ? Math.round(done/total*100) : 0;
+
+      const dEl = document.createElement('div');
+      dEl.className = 'domain';
+      dEl.id = 'dom-' + domain.id;
+
+      dEl.innerHTML = `
+        <div class="dom-head" onclick="toggleDomain('${domain.id}')">
+          <div class="dom-icon" style="background:${domain.bgColor}">${domain.icon}</div>
+          <div class="dom-info">
+            <div class="dom-name">${domain.name}</div>
+            <div class="dom-sub">${domain.note}</div>
+          </div>
+          <div class="dom-meta">
+            <span class="dom-weight">${domain.weight} de l'examen</span>
+            <span class="dom-prog-mini" id="dpm-${domain.id}">${done}/${total} sujets</span>
+          </div>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="dom-prog-strip"><div class="dom-prog-inner" id="dpi-${domain.id}" style="width:${pct}%;background:${domain.color}40"></div></div>
+        <div class="topics" id="topics-${domain.id}">
+          ${domain.topics.map(t => renderTopic(t)).join('')}
+        </div>
+      `;
+      app.appendChild(dEl);
+    });
+  });
+
+  updateGlobal();
+}
+
+function renderTopic(t) {
+  const isDone = !!state[t.id];
+  const tags = t.tags.map(tag => `<span class="tag tag-${tag}">${tag}</span>`).join('');
+  const dots = [1,2,3].map(i => `<div class="diff-dot ${i<=t.diff?' on':''}"></div>`).join('');
+  return `
+    <div class="topic ${isDone?'done':''}" id="top-${t.id}" onclick="toggleTopic('${t.id}')">
+      <div class="chk ${isDone?'done':''}" id="chk-${t.id}">${isDone?'✓':''}</div>
+      <div class="topic-body">
+        <div class="topic-name">${t.name}</div>
+        <div class="topic-desc">${t.desc}</div>
+        <div class="tags">${tags}</div>
+      </div>
+      <div class="diff" title="Difficulté estimée">${dots}</div>
+    </div>
+  `;
+}
+
+function toggleDomain(id) {
+  const el = document.getElementById('dom-' + id);
+  el.classList.toggle('open');
+}
+
+function toggleTopic(id) {
+  state[id] = !state[id];
+  save();
+  // Update topic UI
+  const el = document.getElementById('top-' + id);
+  const chk = document.getElementById('chk-' + id);
+  if(state[id]) { el.classList.add('done'); chk.classList.add('done'); chk.textContent='✓'; }
+  else { el.classList.remove('done'); chk.classList.remove('done'); chk.textContent=''; }
+  // Update domain progress
+  PLAN.forEach(ph => ph.domains.forEach(d => {
+    if(d.topics.find(t=>t.id===id)) {
+      const done = d.topics.filter(t=>state[t.id]).length;
+      const total = d.topics.length;
+      const pct = Math.round(done/total*100);
+      const pm = document.getElementById('dpm-'+d.id);
+      const pi = document.getElementById('dpi-'+d.id);
+      if(pm) pm.textContent = done+'/'+total+' sujets';
+      if(pi) pi.style.width = pct+'%';
+    }
+  }));
+  updateGlobal();
+}
+
+function updateGlobal() {
+  const total = allTopics.length;
+  const done = allTopics.filter(t=>state[t.id]).length;
+  const pct = Math.round(done/total*100);
+  document.getElementById('gBar').style.width = pct+'%';
+  document.getElementById('gCount').textContent = done+' / '+total;
+  document.getElementById('gPct').textContent = pct+'%';
+}
+
+function resetAll() {
+  if(confirm('Réinitialiser toute ta progression ? ('+allTopics.length+' sujets)')) {
+    state = {};
+    save();
+    render();
+  }
+}
+
+render();
+// Open first domain by default
+document.getElementById('dom-D1')?.classList.add('open');
+</script>
+</body>
+</html>
