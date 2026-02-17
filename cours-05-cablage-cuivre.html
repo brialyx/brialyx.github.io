@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 05 — Types de câblage cuivre · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .vocab { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; }
+  .vocab-term { font-family: 'IBM Plex Mono', monospace; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .cable-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin: 16px 0; }
+  .cable-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; transition: border-color 0.2s; }
+  .cable-card:hover { border-color: rgba(56,189,248,0.3); }
+  .cable-card-title { font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 0.9rem; color: var(--accent); margin-bottom: 8px; }
+  .cable-card-spec { font-size: 0.8rem; line-height: 1.8; color: var(--text); }
+  .cable-card-spec div { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid rgba(28,42,58,0.4); }
+  .cable-card-spec div:last-child { border-bottom: none; }
+  .cable-card-spec .label { color: var(--muted); font-size: 0.75rem; }
+  .cable-card-spec .value { font-weight: 600; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Phase 1 — Fondamentaux</span> &nbsp;›&nbsp; Cours 05</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 1 · C05</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡☆ Moyen</span>
+  </div>
+
+  <h1>Types de <span>Câblage Cuivre</span></h1>
+  <span class="tagline">// Câbles Ethernet, catégories, connecteurs — la couche physique en détail</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais les catégories de câbles (Cat5e, Cat6, Cat6a…) et leurs specs</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je sais différencier UTP, STP et câble coaxial</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends les standards de câblage T568A et T568B</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Avant de commencer</div>
+    <h2>C'est quoi un câble réseau cuivre ?</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🔌</span>
+      <div class="callout-body">
+        <strong>Analogie — les tuyaux d'eau de ta maison</strong>
+        Le câble réseau, c'est comme le tuyau qui amène l'eau chez toi. Plus le tuyau est large et de bonne qualité, plus l'eau coule vite. Plus le câble est performant, plus les données passent rapidement. Et comme pour un tuyau, si le câble est endommagé ou trop long, le débit baisse.
+      </div>
+    </div>
+
+    <p>Un <strong>câble réseau cuivre</strong> est un câble qui transporte des signaux électriques pour faire communiquer des appareils (ordinateurs, switches, routeurs…) sur un réseau local. C'est la couche physique (couche 1 OSI) concrète — le support qui fait voyager les bits.</p>
+
+    <p>Les câbles cuivre les plus courants dans les réseaux modernes sont les <strong>câbles Ethernet à paires torsadées</strong> (twisted pair). Tu les reconnais facilement : ce sont les câbles avec un connecteur RJ-45 (comme une prise téléphone mais plus large).</p>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen Network+</strong>
+        CompTIA teste beaucoup les catégories de câbles (Cat5e, Cat6, Cat6a…), leurs débits maximum, leurs distances limites, et la différence entre câbles droits (straight-through) et câbles croisés (crossover). Ces questions sont faciles si tu connais les specs par cœur.
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Vocabulaire essentiel</div>
+    <h2>Les mots clés de ce cours</h2>
+
+    <div class="vocab">
+      <div class="vocab-term">Paire torsadée (Twisted Pair)</div>
+      <div>Deux fils de cuivre enroulés l'un autour de l'autre. Le fait de les torsader réduit les interférences électromagnétiques. Un câble Ethernet contient 4 paires torsadées = 8 fils au total.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">UTP — Unshielded Twisted Pair</div>
+      <div>Câble à paires torsadées <strong>sans blindage</strong>. C'est le type le plus courant dans les bureaux et maisons. Moins cher, plus flexible, mais plus sensible aux interférences.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">STP — Shielded Twisted Pair</div>
+      <div>Câble à paires torsadées <strong>avec blindage</strong> (feuille métallique ou tresse). Mieux protégé contre les interférences, utilisé dans les environnements industriels ou à proximité de machines électriques.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">RJ-45</div>
+      <div>Le connecteur standard des câbles Ethernet. Il a 8 broches (une par fil). C'est ce que tu branches dans ton PC ou ta box.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Catégorie de câble (Cat5e, Cat6, Cat6a…)</div>
+      <div>Standard qui définit les performances du câble : débit maximum, fréquence, distance. Plus le numéro est élevé, meilleures sont les performances.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Atténuation</div>
+      <div>La perte de signal au fur et à mesure que le signal électrique parcourt le câble. Plus le câble est long, plus l'atténuation est forte. C'est pour ça qu'il y a une distance maximum par type de câble.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Diaphonie (Crosstalk)</div>
+      <div>Interférence entre les paires de fils à l'intérieur du câble. Les paires torsadées réduisent la diaphonie, et les catégories supérieures ont de meilleures protections.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Les 3 grands types</div>
+    <h2>Câbles à paires torsadées vs Coaxial</h2>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Type de câble</th><th>Description</th><th>Utilisation</th><th>Connecteur</th></tr>
+        <tr>
+          <td><strong>UTP</strong><br>(Unshielded Twisted Pair)</td>
+          <td>4 paires torsadées, pas de blindage. Le plus courant. Souple et économique.</td>
+          <td>Réseaux locaux (LAN) dans bureaux, maisons, écoles. 95% des installations Ethernet.</td>
+          <td>RJ-45</td>
+        </tr>
+        <tr>
+          <td><strong>STP</strong><br>(Shielded Twisted Pair)</td>
+          <td>4 paires torsadées avec blindage (feuille métallique). Mieux protégé contre les interférences (EMI/RFI).</td>
+          <td>Environnements industriels, salles serveurs, proximité de moteurs électriques ou équipements haute tension.</td>
+          <td>RJ-45</td>
+        </tr>
+        <tr>
+          <td><strong>Coaxial</strong></td>
+          <td>Un conducteur central entouré d'un isolant, puis d'un blindage tressé et d'une gaine externe. Ressemble au câble d'antenne TV.</td>
+          <td>Ancien : réseaux 10Base2/10Base5. Moderne : connexions Internet câble (modem), caméras de surveillance.</td>
+          <td>BNC (ancien), F-type (câble TV/Internet)</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>Dans 99% des cas en réseau LAN moderne</strong>
+        Tu utiliseras des câbles <strong>UTP</strong> (pas de blindage) avec connecteurs <strong>RJ-45</strong>. Le câble coaxial est devenu rare dans les LAN, mais tu le verras encore pour les connexions Internet câble (box → modem).
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Catégories de câbles — à connaître par cœur</div>
+    <h2>Cat5e, Cat6, Cat6a, Cat7, Cat8</h2>
+    <p>Chaque catégorie a des performances différentes. Plus la catégorie est élevée, plus le câble est performant (débit, fréquence, protection contre les interférences).</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Catégorie</th><th>Fréquence max</th><th>Débit max (Ethernet)</th><th>Distance max</th><th>Usage typique</th></tr>
+        <tr>
+          <td><strong>Cat5</strong><br><span style="font-size:0.7rem;color:var(--red)">Obsolète</span></td>
+          <td>100 MHz</td>
+          <td>100 Mbps (Fast Ethernet)</td>
+          <td>100m</td>
+          <td>Ancien standard. N'est plus installé aujourd'hui.</td>
+        </tr>
+        <tr>
+          <td><strong>Cat5e</strong><br><span style="font-size:0.7rem;color:var(--green)">Encore courant</span></td>
+          <td>100 MHz</td>
+          <td><strong>1 Gbps</strong> (Gigabit Ethernet)</td>
+          <td>100m</td>
+          <td>Standard minimum actuel pour installations résidentielles et petits bureaux. Économique.</td>
+        </tr>
+        <tr>
+          <td><strong>Cat6</strong><br><span style="font-size:0.7rem;color:var(--green)">Standard actuel</span></td>
+          <td>250 MHz</td>
+          <td><strong>1 Gbps</strong> (100m)<br><strong>10 Gbps</strong> (55m)</td>
+          <td>100m (1G)<br>55m (10G)</td>
+          <td>Standard recommandé pour nouvelles installations. Meilleure protection contre la diaphonie que Cat5e.</td>
+        </tr>
+        <tr>
+          <td><strong>Cat6a</strong><br><span style="font-size:0.7rem;color:var(--accent)">Haut de gamme</span></td>
+          <td>500 MHz</td>
+          <td><strong>10 Gbps</strong></td>
+          <td>100m</td>
+          <td>Data centers, salles serveurs, installations professionnelles nécessitant 10 Gbps sur 100m.</td>
+        </tr>
+        <tr>
+          <td><strong>Cat7</strong></td>
+          <td>600 MHz</td>
+          <td>10 Gbps</td>
+          <td>100m</td>
+          <td>Rare. Blindage complet (S/FTP). Peu utilisé car Cat6a suffit et coûte moins cher.</td>
+        </tr>
+        <tr>
+          <td><strong>Cat8</strong></td>
+          <td>2000 MHz</td>
+          <td><strong>25/40 Gbps</strong></td>
+          <td>30m</td>
+          <td>Data centers haute performance. Connexions courtes entre switches et serveurs.</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Pour l'examen — les specs à mémoriser absolument</strong>
+        <strong>Cat5e</strong> : 1 Gbps, 100m<br>
+        <strong>Cat6</strong> : 1 Gbps sur 100m OU 10 Gbps sur 55m<br>
+        <strong>Cat6a</strong> : 10 Gbps sur 100m (le "a" = "augmented" = distance augmentée)<br>
+        <strong>Cat8</strong> : 40 Gbps mais seulement 30m
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Vue rapide</div>
+    <h2>Comparaison visuelle des catégories</h2>
+
+    <div class="cable-cards">
+      <div class="cable-card">
+        <div class="cable-card-title">Cat5e</div>
+        <div class="cable-card-spec">
+          <div><span class="label">Débit</span><span class="value">1 Gbps</span></div>
+          <div><span class="label">Distance</span><span class="value">100m</span></div>
+          <div><span class="label">Fréquence</span><span class="value">100 MHz</span></div>
+          <div><span class="label">Usage</span><span class="value" style="font-size:0.75rem">Résidentiel, PME</span></div>
+        </div>
+      </div>
+
+      <div class="cable-card">
+        <div class="cable-card-title">Cat6</div>
+        <div class="cable-card-spec">
+          <div><span class="label">Débit</span><span class="value">1G (100m) / 10G (55m)</span></div>
+          <div><span class="label">Distance</span><span class="value">100m / 55m</span></div>
+          <div><span class="label">Fréquence</span><span class="value">250 MHz</span></div>
+          <div><span class="label">Usage</span><span class="value" style="font-size:0.75rem">Standard actuel</span></div>
+        </div>
+      </div>
+
+      <div class="cable-card">
+        <div class="cable-card-title">Cat6a</div>
+        <div class="cable-card-spec">
+          <div><span class="label">Débit</span><span class="value">10 Gbps</span></div>
+          <div><span class="label">Distance</span><span class="value">100m</span></div>
+          <div><span class="label">Fréquence</span><span class="value">500 MHz</span></div>
+          <div><span class="label">Usage</span><span class="value" style="font-size:0.75rem">Data center, pro</span></div>
+        </div>
+      </div>
+
+      <div class="cable-card">
+        <div class="cable-card-title">Cat8</div>
+        <div class="cable-card-spec">
+          <div><span class="label">Débit</span><span class="value">40 Gbps</span></div>
+          <div><span class="label">Distance</span><span class="value">30m</span></div>
+          <div><span class="label">Fréquence</span><span class="value">2000 MHz</span></div>
+          <div><span class="label">Usage</span><span class="value" style="font-size:0.75rem">DC haute perf</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Standards de câblage</div>
+    <h2>T568A vs T568B — l'ordre des fils</h2>
+
+    <p>Quand tu regardes un connecteur RJ-45 de face (languette vers le bas), tu vois 8 broches. Chaque broche correspond à un fil de couleur. Les standards T568A et T568B définissent l'ordre dans lequel ces fils sont branchés.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Broche</th><th>T568A</th><th>T568B</th></tr>
+        <tr><td>1</td><td style="color:#22d3a0">Blanc/Vert</td><td style="color:#fbbf24">Blanc/Orange</td></tr>
+        <tr><td>2</td><td style="color:#22d3a0">Vert</td><td style="color:#fbbf24">Orange</td></tr>
+        <tr><td>3</td><td style="color:#fbbf24">Blanc/Orange</td><td style="color:#22d3a0">Blanc/Vert</td></tr>
+        <tr><td>4</td><td style="color:#38bdf8">Bleu</td><td style="color:#38bdf8">Bleu</td></tr>
+        <tr><td>5</td><td style="color:#38bdf8">Blanc/Bleu</td><td style="color:#38bdf8">Blanc/Bleu</td></tr>
+        <tr><td>6</td><td style="color:#fbbf24">Orange</td><td style="color:#22d3a0">Vert</td></tr>
+        <tr><td>7</td><td style="color:#94a3b8">Blanc/Marron</td><td style="color:#94a3b8">Blanc/Marron</td></tr>
+        <tr><td>8</td><td style="color:#94a3b8">Marron</td><td style="color:#94a3b8">Marron</td></tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>La différence principale</strong>
+        Les broches 1-2 et 3-6 sont inversées entre T568A et T568B. Les paires orange et verte changent de place. <strong>T568B est plus courant</strong> en Amérique du Nord et dans l'industrie. T568A est plus courant en Europe et dans les installations gouvernementales US.
+      </div>
+    </div>
+
+    <h3>// Câble droit (Straight-through) vs Câble croisé (Crossover)</h3>
+    <p><strong>Câble droit</strong> : Les deux extrémités utilisent le <em>même</em> standard (T568A aux deux bouts OU T568B aux deux bouts). Utilisation : connecter des appareils <strong>différents</strong> (PC → switch, switch → routeur).</p>
+    <p><strong>Câble croisé</strong> : Une extrémité en T568A, l'autre en T568B. Utilisation historique : connecter deux appareils <strong>identiques</strong> (PC → PC, switch → switch). Aujourd'hui obsolète grâce à l'Auto-MDIX.</p>
+
+    <div class="callout ok">
+      <span class="callout-icon">🔑</span>
+      <div class="callout-body">
+        <strong>Auto-MDIX — pourquoi les câbles croisés sont obsolètes</strong>
+        Les équipements modernes (depuis ~2010) ont une fonctionnalité appelée Auto-MDIX qui détecte automatiquement le type de câble et ajuste les signaux. Résultat : tu peux utiliser un câble droit partout — l'équipement se débrouille. Mais CompTIA teste encore la différence entre câbles droits et croisés !
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Limites physiques</div>
+    <h2>Distance maximum et solutions</h2>
+
+    <p>Les câbles cuivre Ethernet ont une <strong>distance limite de 100 mètres</strong> (pour la plupart des catégories). Au-delà, le signal s'affaiblit trop (atténuation) et les données ne passent plus correctement.</p>
+
+    <h3>// Pourquoi 100 mètres ?</h3>
+    <p>C'est la distance où l'atténuation du signal électrique devient trop forte. Le signal perd de sa puissance en voyageant dans le cuivre, et au bout de 100m, le récepteur ne peut plus distinguer clairement les 0 et les 1.</p>
+
+    <h3>// Solutions pour dépasser 100m</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Solution</th><th>Description</th><th>Distance ajoutée</th></tr>
+        <tr>
+          <td><strong>Switch intermédiaire</strong></td>
+          <td>Ajouter un switch entre les deux appareils. Le switch régénère le signal. Chaque segment = 100m max.</td>
+          <td>+100m par switch</td>
+        </tr>
+        <tr>
+          <td><strong>Répéteur / Extender</strong></td>
+          <td>Appareil qui amplifie et régénère le signal. Moins cher qu'un switch mais ne fait que répéter.</td>
+          <td>+100m</td>
+        </tr>
+        <tr>
+          <td><strong>Fibre optique</strong></td>
+          <td>Passer à un autre média — la fibre transporte la lumière au lieu d'électricité. Distances : plusieurs kilomètres.</td>
+          <td>Jusqu'à 40-80 km</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Exception Cat8</strong>
+        Le Cat8 a une distance limite de seulement <strong>30 mètres</strong> (pas 100m). C'est à cause de la fréquence très élevée (2000 MHz) — le signal s'atténue plus vite. Cat8 est donc utilisé uniquement pour des connexions courtes en data center.
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Dépannage</div>
+    <h2>Problèmes courants avec les câbles cuivre</h2>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Problème</th><th>Symptôme</th><th>Cause</th><th>Solution</th></tr>
+        <tr>
+          <td><strong>Atténuation</strong></td>
+          <td>Perte de paquets, débit réduit</td>
+          <td>Câble trop long (&gt;100m), câble de mauvaise qualité</td>
+          <td>Raccourcir le câble, utiliser un répéteur, passer à une catégorie supérieure</td>
+        </tr>
+        <tr>
+          <td><strong>Diaphonie (Crosstalk)</strong></td>
+          <td>Interférences, erreurs de transmission</td>
+          <td>Câbles mal torsadés, catégorie trop basse, câbles parallèles sur longue distance</td>
+          <td>Utiliser Cat6 ou supérieur, espacer les câbles</td>
+        </tr>
+        <tr>
+          <td><strong>EMI / RFI</strong><br>(Interférences électromagnétiques)</td>
+          <td>Connexion instable, paquets perdus</td>
+          <td>Proximité de moteurs, néons, lignes haute tension</td>
+          <td>Utiliser du STP (blindé) ou passer à la fibre optique</td>
+        </tr>
+        <tr>
+          <td><strong>Câble endommagé</strong></td>
+          <td>Pas de lien, connexion intermittente</td>
+          <td>Câble plié, écrasé, coupé, connecteur cassé</td>
+          <td>Remplacer le câble, tester avec un testeur de câbles</td>
+        </tr>
+        <tr>
+          <td><strong>Mauvais sertissage</strong></td>
+          <td>Pas de lien ou lien instable</td>
+          <td>Connecteur RJ-45 mal installé, fils dans le mauvais ordre</td>
+          <td>Refaire le sertissage, utiliser un testeur de câbles</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">🔧</span>
+      <div class="callout-body">
+        <strong>Outil de diagnostic — le testeur de câbles</strong>
+        Un testeur de câbles vérifie : continuité (tous les fils sont connectés), ordre correct des fils (T568A/B), courts-circuits, câbles cassés. Indispensable en dépannage réseau. Prix : 15-50€ pour un testeur basique.
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">⚠️ Pièges fréquents</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Piège 1 — Cat6 10 Gbps "sur 100m" ?</strong>
+        Non ! Cat6 fait 10 Gbps sur <strong>55m maximum</strong>. Pour avoir 10 Gbps sur 100m, il faut du <strong>Cat6a</strong> (le "a" = augmented = distance augmentée). CompTIA adore ce piège.
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Piège 2 — UTP vs STP, lequel choisir ?</strong>
+        Dans 95% des cas → <strong>UTP</strong> (pas de blindage). Le STP est plus cher, plus rigide, et nécessite une mise à la terre correcte. On l'utilise uniquement dans les environnements à fortes interférences (usines, hôpitaux…).
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Piège 3 — Câble croisé obligatoire pour PC → PC ?</strong>
+        Plus maintenant ! Depuis Auto-MDIX (~2010), un câble droit fonctionne partout. Mais à l'examen, si la question mentionne "équipement ancien sans Auto-MDIX", alors oui, un câble croisé est nécessaire pour connecter deux PC ou deux switches.
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Piège 4 — Cat8 pour tout le réseau ?</strong>
+        Non ! Cat8 ne fait que <strong>30m de distance max</strong>. Il est conçu uniquement pour les connexions courtes en data center (switch-to-switch, switch-to-serveur). Pour un réseau d'entreprise classique, Cat6a suffit largement.
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">Quel est le débit maximum et la distance maximum d'un câble Cat5e ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Débit : <strong>1 Gbps</strong> (Gigabit Ethernet)<br>Distance : <strong>100 mètres</strong></div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">Quelle catégorie de câble faut-il pour avoir 10 Gbps sur une distance de 100m ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Cat6a</strong> (augmented). Le Cat6 standard ne fait 10 Gbps que sur 55m.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">Quelle est la différence entre UTP et STP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>UTP</strong> = Unshielded (sans blindage) — le plus courant.<br><strong>STP</strong> = Shielded (avec blindage) — protection contre les interférences EMI/RFI, utilisé en environnement industriel.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">Quelle est la distance maximum d'un câble Cat8 ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>30 mètres</strong> (pas 100m comme les autres). Cat8 est limité à cause de sa fréquence très élevée (2000 MHz).</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">Un technicien doit connecter deux switches anciens (sans Auto-MDIX). Quel type de câble doit-il utiliser ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Un <strong>câble croisé (crossover)</strong> — une extrémité en T568A, l'autre en T568B. Les équipements modernes n'en ont plus besoin grâce à l'Auto-MDIX.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">Question type examen : Une entreprise installe un nouveau réseau et veut du Gigabit Ethernet sur 100m avec le meilleur rapport qualité/prix. Quelle catégorie recommander ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Cat6</strong>. Il fait 1 Gbps sur 100m, offre une meilleure protection contre la diaphonie que Cat5e, et coûte moins cher que Cat6a. C'est le standard actuel pour les nouvelles installations.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">Un câble Ethernet standard contient combien de fils ? Combien de paires ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>8 fils</strong> organisés en <strong>4 paires torsadées</strong>. Chaque paire est torsadée pour réduire les interférences.</div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span>UTP = sans blindage (standard), STP = avec blindage (environnements à interférences)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Cat5e</strong> : 1 Gbps, 100m · <strong>Cat6</strong> : 1G sur 100m OU 10G sur 55m · <strong>Cat6a</strong> : 10G sur 100m</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Cat8 : 40 Gbps mais seulement <strong>30m</strong> de distance</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Distance max standard : <strong>100 mètres</strong> (sauf Cat8). Solution : switch/répéteur ou fibre optique</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>T568A et T568B = standards de câblage (ordre des fils). T568B plus courant en industrie.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Câble droit = même standard aux 2 bouts (PC→switch). Câble croisé = T568A + T568B (PC→PC ancien)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Auto-MDIX = détection auto du type de câble → câbles croisés obsolètes sur équipements récents</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Connecteur standard : <strong>RJ-45</strong> (8 broches)</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Questions type examen</div>
+    <h2>❓ Ce que CompTIA peut te poser</h2>
+    <div class="callout exam"><span class="callout-icon">🎯</span><div class="callout-body"><strong>Q : Une entreprise veut déployer du 10 Gigabit Ethernet sur 100m. Quelle catégorie minimum ?</strong><strong>Cat6a</strong>. Cat6 ne fait 10G que sur 55m.</div></div>
+    <div class="callout exam"><span class="callout-icon">🎯</span><div class="callout-body"><strong>Q : Quel type de câble utiliser dans une usine avec beaucoup de moteurs électriques ?</strong><strong>STP</strong> (Shielded Twisted Pair) pour se protéger des interférences électromagnétiques (EMI).</div></div>
+    <div class="callout exam"><span class="callout-icon">🎯</span><div class="callout-body"><strong>Q : Un technicien installe un câble de 120m. Que va-t-il se passer ?</strong>Le signal va s'atténuer au-delà de 100m → perte de paquets, connexion instable ou inexistante. Solution : ajouter un switch/répéteur ou raccourcir le câble.</div></div>
+    <div class="callout exam"><span class="callout-icon">🎯</span><div class="callout-body"><strong>Q : Quelle est la distance max d'un câble Cat8 ?</strong><strong>30 mètres</strong> (pas 100m).</div></div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 04 : Modèle TCP/IP</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">C05 · Phase 1</span>
+    <a class="nav-btn next" href="#">Cours 06 : Fibre optique →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_c05_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>
