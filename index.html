@@ -574,7 +574,11 @@ function renderTopic(t) {
     <div class="topic ${isDone?'done':''}" id="top-${t.id}" onclick="toggleTopic('${t.id}')">
       <div class="chk ${isDone?'done':''}" id="chk-${t.id}">${isDone?'✓':''}</div>
       <div class="topic-body">
-        <div class="topic-name">${t.name}</div>
+        <div class="topic-name">
+  <a href="${t.url || '#'}" onclick="event.stopPropagation()">
+    ${t.name}
+  </a>
+</div>
         <div class="topic-desc">${t.desc}</div>
         <div class="tags">${tags}</div>
       </div>
