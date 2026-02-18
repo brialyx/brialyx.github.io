@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 09 — Structure de la trame Ethernet · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .vocab { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; }
+  .vocab-term { font-family: 'IBM Plex Mono', monospace; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .frame-visual { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin: 20px 0; font-family: 'IBM Plex Mono', monospace; }
+  .frame-parts { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .frame-part { background: rgba(56,189,248,0.1); border: 1px solid var(--accent); border-radius: 6px; padding: 10px 12px; flex: 1; min-width: 100px; text-align: center; }
+  .frame-part-name { font-size: 0.7rem; color: var(--muted); margin-bottom: 4px; }
+  .frame-part-size { font-size: 0.9rem; color: var(--accent); font-weight: 700; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Phase 1 — Fondamentaux</span> &nbsp;›&nbsp; Cours 09</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 1 · C09</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-diff">⚡⚡☆ Moyen</span>
+  </div>
+
+  <h1>Structure de la <span>Trame Ethernet</span></h1>
+  <span class="tagline">// Préambule, adresses MAC, payload, FCS — anatomie d'une trame couche 2</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais les 7 champs d'une trame Ethernet</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je sais les tailles : min 64B, max 1518B</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends le rôle du FCS</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. C'EST QUOI -->
+  <div class="section">
+    <div class="section-label">Avant de commencer</div>
+    <h2>C'est quoi une trame Ethernet ?</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">✉️</span>
+      <div class="callout-body">
+        <strong>Analogie — une lettre postale</strong>
+        Une trame Ethernet, c'est comme une lettre dans une enveloppe :<br>
+        - <strong>Adresse expéditeur</strong> (MAC source) — qui envoie<br>
+        - <strong>Adresse destinataire</strong> (MAC destination) — qui reçoit<br>
+        - <strong>Le contenu de la lettre</strong> (Payload) — les données réelles<br>
+        - <strong>Le cachet de la poste</strong> (FCS) — vérification que rien n'est abîmé
+      </div>
+    </div>
+
+    <p>Une <strong>trame Ethernet</strong> est l'unité de données de la <strong>couche 2 (Liaison de données)</strong> du modèle OSI. C'est l'enveloppe qui transporte les paquets IP sur un réseau local (LAN).</p>
+
+    <p><strong>Rappel de l'encapsulation :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Couche 7-5 (Application) → <strong>Données</strong></li>
+      <li>Couche 4 (Transport) → <strong>Segment</strong> (TCP) ou Datagramme (UDP)</li>
+      <li>Couche 3 (Réseau) → <strong>Paquet</strong> (IP)</li>
+      <li>Couche 2 (Liaison) → <strong>Trame</strong> (Ethernet) ← ON EST ICI</li>
+      <li>Couche 1 (Physique) → Bits électriques/optiques</li>
+    </ul>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen Network+</strong>
+        CompTIA teste la structure exacte de la trame : les 7 champs, leurs tailles en octets, la taille min/max de la trame. C'est du par cœur pur — apprends le tableau et tu gagnes des points faciles.
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. VOCABULAIRE -->
+  <div class="section">
+    <div class="section-label">Vocabulaire essentiel</div>
+    <h2>Les mots clés de ce cours</h2>
+
+    <div class="vocab">
+      <div class="vocab-term">Trame (Frame)</div>
+      <div>Unité de données de la couche 2. Contient les adresses MAC, les données, et un contrôle d'erreur.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Préambule (Preamble)</div>
+      <div>Séquence de bits (10101010...) qui synchronise l'horloge du récepteur. 7 octets.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">SFD (Start Frame Delimiter)</div>
+      <div>1 octet (10101011) qui marque le début de la trame juste après le préambule.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Adresse MAC (Media Access Control)</div>
+      <div>Adresse physique unique de 6 octets (48 bits) attribuée à chaque carte réseau. Format : AA:BB:CC:DD:EE:FF</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">EtherType</div>
+      <div>Champ de 2 octets qui indique le protocole de la couche supérieure (0x0800 = IPv4, 0x86DD = IPv6, 0x0806 = ARP)</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Payload (Charge utile)</div>
+      <div>Les données transportées. Contient généralement un paquet IP. Taille : 46 à 1500 octets.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">FCS (Frame Check Sequence)</div>
+      <div>Somme de contrôle de 4 octets (CRC32) qui permet de détecter les erreurs de transmission.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Runt</div>
+      <div>Trame trop petite (&lt; 64 octets). Considérée comme invalide et rejetée.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Giant / Jumbo</div>
+      <div>Trame plus grande que la taille standard max (1518 octets). Giant = erreur. Jumbo = voulu (jusqu'à 9000 octets).</div>
+    </div>
+  </div>
+
+  <!-- 3. STRUCTURE COMPLÈTE -->
+  <div class="section">
+    <div class="section-label">Anatomie d'une trame</div>
+    <h2>Les 7 champs d'une trame Ethernet II</h2>
+
+    <div class="frame-visual">
+      <div class="frame-parts">
+        <div class="frame-part">
+          <div class="frame-part-name">Préambule</div>
+          <div class="frame-part-size">7 octets</div>
+        </div>
+        <div class="frame-part">
+          <div class="frame-part-name">SFD</div>
+          <div class="frame-part-size">1 octet</div>
+        </div>
+        <div class="frame-part">
+          <div class="frame-part-name">MAC Dest</div>
+          <div class="frame-part-size">6 octets</div>
+        </div>
+        <div class="frame-part">
+          <div class="frame-part-name">MAC Source</div>
+          <div class="frame-part-size">6 octets</div>
+        </div>
+        <div class="frame-part">
+          <div class="frame-part-name">EtherType</div>
+          <div class="frame-part-size">2 octets</div>
+        </div>
+        <div class="frame-part" style="flex:2">
+          <div class="frame-part-name">Payload (Données)</div>
+          <div class="frame-part-size">46-1500 octets</div>
+        </div>
+        <div class="frame-part">
+          <div class="frame-part-name">FCS</div>
+          <div class="frame-part-size">4 octets</div>
+        </div>
+      </div>
+      <div style="font-size:0.75rem;color:var(--muted);text-align:center">Taille totale : <strong>64 octets minimum</strong> — <strong>1518 octets maximum</strong></div>
+    </div>
+
+    <h3>// Détail de chaque champ</h3>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Champ</th><th>Taille</th><th>Rôle</th><th>Exemple / Notes</th></tr>
+        <tr>
+          <td><strong>Préambule</strong></td>
+          <td>7 octets</td>
+          <td>Synchronisation de l'horloge du récepteur</td>
+          <td>Séquence : 10101010 répétée 7 fois. Pas inclus dans le calcul de taille de trame.</td>
+        </tr>
+        <tr>
+          <td><strong>SFD</strong><br>(Start Frame Delimiter)</td>
+          <td>1 octet</td>
+          <td>Marque le début de la trame</td>
+          <td>Valeur : 10101011. Signal "les vraies données commencent maintenant".</td>
+        </tr>
+        <tr>
+          <td><strong>MAC Destination</strong></td>
+          <td>6 octets</td>
+          <td>Adresse physique du destinataire</td>
+          <td>Exemple : <code>AA:BB:CC:DD:EE:FF</code>. Peut être unicast, multicast, ou broadcast (FF:FF:FF:FF:FF:FF).</td>
+        </tr>
+        <tr>
+          <td><strong>MAC Source</strong></td>
+          <td>6 octets</td>
+          <td>Adresse physique de l'expéditeur</td>
+          <td>Permet au destinataire de savoir qui a envoyé la trame.</td>
+        </tr>
+        <tr>
+          <td><strong>EtherType</strong> (ou Length)</td>
+          <td>2 octets</td>
+          <td>Indique le protocole de couche 3</td>
+          <td><code>0x0800</code> = IPv4, <code>0x86DD</code> = IPv6, <code>0x0806</code> = ARP. Si &lt; 1536 = champ Length (Ethernet 802.3).</td>
+        </tr>
+        <tr>
+          <td><strong>Payload</strong><br>(Données)</td>
+          <td>46-1500 octets</td>
+          <td>Contenu utile : paquet IP, ARP, etc.</td>
+          <td>Si &lt; 46 octets → padding ajouté pour atteindre le minimum. 1500 octets = MTU standard.</td>
+        </tr>
+        <tr>
+          <td><strong>FCS</strong><br>(Frame Check Sequence)</td>
+          <td>4 octets</td>
+          <td>Détection d'erreurs (CRC32)</td>
+          <td>Calculé sur tous les champs sauf Préambule + SFD + FCS lui-même. Si erreur détectée → trame rejetée.</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">🔑</span>
+      <div class="callout-body">
+        <strong>Calcul de la taille de trame</strong>
+        <strong>Minimum</strong> : 6 (MAC dest) + 6 (MAC src) + 2 (EtherType) + 46 (payload min) + 4 (FCS) = <strong>64 octets</strong><br>
+        <strong>Maximum</strong> : 6 + 6 + 2 + 1500 (payload max) + 4 = <strong>1518 octets</strong><br><br>
+        Note : Préambule (7B) + SFD (1B) = 8 octets ne sont PAS comptés dans la taille de trame.
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. ADRESSES MAC -->
+  <div class="section">
+    <div class="section-label">Adressage couche 2</div>
+    <h2>Les adresses MAC — identifiant physique unique</h2>
+
+    <p>Une <strong>adresse MAC</strong> (Media Access Control) est un identifiant unique de 48 bits (6 octets) attribué à chaque carte réseau par le fabricant.</p>
+
+    <h3>// Format d'une adresse MAC</h3>
+    <p><strong>Exemple :</strong> <code>00:1A:2B:3C:4D:5E</code></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9;font-family:'IBM Plex Mono',monospace;font-size:0.85rem">
+      <li>6 octets séparés par ":" (ou "-" selon les systèmes)</li>
+      <li>Chaque octet = 2 chiffres hexadécimaux (00 à FF)</li>
+      <li>Les 3 premiers octets = <strong>OUI</strong> (Organizationally Unique Identifier) — identifie le fabricant</li>
+      <li>Les 3 derniers octets = <strong>ID unique</strong> attribué par le fabricant</li>
+    </ul>
+
+    <p><strong>Exemple concret :</strong></p>
+    <p><code>00:1A:2B:3C:4D:5E</code></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><code>00:1A:2B</code> → OUI de Cisco Systems</li>
+      <li><code>3C:4D:5E</code> → Numéro de série unique de cette carte réseau Cisco</li>
+    </ul>
+
+    <h3>// Types d'adresses MAC</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Type</th><th>Adresse</th><th>Signification</th></tr>
+        <tr>
+          <td><strong>Unicast</strong></td>
+          <td>Bit 0 du 1er octet = 0</td>
+          <td>Destinée à UNE seule machine. Exemple : <code>00:1A:2B:3C:4D:5E</code></td>
+        </tr>
+        <tr>
+          <td><strong>Multicast</strong></td>
+          <td>Bit 0 du 1er octet = 1</td>
+          <td>Destinée à un groupe de machines. Exemple : <code>01:00:5E:XX:XX:XX</code> (multicast IPv4)</td>
+        </tr>
+        <tr>
+          <td><strong>Broadcast</strong></td>
+          <td><code>FF:FF:FF:FF:FF:FF</code></td>
+          <td>Destinée à TOUTES les machines du réseau local</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen</strong>
+        Retiens : <code>FF:FF:FF:FF:FF:FF</code> = broadcast Ethernet (tous les bits à 1). Utilisé pour ARP, DHCP Discovery, Wake-on-LAN…
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. FCS -->
+  <div class="section">
+    <div class="section-label">Détection d'erreurs</div>
+    <h2>FCS — Frame Check Sequence (contrôle d'intégrité)</h2>
+
+    <p>Le <strong>FCS</strong> est un champ de 4 octets à la fin de la trame qui contient une somme de contrôle calculée avec l'algorithme <strong>CRC-32</strong> (Cyclic Redundancy Check).</p>
+
+    <h3>// Comment ça fonctionne</h3>
+    <p><strong>Côté émetteur :</strong></p>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>L'émetteur calcule un CRC32 sur tous les champs de la trame (MAC dest, MAC src, EtherType, Payload)</li>
+      <li>Il place le résultat (4 octets) dans le champ FCS</li>
+      <li>Il envoie la trame complète</li>
+    </ol>
+
+    <p><strong>Côté récepteur :</strong></p>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Le récepteur recalcule le CRC32 sur les mêmes champs</li>
+      <li>Il compare son calcul avec le FCS reçu</li>
+      <li>Si ça correspond → trame valide ✅</li>
+      <li>Si ça ne correspond pas → trame corrompue → <strong>rejetée</strong> ❌</li>
+    </ol>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>FCS détecte, ne corrige pas</strong>
+        Le FCS permet de <strong>détecter</strong> les erreurs de transmission (bits flippés, corruption), mais il ne peut PAS les <strong>corriger</strong>. Si une erreur est détectée, la trame est simplement jetée. C'est à la couche supérieure (TCP) de redemander les données perdues.
+      </div>
+    </div>
+
+    <h3>// Causes d'erreurs FCS</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Câble défectueux ou trop long</strong> (atténuation excessive)</li>
+      <li><strong>Interférences électromagnétiques</strong> (EMI/RFI)</li>
+      <li><strong>Connecteur sale ou oxydé</strong></li>
+      <li><strong>Duplex mismatch</strong> (un côté half, l'autre full → collisions)</li>
+      <li><strong>Carte réseau défectueuse</strong></li>
+    </ul>
+  </div>
+
+  <!-- 6. TAILLES -->
+  <div class="section">
+    <div class="section-label">Contraintes de taille</div>
+    <h2>Taille minimum et maximum d'une trame</h2>
+
+    <h3>// Taille minimum : 64 octets</h3>
+    <p><strong>Pourquoi 64 octets minimum ?</strong> Pour permettre la détection de collisions en CSMA/CD (mode half-duplex). Une trame doit être assez longue pour qu'une collision soit détectée avant la fin de la transmission.</p>
+
+    <p><strong>Calcul :</strong> 6 (MAC dest) + 6 (MAC src) + 2 (EtherType) + 46 (payload min) + 4 (FCS) = 64 octets</p>
+
+    <p><strong>Si les données sont &lt; 46 octets ?</strong> On ajoute du <strong>padding</strong> (remplissage de zéros) pour atteindre 46 octets minimum.</p>
+
+    <p><strong>Exemple :</strong> Envoyer un paquet ARP de 28 octets → ajouter 18 octets de padding → payload total = 46 octets → trame valide.</p>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Runt frame</strong>
+        Une trame &lt; 64 octets s'appelle un <strong>runt</strong>. Elle est considérée comme invalide et rejetée par le switch. Cause typique : collision, câble défectueux, carte réseau défaillante.
+      </div>
+    </div>
+
+    <h3>// Taille maximum : 1518 octets (standard)</h3>
+    <p><strong>Calcul :</strong> 6 + 6 + 2 + 1500 (payload max) + 4 = 1518 octets</p>
+
+    <p>Le <strong>MTU</strong> (Maximum Transmission Unit) standard Ethernet = <strong>1500 octets</strong> de payload. C'est la taille max du paquet IP qu'on peut transporter dans une trame Ethernet standard.</p>
+
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>Jumbo Frames</strong>
+        Certains datacenters utilisent des <strong>Jumbo Frames</strong> (jusqu'à 9000 octets de payload). Avantages : moins d'overhead, meilleure performance pour les gros transferts. Inconvénient : tous les équipements du chemin doivent supporter les jumbo frames, sinon → fragmentation ou perte de paquets.
+      </div>
+    </div>
+
+    <h3>// Résumé des tailles</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Type</th><th>Taille</th><th>Note</th></tr>
+        <tr><td>Préambule + SFD</td><td>8 octets</td><td>Non compté dans la taille de trame</td></tr>
+        <tr><td>En-tête Ethernet (hors payload)</td><td>18 octets</td><td>6 + 6 + 2 + 4</td></tr>
+        <tr><td>Payload minimum</td><td>46 octets</td><td>Padding si données &lt; 46</td></tr>
+        <tr><td>Payload maximum (standard)</td><td>1500 octets</td><td>= MTU Ethernet</td></tr>
+        <tr><td>Trame minimum</td><td>64 octets</td><td>En-tête + payload min</td></tr>
+        <tr><td>Trame maximum (standard)</td><td>1518 octets</td><td>En-tête + payload max</td></tr>
+        <tr><td>Jumbo frame</td><td>Jusqu'à ~9018 octets</td><td>Non standard, datacenter uniquement</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 7. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">Quelle est la taille d'une adresse MAC ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>6 octets</strong> (48 bits). Format : AA:BB:CC:DD:EE:FF en hexadécimal.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">Quelle est la taille minimum d'une trame Ethernet ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>64 octets</strong> (incluant FCS, excluant préambule + SFD). Si données &lt; 46 octets → padding ajouté.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">Quelle est la taille maximum d'une trame Ethernet standard ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>1518 octets</strong>. Détail : 6 (MAC dest) + 6 (MAC src) + 2 (EtherType) + 1500 (payload max) + 4 (FCS).</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">À quoi sert le champ FCS ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Le <strong>FCS</strong> (Frame Check Sequence) détecte les erreurs de transmission grâce à un CRC32. Si erreur → trame rejetée.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">Quelle est l'adresse MAC broadcast ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>FF:FF:FF:FF:FF:FF</strong>. Tous les bits à 1 = envoi à toutes les machines du réseau local.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">Question type examen : Un switch reçoit une trame de 50 octets. Est-elle valide ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Non</strong>. Taille minimum = 64 octets. Une trame de 50 octets est un <strong>runt</strong> et sera rejetée.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">Que contient le champ EtherType 0x0800 ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><code>0x0800</code> = <strong>IPv4</strong>. Indique que le payload contient un paquet IPv4. Autres valeurs : 0x86DD = IPv6, 0x0806 = ARP.</div>
+  </div>
+
+  <!-- 8. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span>7 champs : Préambule (7B) + SFD (1B) + MAC dest (6B) + MAC src (6B) + EtherType (2B) + Payload (46-1500B) + FCS (4B)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Taille minimum : <strong>64 octets</strong> (padding si nécessaire). Taille maximum : <strong>1518 octets</strong></span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Adresse MAC = 6 octets, format AA:BB:CC:DD:EE:FF, 3 premiers = OUI (fabricant)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Broadcast MAC = FF:FF:FF:FF:FF:FF (tous les bits à 1)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>FCS = 4 octets, CRC32, détecte erreurs mais ne corrige pas</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>EtherType : 0x0800 = IPv4, 0x86DD = IPv6, 0x0806 = ARP</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Runt = trame &lt; 64 octets (invalide). Jumbo frame = jusqu'à 9000 octets (datacenter)</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 08 : Standards Ethernet IEEE 802.3</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">C09 · Phase 1</span>
+    <a class="nav-btn next" href="#">Cours 10 : MTU et fragmentation IP →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_c09_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>

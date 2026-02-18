@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 11 — Topologies réseau · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .vocab { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; }
+  .vocab-term { font-family: 'IBM Plex Mono', monospace; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .topo-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin: 14px 0; }
+  .topo-title { font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 1rem; color: var(--accent); margin-bottom: 12px; }
+  .topo-body { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Phase 1 — Fondamentaux</span> &nbsp;›&nbsp; Cours 11</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 1 · C11</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-diff">⚡☆☆ Facile</span>
+  </div>
+
+  <h1>Topologies <span>Réseau</span></h1>
+  <span class="tagline">// Bus, Étoile, Anneau, Maillé — comment les appareils sont connectés entre eux</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais les 7 topologies principales</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends avantages et inconvénients de chaque topologie</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je sais reconnaître quelle topologie utiliser selon le contexte</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. C'EST QUOI -->
+  <div class="section">
+    <div class="section-label">Avant de commencer</div>
+    <h2>C'est quoi une topologie réseau ?</h2>
+
+    <p>Une <strong>topologie réseau</strong> décrit la manière dont les appareils (ordinateurs, switches, routeurs) sont <strong>connectés physiquement ou logiquement</strong> entre eux.</p>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🗺️</span>
+      <div class="callout-body">
+        <strong>Analogie — plan du métro vs itinéraire réel</strong>
+        <strong>Topologie physique</strong> = le plan réel des câbles (comment ils sont tirés dans les murs, les conduits)<br>
+        <strong>Topologie logique</strong> = comment les données circulent (le "plan du métro" — qui peut parler à qui)
+      </div>
+    </div>
+
+    <p><strong>Topologie physique :</strong> L'arrangement réel des câbles et équipements. Exemple : tous les câbles vont au switch central (étoile physique).</p>
+
+    <p><strong>Topologie logique :</strong> Comment les données circulent. Exemple : tous les appareils reçoivent tous les messages (bus logique), même si physiquement c'est une étoile.</p>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen Network+</strong>
+        CompTIA teste : reconnaître chaque topologie, savoir leurs avantages/inconvénients, identifier la topologie physique vs logique, et choisir la bonne topologie selon un scénario. C'est conceptuel — pas de calculs, juste de la compréhension.
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. VOCABULAIRE -->
+  <div class="section">
+    <div class="section-label">Vocabulaire essentiel</div>
+    <h2>Les mots clés de ce cours</h2>
+
+    <div class="vocab">
+      <div class="vocab-term">Topologie physique</div>
+      <div>L'arrangement réel et physique des câbles, équipements et connexions.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Topologie logique</div>
+      <div>La manière dont les données circulent sur le réseau, indépendamment de la disposition physique.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Nœud (Node)</div>
+      <div>Tout appareil connecté au réseau (PC, switch, routeur, imprimante…)</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Point de défaillance unique (Single Point of Failure - SPOF)</div>
+      <div>Un élément dont la panne entraîne l'arrêt de tout le réseau. À éviter pour la haute disponibilité.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Redondance</div>
+      <div>Avoir plusieurs chemins possibles entre deux points. Si un chemin tombe, un autre prend le relais.</div>
+    </div>
+  </div>
+
+  <!-- 3. BUS -->
+  <div class="section">
+    <div class="section-label">Topologie 1</div>
+    <h2>Topologie en Bus</h2>
+
+    <div class="topo-card">
+      <div class="topo-title">📏 Bus (linéaire)</div>
+      <div class="topo-body">
+        Tous les appareils sont connectés à un <strong>câble central unique</strong> (le "bus" ou "backbone"). Les données circulent sur le câble et tous les appareils les reçoivent, mais seul le destinataire traite le message.
+      </div>
+    </div>
+
+    <h3>// Caractéristiques</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Un seul câble central (coaxial, généralement)</li>
+      <li>Les appareils se connectent via des "T-connectors"</li>
+      <li>Les extrémités du câble ont des <strong>terminateurs</strong> (50 ohms) pour éviter les réflexions de signal</li>
+      <li>Tous les appareils partagent le même support de transmission</li>
+    </ul>
+
+    <h3>// Avantages</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Simple et peu coûteux</li>
+      <li>Peu de câblage nécessaire</li>
+      <li>Facile à étendre (ajouter un appareil = connecter au câble)</li>
+    </ul>
+
+    <h3>// Inconvénients</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Point de défaillance unique</strong> : si le câble principal se casse → tout le réseau tombe</li>
+      <li>Difficile à dépanner (où est la coupure ?)</li>
+      <li>Performance dégradée avec beaucoup d'appareils (collisions)</li>
+      <li>Pas de sécurité : tous les appareils voient tout le trafic</li>
+    </ul>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Statut aujourd'hui</strong>
+        La topologie en bus est <strong>obsolète</strong>. Utilisée dans les années 1980-90 avec Ethernet 10Base2 et 10Base5 (coaxial). Remplacée par l'étoile avec switches. Tu ne la verras que dans l'examen, pas dans la vraie vie.
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. ÉTOILE -->
+  <div class="section">
+    <div class="section-label">Topologie 2</div>
+    <h2>Topologie en Étoile</h2>
+
+    <div class="topo-card">
+      <div class="topo-title">⭐ Étoile (Star)</div>
+      <div class="topo-body">
+        Tous les appareils sont connectés à un <strong>point central</strong> (switch ou hub). Toutes les communications passent par ce point central.
+      </div>
+    </div>
+
+    <h3>// Caractéristiques</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Un switch (ou hub) au centre</li>
+      <li>Chaque appareil a son propre câble vers le centre</li>
+      <li>Topologie physique ET logique la plus courante aujourd'hui</li>
+      <li>Utilisée dans presque tous les réseaux LAN modernes</li>
+    </ul>
+
+    <h3>// Avantages</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Facile à dépanner</strong> : si un câble tombe, seul cet appareil est affecté</li>
+      <li><strong>Facile à étendre</strong> : ajouter un appareil = brancher un câble au switch</li>
+      <li><strong>Performance</strong> : avec un switch, chaque appareil a sa bande passante dédiée</li>
+      <li><strong>Centralisé</strong> : gestion et surveillance faciles</li>
+    </ul>
+
+    <h3>// Inconvénients</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Point de défaillance unique</strong> : si le switch central tombe → tout le réseau tombe</li>
+      <li>Plus de câblage qu'en bus (un câble par appareil)</li>
+      <li>Coût du switch central</li>
+    </ul>
+
+    <div class="callout ok">
+      <span class="callout-icon">✅</span>
+      <div class="callout-body">
+        <strong>Standard actuel</strong>
+        Topologie en étoile = <strong>standard moderne</strong>. Presque tous les réseaux locaux (maison, bureau, entreprise) utilisent une étoile physique avec switch central.
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. ÉTOILE ÉTENDUE -->
+  <div class="section">
+    <div class="section-label">Topologie 3</div>
+    <h2>Topologie en Étoile étendue</h2>
+
+    <div class="topo-card">
+      <div class="topo-title">🌟 Étoile étendue (Extended Star / Hierarchical Star)</div>
+      <div class="topo-body">
+        Plusieurs étoiles connectées entre elles via leurs switches centraux. C'est une <strong>étoile d'étoiles</strong> — hiérarchique.
+      </div>
+    </div>
+
+    <h3>// Caractéristiques</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Un switch central principal (core switch)</li>
+      <li>Plusieurs switches secondaires connectés au switch principal</li>
+      <li>Les appareils finaux se connectent aux switches secondaires</li>
+      <li>Structure à 3 niveaux typique : Core → Distribution → Access</li>
+    </ul>
+
+    <h3>// Avantages</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Permet de couvrir de grandes distances (immeubles, campus)</li>
+      <li>Scalable (facile d'ajouter des switches et appareils)</li>
+      <li>Bonne performance</li>
+      <li>Isolation : un problème sur un switch secondaire n'affecte que cette branche</li>
+    </ul>
+
+    <h3>// Inconvénients</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Si le switch central tombe → tout le réseau tombe</li>
+      <li>Plus complexe à configurer</li>
+      <li>Plus coûteux (plusieurs switches)</li>
+    </ul>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Usage typique</strong>
+        Étoile étendue = standard pour les <strong>entreprises et campus</strong>. Exemple : switch central dans la salle serveur, switches par étage, PC/téléphones sur chaque étage.
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. ANNEAU -->
+  <div class="section">
+    <div class="section-label">Topologie 4</div>
+    <h2>Topologie en Anneau</h2>
+
+    <div class="topo-card">
+      <div class="topo-title">⭕ Anneau (Ring)</div>
+      <div class="topo-body">
+        Les appareils sont connectés en <strong>boucle fermée</strong>. Chaque appareil est connecté à exactement deux voisins. Les données circulent dans une direction (ou les deux avec double anneau).
+      </div>
+    </div>
+
+    <h3>// Caractéristiques</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Chaque appareil a deux connexions (entrée et sortie)</li>
+      <li>Les données circulent de nœud en nœud jusqu'au destinataire</li>
+      <li>Chaque nœud régénère le signal (pas d'atténuation)</li>
+      <li>Accès au réseau contrôlé par <strong>jeton</strong> (Token Ring) ou autre mécanisme</li>
+    </ul>
+
+    <h3>// Avantages</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Pas de collisions (accès contrôlé par jeton)</li>
+      <li>Performance prévisible même avec beaucoup d'appareils</li>
+      <li>Pas d'atténuation (signal régénéré à chaque nœud)</li>
+    </ul>
+
+    <h3>// Inconvénients</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Point de défaillance</strong> : si un nœud ou un câble tombe → tout l'anneau tombe (sauf double anneau)</li>
+      <li>Difficile à dépanner</li>
+      <li>Ajouter/retirer un appareil perturbe tout le réseau</li>
+      <li>Plus coûteux que l'étoile</li>
+    </ul>
+
+    <h3>// Variante : Double anneau (Dual Ring)</h3>
+    <p>Deux anneaux en sens inverse. Si un anneau se coupe, le trafic passe par l'autre → <strong>redondance</strong>. Utilisé dans FDDI et SONET.</p>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Statut aujourd'hui</strong>
+        Topologie en anneau <strong>rare aujourd'hui</strong>. Token Ring (IBM, années 80-90) est mort. Seule utilisation moderne : réseaux fibre optique SONET/SDH en télécommunications (opérateurs).
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. MAILLÉ -->
+  <div class="section">
+    <div class="section-label">Topologie 5</div>
+    <h2>Topologie Maillée</h2>
+
+    <div class="topo-card">
+      <div class="topo-title">🕸️ Maillé (Mesh)</div>
+      <div class="topo-body">
+        Chaque appareil est connecté à <strong>plusieurs</strong> (voire tous) les autres appareils. Plusieurs chemins possibles entre deux points.
+      </div>
+    </div>
+
+    <h3>// Deux types</h3>
+
+    <p><strong>Full Mesh (Maillage complet) :</strong> Chaque nœud est connecté à TOUS les autres nœuds.</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9;font-family:'IBM Plex Mono',monospace;font-size:0.85rem">
+      <li>Nombre de connexions = n × (n - 1) / 2</li>
+      <li>Exemple : 5 nœuds → 5 × 4 / 2 = 10 connexions</li>
+      <li>10 nœuds → 45 connexions</li>
+    </ul>
+
+    <p><strong>Partial Mesh (Maillage partiel) :</strong> Certains nœuds ont plusieurs connexions, mais pas tous connectés à tous.</p>
+
+    <h3>// Avantages</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Redondance maximale</strong> : plusieurs chemins entre deux points</li>
+      <li><strong>Haute disponibilité</strong> : si un lien tombe, le trafic passe par un autre chemin</li>
+      <li><strong>Fiabilité</strong> : pas de point de défaillance unique</li>
+      <li>Performance : plusieurs chemins → répartition de charge</li>
+    </ul>
+
+    <h3>// Inconvénients</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Très coûteux</strong> : beaucoup de câbles et de ports nécessaires</li>
+      <li><strong>Complexe</strong> : configuration et maintenance difficiles</li>
+      <li>Overhead de routage (trouver le meilleur chemin)</li>
+    </ul>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Usage typique</strong>
+        <strong>Full mesh</strong> : rare, seulement pour infrastructures critiques (centres de données, backbones Internet)<br>
+        <strong>Partial mesh</strong> : plus courant, WAN d'entreprise, connexions entre datacenters, Wi-Fi mesh
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. POINT-À-POINT -->
+  <div class="section">
+    <div class="section-label">Topologie 6</div>
+    <h2>Topologie Point-à-Point</h2>
+
+    <div class="topo-card">
+      <div class="topo-title">↔️ Point-à-Point (P2P)</div>
+      <div class="topo-body">
+        Connexion <strong>directe</strong> entre exactement <strong>deux</strong> appareils. Pas d'intermédiaire.
+      </div>
+    </div>
+
+    <h3>// Caractéristiques</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Deux appareils uniquement</li>
+      <li>Lien dédié</li>
+      <li>Simple, performant, sécurisé</li>
+    </ul>
+
+    <h3>// Exemples d'usage</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Liaison entre deux routeurs (connexion WAN)</li>
+      <li>Connexion entre deux datacenters</li>
+      <li>Câble USB entre ordinateur et imprimante</li>
+      <li>Liaison série entre deux équipements réseau</li>
+    </ul>
+
+    <h3>// Avantages</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Bande passante dédiée (pas de partage)</li>
+      <li>Faible latence</li>
+      <li>Sécurisé (seulement 2 appareils)</li>
+      <li>Simple à configurer</li>
+    </ul>
+
+    <h3>// Inconvénients</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Pas scalable (1 lien = 2 appareils seulement)</li>
+      <li>Pour connecter 10 appareils → besoin de 45 liens (devient mesh)</li>
+    </ul>
+  </div>
+
+  <!-- 9. HUB-AND-SPOKE -->
+  <div class="section">
+    <div class="section-label">Topologie 7</div>
+    <h2>Topologie Hub-and-Spoke</h2>
+
+    <div class="topo-card">
+      <div class="topo-title">🎯 Hub-and-Spoke (étoile WAN)</div>
+      <div class="topo-body">
+        Une topologie en <strong>étoile</strong> utilisée pour les WAN. Un site central (hub) connecté à plusieurs sites distants (spokes). Tout le trafic entre spokes passe par le hub.
+      </div>
+    </div>
+
+    <h3>// Caractéristiques</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Un site central (siège, datacenter principal)</li>
+      <li>Plusieurs sites distants (agences, bureaux régionaux)</li>
+      <li>Chaque site distant a une liaison WAN vers le hub</li>
+      <li>Pas de connexion directe entre spokes</li>
+    </ul>
+
+    <h3>// Avantages</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Économique</strong> : moins de liaisons WAN coûteuses (n liaisons au lieu de n×(n-1)/2)</li>
+      <li>Gestion centralisée (firewall, serveurs, backup au hub)</li>
+      <li>Simple à déployer et maintenir</li>
+    </ul>
+
+    <h3>// Inconvénients</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Point de défaillance unique</strong> : si le hub tombe → tous les spokes sont isolés</li>
+      <li><strong>Latence</strong> : communication spoke-to-spoke passe par le hub (2× la distance)</li>
+      <li><strong>Bande passante hub saturée</strong> si beaucoup de spokes</li>
+    </ul>
+
+    <h3>// Variante : Hub-and-Spoke avec backup</h3>
+    <p>Certains déploiements ajoutent une connexion de secours (backup) entre spokes critiques → devient partial mesh.</p>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Usage typique</strong>
+        WAN d'entreprise avec siège + agences, VPN site-to-site (toutes les agences se connectent au siège via VPN), SD-WAN.
+      </div>
+    </div>
+  </div>
+
+  <!-- 10. COMPARAISON -->
+  <div class="section">
+    <div class="section-label">Tableau comparatif</div>
+    <h2>Résumé des topologies</h2>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Topologie</th><th>Redondance</th><th>Coût</th><th>Complexité</th><th>Point de défaillance unique</th><th>Usage typique</th></tr>
+        <tr><td>Bus</td><td>❌ Aucune</td><td>💰 Faible</td><td>⭐ Simple</td><td>✅ Oui (câble central)</td><td>Obsolète</td></tr>
+        <tr><td>Étoile</td><td>❌ Faible</td><td>💰💰 Moyen</td><td>⭐ Simple</td><td>✅ Oui (switch central)</td><td>LAN standard</td></tr>
+        <tr><td>Étoile étendue</td><td>⚠️ Moyenne</td><td>💰💰💰 Élevé</td><td>⭐⭐ Moyen</td><td>✅ Oui (core switch)</td><td>Campus, entreprise</td></tr>
+        <tr><td>Anneau</td><td>⚠️ Faible (✅ avec dual ring)</td><td>💰💰💰 Élevé</td><td>⭐⭐⭐ Complexe</td><td>✅ Oui (sauf dual ring)</td><td>SONET/SDH (opérateurs)</td></tr>
+        <tr><td>Full Mesh</td><td>✅ Maximale</td><td>💰💰💰💰 Très élevé</td><td>⭐⭐⭐⭐ Très complexe</td><td>❌ Non</td><td>Infrastructures critiques</td></tr>
+        <tr><td>Partial Mesh</td><td>✅ Bonne</td><td>💰💰💰 Élevé</td><td>⭐⭐⭐ Complexe</td><td>❌ Non</td><td>WAN entreprise, Wi-Fi mesh</td></tr>
+        <tr><td>Point-à-Point</td><td>❌ Aucune</td><td>💰💰 Moyen</td><td>⭐ Simple</td><td>✅ Oui (le lien)</td><td>Liaison WAN entre 2 sites</td></tr>
+        <tr><td>Hub-and-Spoke</td><td>❌ Faible</td><td>💰💰 Moyen</td><td>⭐⭐ Moyen</td><td>✅ Oui (le hub)</td><td>WAN siège + agences</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 11. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">Quelle est la topologie physique la plus courante dans les réseaux LAN modernes ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Étoile</strong>. Tous les appareils se connectent à un switch central.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">Quelle topologie offre la meilleure redondance ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Full Mesh</strong> (maillage complet). Chaque nœud est connecté à tous les autres → plusieurs chemins possibles → pas de point de défaillance unique.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">Combien de connexions pour un réseau full mesh de 6 nœuds ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Formule : n × (n - 1) / 2 = 6 × 5 / 2 = <strong>15 connexions</strong></div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">Question type examen : Une entreprise a un siège et 10 agences. Toutes les agences doivent accéder aux serveurs du siège, mais n'ont pas besoin de communiquer entre elles. Quelle topologie WAN ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Hub-and-Spoke</strong>. Siège = hub, agences = spokes. Économique (10 liaisons au lieu de 55 en full mesh), gestion centralisée.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">Quel est le principal inconvénient de la topologie en étoile ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Point de défaillance unique</strong> : si le switch central tombe, tout le réseau tombe.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">Question type examen : Un datacenter veut une haute disponibilité avec plusieurs chemins possibles entre serveurs, mais le full mesh est trop coûteux. Quelle topologie ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Partial Mesh</strong> (maillage partiel). Offre redondance et plusieurs chemins, moins coûteux que full mesh.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">Quelle topologie était utilisée avec Token Ring ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Anneau</strong> (Ring). Token Ring (IBM) utilisait une topologie logique en anneau. Obsolète aujourd'hui.</div>
+  </div>
+
+  <!-- 12. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Bus</strong> : un câble central, obsolète, point de défaillance unique</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Étoile</strong> : switch central, standard LAN actuel, facile à dépanner, SPOF au centre</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Étoile étendue</strong> : étoile hiérarchique (core → distribution → access), campus/entreprise</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Anneau</strong> : boucle fermée, Token Ring obsolète, dual ring pour redondance, SONET/SDH opérateurs</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Full Mesh</strong> : tous connectés à tous, redondance max, très coûteux (n×(n-1)/2 connexions)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Partial Mesh</strong> : certains nœuds multiples connexions, bon compromis redondance/coût</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Point-à-Point</strong> : 2 appareils, lien dédié, WAN entre 2 sites</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Hub-and-Spoke</strong> : étoile WAN, siège + agences, économique, SPOF au hub</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 10 : MTU et fragmentation IP</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">C11 · Phase 1</span>
+    <a class="nav-btn next" href="#">Cours 12 : ... →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_c11_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>
