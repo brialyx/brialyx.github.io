@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 17 — Default Gateway : rôle précis · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .vocab { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; }
+  .vocab-term { font-family: 'IBM Plex Mono', monospace; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .decision-box { background: var(--bg2); border: 2px solid var(--accent); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .decision-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--accent); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .decision-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .comptia-box { background: rgba(251,191,36,0.05); border: 2px solid var(--amber); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .comptia-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--amber); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .comptia-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Phase 2 — IPv4</span> &nbsp;›&nbsp; Cours 17</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 2 · C17</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡☆ Moyen</span>
+  </div>
+
+  <h1>Default Gateway — <span>Rôle précis</span></h1>
+  <span class="tagline">// Comment un hôte décide d'envoyer à la passerelle — comparaison IP dst + masque</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends le rôle du default gateway</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je sais comment l'hôte décide local vs distant</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends les symptômes d'un gateway manquant/incorrect</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. C'EST QUOI -->
+  <div class="section">
+    <div class="section-label">Avant de commencer</div>
+    <h2>C'est quoi le Default Gateway — la porte de sortie du réseau local</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🚪</span>
+      <div class="callout-body">
+        <strong>Analogie — la porte de sortie d'un immeuble</strong>
+        Imagine que ton réseau local = ton immeuble. Pour parler à un voisin du même étage (même réseau) → tu marches direct jusqu'à sa porte. Pour parler à quelqu'un dans un autre immeuble (autre réseau) → tu dois passer par la porte de sortie de l'immeuble (le gateway), qui te mène au monde extérieur.
+      </div>
+    </div>
+
+    <p>Le <strong>Default Gateway</strong> (passerelle par défaut) est l'<strong>adresse IP du routeur</strong> qui permet à un hôte de communiquer avec des appareils situés <strong>en dehors de son sous-réseau local</strong>.</p>
+
+    <p><strong>Rôle simple :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Destination locale</strong> (même réseau) → communication directe</li>
+      <li><strong>Destination distante</strong> (autre réseau) → envoyer au gateway, qui route vers la destination</li>
+    </ul>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen Network+</strong>
+        CompTIA teste massivement : comment l'hôte décide local vs distant, symptômes d'un gateway manquant, et diagnostic de problèmes de routage. Maîtrise le processus de décision — c'est fondamental.
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. VOCABULAIRE -->
+  <div class="section">
+    <div class="section-label">Vocabulaire essentiel</div>
+    <h2>Les mots clés de ce cours</h2>
+
+    <div class="vocab">
+      <div class="vocab-term">Default Gateway (Passerelle par défaut)</div>
+      <div>Adresse IP du routeur qui permet de sortir du réseau local vers d'autres réseaux. Généralement le premier IP utilisable du sous-réseau (ex: 192.168.1.1).</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Réseau local (Local Network)</div>
+      <div>Ensemble des IPs appartenant au même sous-réseau. Déterminé par l'IP + masque de sous-réseau.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Réseau distant (Remote Network)</div>
+      <div>Toute destination IP en dehors du sous-réseau local. Nécessite un routeur (gateway) pour y accéder.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Table de routage (Routing Table)</div>
+      <div>Table interne de l'hôte qui contient les routes connues. Contient au minimum : route locale (même réseau) + route par défaut (0.0.0.0/0 → gateway).</div>
+    </div>
+  </div>
+
+  <!-- 3. DÉCISION -->
+  <div class="section">
+    <div class="section-label">Processus de décision</div>
+    <h2>Comment l'hôte décide : local ou gateway ?</h2>
+
+    <p>Quand un hôte veut envoyer un paquet, il doit répondre à UNE question : <strong>"La destination est-elle dans mon réseau local ou dans un réseau distant ?"</strong></p>
+
+    <h3>// L'algorithme de décision (CRUCIAL)</h3>
+
+    <div class="decision-box">
+      <div class="decision-title">🧮 Processus étape par étape</div>
+      <div class="decision-content">
+        <strong>Étape 1 : Récupérer les infos de l'hôte</strong><br>
+        - Mon IP : 192.168.1.10<br>
+        - Mon masque : 255.255.255.0<br>
+        - Mon gateway : 192.168.1.1<br><br>
+
+        <strong>Étape 2 : Appliquer le masque sur mon IP</strong><br>
+        192.168.1.10 AND 255.255.255.0 = <strong>192.168.1.0</strong> ← mon réseau<br><br>
+
+        <strong>Étape 3 : Appliquer le MÊME masque sur l'IP destination</strong><br>
+        Exemple destination : 192.168.1.50<br>
+        192.168.1.50 AND 255.255.255.0 = <strong>192.168.1.0</strong> ← réseau de la destination<br><br>
+
+        <strong>Étape 4 : Comparer</strong><br>
+        - Mon réseau = 192.168.1.0<br>
+        - Réseau destination = 192.168.1.0<br>
+        - Conclusion : <strong>MÊME réseau</strong> → communication directe ✅<br><br>
+
+        <strong>Si différent :</strong><br>
+        Destination : 10.5.2.100<br>
+        10.5.2.100 AND 255.255.255.0 = <strong>10.5.2.0</strong><br>
+        - Mon réseau = 192.168.1.0<br>
+        - Réseau destination = 10.5.2.0<br>
+        - Conclusion : <strong>RÉSEAUX DIFFÉRENTS</strong> → envoyer au gateway (192.168.1.1) 🚪
+      </div>
+    </div>
+
+    <h3>// Exemple concret pas à pas</h3>
+
+    <p><strong>Configuration de l'hôte :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9;font-family:'IBM Plex Mono',monospace;font-size:0.85rem">
+      <li>IP : 192.168.10.25</li>
+      <li>Masque : 255.255.255.0</li>
+      <li>Gateway : 192.168.10.1</li>
+    </ul>
+
+    <p><strong>Scénario 1 : Ping 192.168.10.30</strong></p>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Calcul : 192.168.10.25 AND 255.255.255.0 = 192.168.10.0 (mon réseau)</li>
+      <li>Calcul : 192.168.10.30 AND 255.255.255.0 = 192.168.10.0 (réseau destination)</li>
+      <li><strong>Même réseau !</strong> → Envoyer directement à 192.168.10.30 (pas besoin du gateway)</li>
+      <li>L'hôte fait une requête ARP pour obtenir la MAC de .30, puis envoie le paquet</li>
+    </ol>
+
+    <p><strong>Scénario 2 : Ping 8.8.8.8 (Google DNS)</strong></p>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Calcul : 192.168.10.25 AND 255.255.255.0 = 192.168.10.0 (mon réseau)</li>
+      <li>Calcul : 8.8.8.8 AND 255.255.255.0 = 8.8.8.0 (réseau destination)</li>
+      <li><strong>Réseaux différents !</strong> → Envoyer au gateway (192.168.10.1)</li>
+      <li>L'hôte fait une requête ARP pour la MAC du gateway (.1), puis envoie le paquet au gateway</li>
+      <li>Le gateway route le paquet vers Internet</li>
+    </ol>
+
+    <div class="callout ok">
+      <span class="callout-icon">🔑</span>
+      <div class="callout-body">
+        <strong>Règle d'OR</strong>
+        L'hôte applique TOUJOURS son propre masque à la destination pour décider. Il ne demande pas au gateway "est-ce que tu connais cette IP ?". Il décide seul en comparant les réseaux.
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. SANS GATEWAY -->
+  <div class="section">
+    <div class="section-label">Conséquences</div>
+    <h2>Sans gateway = pas de communication inter-réseau</h2>
+
+    <p><strong>Que se passe-t-il si le gateway n'est PAS configuré ?</strong></p>
+
+    <div class="callout warn">
+      <span class="callout-icon">🚫</span>
+      <div class="callout-body">
+        <strong>Symptômes d'un gateway manquant ou incorrect</strong>
+        <strong>Réseau local fonctionne :</strong> Tu peux pinguer d'autres PC du même réseau (192.168.1.x ↔ 192.168.1.y) ✅<br><br>
+        <strong>Internet ne fonctionne PAS :</strong> Tu ne peux pas pinguer 8.8.8.8, ni accéder à des sites web ❌<br><br>
+        <strong>Pourquoi ?</strong> L'hôte n'a aucune idée où envoyer les paquets pour les réseaux distants. Il essaie quand même de les envoyer en broadcast sur le réseau local → échec.
+      </div>
+    </div>
+
+    <h3>// Diagnostic étape par étape</h3>
+
+    <p><strong>Test 1 : Ping loopback</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;line-height:1.8;">
+      C:\> ping 127.0.0.1<br>
+      <span style="color:var(--green)">✅ Réponse reçue</span> → Pile TCP/IP fonctionne
+    </div>
+
+    <p><strong>Test 2 : Ping mon IP</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;line-height:1.8;">
+      C:\> ping 192.168.1.10<br>
+      <span style="color:var(--green)">✅ Réponse reçue</span> → Interface réseau fonctionne
+    </div>
+
+    <p><strong>Test 3 : Ping un PC local (même réseau)</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;line-height:1.8;">
+      C:\> ping 192.168.1.50<br>
+      <span style="color:var(--green)">✅ Réponse reçue</span> → Réseau local fonctionne
+    </div>
+
+    <p><strong>Test 4 : Ping le gateway</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;line-height:1.8;">
+      C:\> ping 192.168.1.1<br>
+      <span style="color:var(--red)">❌ Délai d'attente dépassé</span> → Gateway inaccessible !
+    </div>
+
+    <p><strong>Test 5 : Ping Internet (8.8.8.8)</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;line-height:1.8;">
+      C:\> ping 8.8.8.8<br>
+      <span style="color:var(--red)">❌ Délai d'attente dépassé</span> → Pas d'accès Internet
+    </div>
+
+    <p><strong>Diagnostic :</strong> Gateway manquant ou incorrect. Solutions :</p>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Vérifier la config IP : <code>ipconfig /all</code> (Windows) ou <code>ip addr</code> (Linux)</li>
+      <li>Gateway défini ? Si non → le configurer</li>
+      <li>Gateway correct ? Doit être dans le même sous-réseau que l'hôte</li>
+      <li>Gateway accessible ? Pinguer le gateway</li>
+      <li>Câble branché ? VLAN correct ?</li>
+    </ol>
+  </div>
+
+  <!-- 5. GATEWAY INCORRECT -->
+  <div class="section">
+    <div class="section-label">Erreurs courantes</div>
+    <h2>Gateway mal configuré — les pièges</h2>
+
+    <h3>// Erreur 1 : Gateway dans un autre sous-réseau</h3>
+
+    <p><strong>Configuration INCORRECTE :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9;font-family:'IBM Plex Mono',monospace;font-size:0.85rem">
+      <li>IP hôte : 192.168.1.10</li>
+      <li>Masque : 255.255.255.0</li>
+      <li>Gateway : 192.168.2.1 ❌ (autre réseau !)</li>
+    </ul>
+
+    <p><strong>Problème :</strong> Le gateway 192.168.2.1 n'est PAS dans le réseau local (192.168.1.0/24). L'hôte ne pourra JAMAIS l'atteindre directement → pas de communication possible.</p>
+
+    <p><strong>Symptôme :</strong> Impossible de pinguer le gateway. Internet ne fonctionne pas.</p>
+
+    <h3>// Erreur 2 : Gateway = adresse réseau ou broadcast</h3>
+
+    <p><strong>Configurations INCORRECTES :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9;font-family:'IBM Plex Mono',monospace;font-size:0.85rem">
+      <li>Gateway : 192.168.1.0 ❌ (adresse réseau)</li>
+      <li>Gateway : 192.168.1.255 ❌ (broadcast)</li>
+    </ul>
+
+    <p>Ces adresses ne peuvent PAS être assignées à un appareil → gateway invalide.</p>
+
+    <h3>// Erreur 3 : Pas de gateway du tout</h3>
+
+    <p><strong>Configuration :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9;font-family:'IBM Plex Mono',monospace;font-size:0.85rem">
+      <li>IP : 192.168.1.10</li>
+      <li>Masque : 255.255.255.0</li>
+      <li>Gateway : <strong>(vide)</strong> ❌</li>
+    </ul>
+
+    <p><strong>Conséquence :</strong> Réseau local fonctionne, mais AUCUN accès à l'extérieur (Internet, autres sous-réseaux).</p>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Question type examen</strong>
+        "Un utilisateur peut pinguer d'autres PC du bureau mais pas Internet. Quelle est la cause probable ?"<br><br>
+        <strong>Réponse :</strong> Gateway manquant, incorrect, ou inaccessible. Le réseau local fonctionne (même sous-réseau) mais pas l'accès distant.
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. CE QUI TROMPE LES CANDIDATS -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : L'hôte demande au gateway</div>
+      <div class="trap-content">
+        Beaucoup pensent que l'hôte "demande au gateway s'il connaît la destination". <strong>FAUX</strong>.<br><br>
+        L'hôte décide SEUL en comparant les réseaux (IP dst AND masque). Si réseaux différents → il envoie au gateway sans demander. Le gateway n'est consulté qu'APRÈS la décision.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : Gateway peut être n'importe où</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Le gateway DOIT être dans le même sous-réseau que l'hôte.<br><br>
+        Si hôte = 192.168.1.10/24 → gateway DOIT être 192.168.1.x (entre .1 et .254)<br><br>
+        Un gateway 192.168.2.1 ne fonctionnera jamais car l'hôte ne peut pas l'atteindre directement.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : Gateway manquant = rien ne fonctionne</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Sans gateway, le réseau LOCAL fonctionne parfaitement.<br><br>
+        <strong>Fonctionne :</strong> Communication entre PC du même réseau ✅<br>
+        <strong>Ne fonctionne PAS :</strong> Internet, autres sous-réseaux ❌<br><br>
+        C'est un piège fréquent : "Réseau local OK mais pas Internet" → vérifier le gateway.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #4 : ARP pour la destination distante</div>
+      <div class="trap-content">
+        Beaucoup pensent que l'hôte fait ARP pour l'IP distante (ex: 8.8.8.8). <strong>FAUX</strong>.<br><br>
+        Pour une destination distante, l'hôte fait ARP pour obtenir la <strong>MAC du GATEWAY</strong>, pas la MAC de la destination finale.<br><br>
+        Le paquet IP contient : IP dst = 8.8.8.8, mais trame Ethernet : MAC dst = MAC du gateway.
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. CE QUE COMPTIA PEUT TE POSER -->
+  <div class="section">
+    <div class="section-label">🎯 Questions types</div>
+    <h2>Ce que CompTIA peut te poser</h2>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #1 : Diagnostic réseau</div>
+      <div class="comptia-content">
+        "Un utilisateur (IP: 192.168.1.50/24) peut communiquer avec d'autres PC du bureau mais pas accéder à Internet. Quelle est la première chose à vérifier ?"<br><br>
+        <strong>Réponse :</strong> Vérifier que le default gateway est configuré et accessible (<code>ping 192.168.1.1</code>).
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #2 : Configuration invalide</div>
+      <div class="comptia-content">
+        "Configuration : IP = 192.168.5.100, Masque = 255.255.255.0, Gateway = 192.168.10.1. Quel est le problème ?"<br><br>
+        <strong>Réponse :</strong> Le gateway (192.168.10.1) n'est PAS dans le même sous-réseau que l'hôte (192.168.5.0/24). Gateway invalide → pas d'accès Internet.
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #3 : Processus de décision</div>
+      <div class="comptia-content">
+        "Un PC (192.168.1.10/24, gateway 192.168.1.1) veut pinguer 192.168.1.200. L'hôte envoie-t-il le paquet au gateway ?"<br><br>
+        <strong>Réponse :</strong> Non. 192.168.1.200 est dans le même réseau (192.168.1.0/24) → communication directe, pas besoin du gateway.
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #4 : ARP destination distante</div>
+      <div class="comptia-content">
+        "Un PC veut envoyer un paquet vers 8.8.8.8 (Internet). Pour quelle IP va-t-il faire une requête ARP ?"<br><br>
+        <strong>Réponse :</strong> Pour l'IP du gateway (ex: 192.168.1.1), pas pour 8.8.8.8. L'hôte a besoin de la MAC du gateway pour lui transmettre le paquet.
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">C'est quoi le default gateway ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Adresse IP du routeur qui permet de sortir du réseau local vers d'autres réseaux. Porte de sortie obligatoire pour les destinations distantes.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">Comment l'hôte décide-t-il d'envoyer au gateway ou directement ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Il applique son masque sur sa propre IP et sur l'IP destination. Si MÊME réseau → direct. Si DIFFÉRENT → gateway.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">Que se passe-t-il si aucun gateway n'est configuré ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Réseau local fonctionne ✅ (communication entre PC du même réseau). Internet et autres réseaux NE fonctionnent PAS ❌.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">Question type examen : Hôte = 10.5.10.50/24, Gateway = 10.5.20.1. Problème ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Gateway dans un autre sous-réseau ! Hôte = 10.5.10.0/24, Gateway = 10.5.20.0/24 → inaccessible. Le gateway DOIT être dans le même réseau.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">Question type examen : PC (192.168.1.25/24) pingue 192.168.1.100. ARP pour quelle IP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">ARP pour <strong>192.168.1.100</strong>. Même réseau → communication directe, l'hôte a besoin de la MAC de la destination.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">Question type examen : PC (192.168.1.25/24, GW 192.168.1.1) pingue 8.8.8.8. ARP pour quelle IP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">ARP pour <strong>192.168.1.1</strong> (le gateway). Réseau distant → l'hôte envoie au gateway, donc besoin de SA MAC (pas celle de 8.8.8.8).</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">Un utilisateur peut pinguer le loopback, son IP, et d'autres PC locaux, mais pas Internet. Diagnostic ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Problème de gateway. Vérifier : gateway configuré ? dans le bon réseau ? accessible (pingable) ? Si tout OK → problème sur le routeur lui-même.</div>
+  </div>
+
+  <!-- 9. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span>Default gateway = porte de sortie du réseau local (adresse IP du routeur)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Décision : hôte applique masque sur IP dst. Même réseau → direct. Différent → gateway.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Gateway DOIT être dans le même sous-réseau que l'hôte (sinon inaccessible)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Sans gateway : réseau local OK ✅, Internet/autres réseaux NON ❌</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Destination distante : ARP pour MAC du gateway (pas MAC de la destination finale)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Symptôme gateway manquant : "Réseau local fonctionne mais pas Internet"</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>L'hôte décide SEUL (ne demande pas au gateway). Processus automatique basé sur IP+masque.</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 16 : Adressage IPv4 — bases</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">C17 · Phase 2</span>
+    <a class="nav-btn next" href="#">Cours 18 : CIDR et Subnetting →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_c17_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>
