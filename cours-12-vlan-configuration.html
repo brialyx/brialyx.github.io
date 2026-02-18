@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 13 — VLAN : configuration · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .vocab { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; }
+  .vocab-term { font-family: 'IBM Plex Mono', monospace; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .cmd-block { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; margin: 14px 0; font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; line-height: 1.8; }
+  .cmd-prompt { color: var(--green); }
+  .cmd-comment { color: var(--muted); font-style: italic; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Phase 1 — Fondamentaux</span> &nbsp;›&nbsp; Cours 13</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 1 · C13</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-diff">⚡⚡⚡ Difficile</span>
+  </div>
+
+  <h1>VLAN — <span>Configuration</span></h1>
+  <span class="tagline">// Access ports, Trunk ports, 802.1Q tagging, Native VLAN — segmenter logiquement un réseau</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends ce qu'est un VLAN et pourquoi on l'utilise</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais la différence entre Access port et Trunk port</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends le tagging 802.1Q et le Native VLAN</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. C'EST QUOI -->
+  <div class="section">
+    <div class="section-label">Avant de commencer</div>
+    <h2>C'est quoi un VLAN — et pourquoi c'est essentiel</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🏢</span>
+      <div class="callout-body">
+        <strong>Analogie — immeuble avec étages séparés</strong>
+        Sans VLAN : tout le monde dans un seul grand open space. Tout le monde entend tout.<br>
+        Avec VLAN : l'immeuble est divisé en étages. Le département RH (VLAN 10) ne peut pas voir/entendre le département IT (VLAN 20), même s'ils sont sur le même switch physique.
+      </div>
+    </div>
+
+    <p>Un <strong>VLAN</strong> (Virtual Local Area Network) est un <strong>réseau local virtuel</strong> créé en segmentant logiquement un switch physique en plusieurs réseaux isolés.</p>
+
+    <p><strong>Principe clé :</strong> Un switch physique peut héberger plusieurs VLANs. Chaque VLAN est un domaine de broadcast séparé.</p>
+
+    <h3>// Pourquoi utiliser des VLANs ?</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Avantage</th><th>Explication</th></tr>
+        <tr><td><strong>Sécurité</strong></td><td>Isoler les départements. Le VLAN RH ne peut pas communiquer directement avec le VLAN invités.</td></tr>
+        <tr><td><strong>Performance</strong></td><td>Réduire le trafic broadcast. Un broadcast dans VLAN 10 reste dans VLAN 10.</td></tr>
+        <tr><td><strong>Organisation</strong></td><td>Grouper logiquement : VLAN par département, par fonction, par niveau de sécurité.</td></tr>
+        <tr><td><strong>Flexibilité</strong></td><td>Changer un PC de VLAN = changer la config du port. Pas besoin de le déplacer physiquement.</td></tr>
+        <tr><td><strong>Économie</strong></td><td>1 switch physique = plusieurs réseaux logiques. Pas besoin d'un switch par département.</td></tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen Network+</strong>
+        CompTIA teste massivement les VLANs : différence Access vs Trunk, tagging 802.1Q, Native VLAN, Voice VLAN. Maîtrise ce cours — c'est l'un des sujets les plus importants de l'examen.
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. VOCABULAIRE -->
+  <div class="section">
+    <div class="section-label">Vocabulaire essentiel</div>
+    <h2>Les mots clés de ce cours</h2>
+
+    <div class="vocab">
+      <div class="vocab-term">VLAN ID</div>
+      <div>Numéro unique qui identifie un VLAN (1 à 4094). Exemple : VLAN 10 = RH, VLAN 20 = IT, VLAN 30 = Invités.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Access Port</div>
+      <div>Port configuré pour transporter le trafic d'UN SEUL VLAN. Utilisé pour connecter des appareils finaux (PC, imprimante, téléphone).</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Trunk Port</div>
+      <div>Port configuré pour transporter le trafic de PLUSIEURS VLANs simultanément. Utilisé entre switches ou entre switch et routeur.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">802.1Q (Dot1Q)</div>
+      <div>Standard IEEE de tagging VLAN. Ajoute un tag de 4 octets dans la trame Ethernet pour identifier le VLAN.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">VLAN Tag</div>
+      <div>Champ de 4 octets inséré dans la trame Ethernet qui contient le VLAN ID.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Native VLAN</div>
+      <div>VLAN utilisé pour les trames non taggées sur un trunk. Par défaut = VLAN 1.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Voice VLAN (VLAN voix)</div>
+      <div>VLAN dédié au trafic des téléphones IP pour prioriser la voix sur les données.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Management VLAN</div>
+      <div>VLAN utilisé pour l'administration à distance du switch (SSH, Telnet, HTTP). Recommandé de ne PAS utiliser VLAN 1.</div>
+    </div>
+  </div>
+
+  <!-- 3. ACCESS PORT -->
+  <div class="section">
+    <div class="section-label">Types de ports</div>
+    <h2>Access Port — pour les appareils finaux</h2>
+
+    <p>Un <strong>Access Port</strong> est un port configuré pour appartenir à <strong>UN SEUL VLAN</strong>. C'est le type de port utilisé pour connecter des appareils finaux (PC, imprimantes, serveurs).</p>
+
+    <h3>// Caractéristiques</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Porte le trafic d'un seul VLAN</li>
+      <li>Les trames envoyées/reçues sur ce port ne sont PAS taggées (pas de VLAN tag visible pour l'appareil final)</li>
+      <li>L'appareil final (PC) n'a pas besoin de savoir qu'il est dans un VLAN</li>
+      <li>Utilisé pour : PC, imprimantes, serveurs, caméras IP, points d'accès Wi-Fi (en mode simple)</li>
+    </ul>
+
+    <h3>// Configuration exemple (Cisco)</h3>
+    <div class="cmd-block">
+      <span class="cmd-prompt">Switch(config)#</span> interface FastEthernet0/1<br>
+      <span class="cmd-prompt">Switch(config-if)#</span> switchport mode access<br>
+      <span class="cmd-prompt">Switch(config-if)#</span> switchport access vlan 10<br>
+      <span class="cmd-comment">! Le port Fa0/1 est maintenant dans le VLAN 10</span>
+    </div>
+
+    <p><strong>Résultat :</strong> Tout appareil branché sur le port Fa0/1 sera automatiquement dans le VLAN 10, sans aucune configuration côté appareil.</p>
+
+    <div class="callout ok">
+      <span class="callout-icon">✅</span>
+      <div class="callout-body">
+        <strong>Règle simple</strong>
+        Access port = 1 VLAN, pour appareils finaux, pas de tag visible
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. TRUNK PORT -->
+  <div class="section">
+    <div class="section-label">Interconnexion switches</div>
+    <h2>Trunk Port — pour transporter plusieurs VLANs</h2>
+
+    <p>Un <strong>Trunk Port</strong> est un port configuré pour transporter le trafic de <strong>PLUSIEURS VLANs simultanément</strong>. C'est le type de port utilisé entre switches ou entre switch et routeur.</p>
+
+    <h3>// Caractéristiques</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Porte le trafic de multiples VLANs sur un seul câble</li>
+      <li>Les trames sont <strong>taggées</strong> avec le VLAN ID (standard 802.1Q)</li>
+      <li>Permet à deux switches de partager tous leurs VLANs sur une seule connexion</li>
+      <li>Utilisé pour : liaison switch-to-switch, liaison switch-to-routeur (inter-VLAN routing)</li>
+    </ul>
+
+    <h3>// Configuration exemple (Cisco)</h3>
+    <div class="cmd-block">
+      <span class="cmd-prompt">Switch(config)#</span> interface GigabitEthernet0/1<br>
+      <span class="cmd-prompt">Switch(config-if)#</span> switchport mode trunk<br>
+      <span class="cmd-prompt">Switch(config-if)#</span> switchport trunk allowed vlan 10,20,30<br>
+      <span class="cmd-comment">! Le trunk autorise les VLANs 10, 20, 30</span>
+    </div>
+
+    <p><strong>Résultat :</strong> Le port Gi0/1 transporte maintenant le trafic des VLANs 10, 20, et 30 simultanément.</p>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Règle simple</strong>
+        Trunk port = plusieurs VLANs, entre équipements réseau, trames taggées
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. 802.1Q TAGGING -->
+  <div class="section">
+    <div class="section-label">Standard de tagging</div>
+    <h2>802.1Q — le tagging VLAN standard</h2>
+
+    <p><strong>IEEE 802.1Q</strong> est le standard qui définit comment ajouter un <strong>tag VLAN</strong> dans une trame Ethernet.</p>
+
+    <h3>// Structure du tag 802.1Q</h3>
+    <p>Le tag est inséré entre les champs "MAC Source" et "EtherType" de la trame Ethernet. Il fait <strong>4 octets</strong> :</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Champ</th><th>Taille</th><th>Description</th></tr>
+        <tr><td><strong>TPID</strong><br>(Tag Protocol Identifier)</td><td>2 octets</td><td>Valeur fixe : <code>0x8100</code>. Indique "c'est une trame 802.1Q taggée".</td></tr>
+        <tr><td><strong>PCP</strong><br>(Priority Code Point)</td><td>3 bits</td><td>Priorité QoS (0-7). Utilisé pour prioriser le trafic (voix > données).</td></tr>
+        <tr><td><strong>DEI</strong><br>(Drop Eligible Indicator)</td><td>1 bit</td><td>Indique si la trame peut être droppée en cas de congestion.</td></tr>
+        <tr><td><strong>VLAN ID</strong></td><td>12 bits</td><td>Identifiant du VLAN (1-4094). 0 et 4095 sont réservés.</td></tr>
+      </table>
+    </div>
+
+    <p><strong>Taille de trame avec tag :</strong> Une trame Ethernet standard fait 64-1518 octets. Avec un tag 802.1Q, elle fait 68-1522 octets (4 octets de plus).</p>
+
+    <h3>// Processus de tagging/untagging</h3>
+
+    <p><strong>Tagging (à l'entrée d'un trunk) :</strong></p>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Trame arrive sur un access port (VLAN 10)</li>
+      <li>Le switch identifie le VLAN du port : VLAN 10</li>
+      <li>En sortant sur le trunk, il insère un tag 802.1Q avec VLAN ID = 10</li>
+      <li>La trame taggée voyage sur le trunk</li>
+    </ol>
+
+    <p><strong>Untagging (à la sortie d'un trunk) :</strong></p>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Trame taggée arrive sur le trunk (VLAN ID = 10)</li>
+      <li>Le switch lit le tag : "cette trame est pour VLAN 10"</li>
+      <li>Il retire le tag 802.1Q</li>
+      <li>Il envoie la trame non-taggée sur l'access port du VLAN 10</li>
+    </ol>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Important</strong>
+        Les appareils finaux (PC, imprimantes) ne voient JAMAIS les tags VLAN. Le switch ajoute le tag en entrée de trunk et le retire en sortie de trunk. Les tags n'existent que sur les trunks.
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. NATIVE VLAN -->
+  <div class="section">
+    <div class="section-label">Cas particulier</div>
+    <h2>Native VLAN — pour les trames non taggées</h2>
+
+    <p>Le <strong>Native VLAN</strong> est un VLAN spécial sur un trunk qui gère les trames <strong>non taggées</strong>.</p>
+
+    <h3>// Comment ça fonctionne</h3>
+    <p>Sur un trunk :</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Toutes les trames des VLANs sont normalement <strong>taggées</strong></li>
+      <li>SAUF les trames du <strong>Native VLAN</strong> qui sont envoyées <strong>sans tag</strong></li>
+    </ul>
+
+    <p><strong>Par défaut, le Native VLAN = VLAN 1</strong></p>
+
+    <h3>// Pourquoi un Native VLAN ?</h3>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Compatibilité</strong> : Permet de communiquer avec des équipements qui ne supportent pas 802.1Q</li>
+      <li><strong>Trafic de contrôle</strong> : Certains protocoles (CDP, VTP, STP) utilisent le Native VLAN</li>
+      <li><strong>Simplification</strong> : Évite de tagger inutilement un VLAN si c'est le seul</li>
+    </ol>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>PIÈGE DE SÉCURITÉ — Native VLAN Mismatch</strong>
+        Les deux extrémités d'un trunk DOIVENT avoir le même Native VLAN configuré !<br><br>
+        Si Switch A a Native VLAN 1 et Switch B a Native VLAN 99 :<br>
+        - Switch A envoie trame VLAN 1 sans tag<br>
+        - Switch B reçoit trame sans tag → la met dans VLAN 99<br>
+        - Résultat : les appareils VLAN 1 communiquent avec VLAN 99 → <strong>faille de sécurité</strong> !
+      </div>
+    </div>
+
+    <h3>// Bonne pratique de sécurité</h3>
+    <div class="callout ok">
+      <span class="callout-icon">🔒</span>
+      <div class="callout-body">
+        <strong>Recommandation sécurité</strong>
+        <strong>Ne jamais utiliser VLAN 1 comme Native VLAN</strong>. Créer un VLAN inutilisé (ex: VLAN 999) et le configurer comme Native VLAN sur tous les trunks. Comme aucun appareil n'est dans VLAN 999, aucune faille possible.
+      </div>
+    </div>
+
+    <h3>// Configuration Native VLAN</h3>
+    <div class="cmd-block">
+      <span class="cmd-prompt">Switch(config)#</span> interface GigabitEthernet0/1<br>
+      <span class="cmd-prompt">Switch(config-if)#</span> switchport mode trunk<br>
+      <span class="cmd-prompt">Switch(config-if)#</span> switchport trunk native vlan 999<br>
+      <span class="cmd-comment">! Native VLAN changé à 999 (au lieu de 1 par défaut)</span>
+    </div>
+  </div>
+
+  <!-- 7. VOICE VLAN -->
+  <div class="section">
+    <div class="section-label">VLANs spécialisés</div>
+    <h2>Voice VLAN — pour les téléphones IP</h2>
+
+    <p>Un <strong>Voice VLAN</strong> (VLAN voix) est un VLAN dédié au trafic des téléphones IP. Il permet de séparer et prioriser la voix par rapport aux données.</p>
+
+    <h3>// Pourquoi un VLAN séparé pour la voix ?</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>QoS (Quality of Service)</strong> : La voix est sensible à la latence et à la gigue. Un VLAN dédié permet de prioriser le trafic voix.</li>
+      <li><strong>Sécurité</strong> : Isoler les téléphones du réseau de données.</li>
+      <li><strong>Gestion</strong> : Facilite l'administration (tous les téléphones dans un seul VLAN).</li>
+    </ul>
+
+    <h3>// Configuration typique</h3>
+    <p>Un port avec Voice VLAN supporte <strong>2 VLANs simultanément</strong> :</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Data VLAN</strong> (access) : pour le PC branché sur le téléphone</li>
+      <li><strong>Voice VLAN</strong> : pour le téléphone IP lui-même</li>
+    </ul>
+
+    <div class="cmd-block">
+      <span class="cmd-prompt">Switch(config)#</span> interface FastEthernet0/5<br>
+      <span class="cmd-prompt">Switch(config-if)#</span> switchport mode access<br>
+      <span class="cmd-prompt">Switch(config-if)#</span> switchport access vlan 10<br>
+      <span class="cmd-comment">! VLAN 10 = données (PC)</span><br>
+      <span class="cmd-prompt">Switch(config-if)#</span> switchport voice vlan 20<br>
+      <span class="cmd-comment">! VLAN 20 = voix (téléphone IP)</span>
+    </div>
+
+    <p><strong>Résultat :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Le téléphone IP envoie son trafic dans VLAN 20 (taggé)</li>
+      <li>Le PC branché sur le téléphone envoie son trafic dans VLAN 10 (non taggé)</li>
+      <li>Les deux appareils partagent le même câble, mais sont dans des VLANs différents</li>
+    </ul>
+  </div>
+
+  <!-- 8. MANAGEMENT VLAN -->
+  <div class="section">
+    <div class="section-label">Administration du switch</div>
+    <h2>Management VLAN — pour gérer le switch</h2>
+
+    <p>Le <strong>Management VLAN</strong> est le VLAN utilisé pour l'administration à distance du switch (SSH, Telnet, HTTP, SNMP).</p>
+
+    <h3>// Pourquoi un VLAN de management dédié ?</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Sécurité</strong> : Isoler le trafic d'administration du trafic utilisateur</li>
+      <li><strong>Contrôle d'accès</strong> : Seuls les admins réseau ont accès au VLAN management</li>
+      <li><strong>Disponibilité</strong> : Même si le réseau utilisateur est en panne, l'admin peut toujours se connecter</li>
+    </ul>
+
+    <h3>// Configuration</h3>
+    <div class="cmd-block">
+      <span class="cmd-prompt">Switch(config)#</span> interface vlan 99<br>
+      <span class="cmd-comment">! Créer l'interface virtuelle VLAN 99</span><br>
+      <span class="cmd-prompt">Switch(config-if)#</span> ip address 192.168.99.10 255.255.255.0<br>
+      <span class="cmd-prompt">Switch(config-if)#</span> no shutdown<br>
+      <span class="cmd-prompt">Switch(config-if)#</span> exit<br>
+      <span class="cmd-prompt">Switch(config)#</span> ip default-gateway 192.168.99.1<br>
+      <span class="cmd-comment">! Le switch est maintenant accessible via 192.168.99.10</span>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">🔒</span>
+      <div class="callout-body">
+        <strong>Bonne pratique de sécurité</strong>
+        <strong>Ne JAMAIS utiliser VLAN 1 comme Management VLAN</strong>. VLAN 1 est le VLAN par défaut et présente des risques de sécurité (attaques VLAN hopping). Utiliser un VLAN dédié (ex: VLAN 99).
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">Quelle est la différence entre un Access port et un Trunk port ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Access port</strong> : 1 seul VLAN, pour appareils finaux, trames non taggées<br><strong>Trunk port</strong> : plusieurs VLANs, entre switches/routeurs, trames taggées 802.1Q</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">Quel est le Native VLAN par défaut sur Cisco ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>VLAN 1</strong>. C'est le VLAN dont les trames sont envoyées sans tag sur un trunk. Recommandation : changer pour un VLAN inutilisé (ex: 999) pour des raisons de sécurité.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">Quelle est la taille du tag 802.1Q ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>4 octets</strong>. Contient : TPID (2B), PCP (3 bits), DEI (1 bit), VLAN ID (12 bits).</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">Question type examen : Un PC est branché sur un port configuré en "switchport access vlan 10". L'appareil voit-il le tag VLAN dans les trames ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Non</strong>. Les trames sur un access port ne sont jamais taggées. Le PC reçoit des trames Ethernet standard sans tag VLAN. Le tagging n'existe que sur les trunks.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">Question type examen : Switch A a Native VLAN 1, Switch B a Native VLAN 10. Quel problème ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Native VLAN Mismatch</strong>. Les trames du VLAN 1 sur Switch A (envoyées sans tag) seront reçues comme VLAN 10 sur Switch B → faille de sécurité, communication entre VLANs différents.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">À quoi sert un Voice VLAN ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Séparer et <strong>prioriser le trafic voix</strong> (téléphones IP) du trafic données (PC). Permet QoS, sécurité, et gestion facilitée. Un port peut avoir à la fois un data VLAN et un voice VLAN.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">Question type examen : Pourquoi ne pas utiliser VLAN 1 comme Management VLAN ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">VLAN 1 est le <strong>VLAN par défaut</strong> sur tous les switches Cisco → présente des risques de sécurité (attaques VLAN hopping, DTP). Utiliser un VLAN dédié (ex: VLAN 99) pour l'administration.</div>
+  </div>
+
+  <!-- 10. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span>VLAN = réseau local virtuel, segmente un switch en domaines de broadcast séparés</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Access port</strong> : 1 VLAN, appareils finaux, pas de tag visible</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Trunk port</strong> : plusieurs VLANs, entre switches, trames taggées 802.1Q</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Tag 802.1Q = 4 octets insérés dans la trame (TPID + PCP + DEI + VLAN ID)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Native VLAN</strong> : VLAN des trames non taggées sur trunk. Par défaut = 1. Changer pour sécurité.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Native VLAN Mismatch = faille sécurité. Les deux côtés d'un trunk doivent avoir le même Native VLAN.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Voice VLAN</strong> : sépare voix (téléphones IP) des données (PC), priorisation QoS</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Management VLAN</strong> : pour administrer le switch. Ne PAS utiliser VLAN 1.</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 12 : Switching — bases</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">C13 · Phase 1</span>
+    <a class="nav-btn next" href="#">Cours 14 : ... →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_c13_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>

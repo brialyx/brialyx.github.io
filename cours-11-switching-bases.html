@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 12 — Switching : bases · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .vocab { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; }
+  .vocab-term { font-family: 'IBM Plex Mono', monospace; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .step-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; margin: 14px 0; }
+  .step-title { font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 0.85rem; color: var(--accent); margin-bottom: 10px; }
+  .step-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Phase 1 — Fondamentaux</span> &nbsp;›&nbsp; Cours 12</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 1 · C12</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-diff">⚡⚡☆ Moyen</span>
+  </div>
+
+  <h1>Switching — <span>Bases</span></h1>
+  <span class="tagline">// Table MAC, forwarding, filtering, flooding — comment un switch apprend et décide</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends comment un switch apprend les adresses MAC</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais les 3 actions : forward, filter, flood</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je sais la différence entre collision domain et broadcast domain</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. C'EST QUOI -->
+  <div class="section">
+    <div class="section-label">Avant de commencer</div>
+    <h2>C'est quoi un switch — et comment il fonctionne</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">📬</span>
+      <div class="callout-body">
+        <strong>Analogie — le facteur intelligent</strong>
+        Un hub = quelqu'un qui crie "Lettre pour Jean !" dans tout l'immeuble. Tout le monde entend, même si c'est pas pour eux.<br>
+        Un switch = un facteur qui a une liste des appartements. Il lit "Jean, appt 12" et livre directement à la porte 12. Personne d'autre n'est dérangé.
+      </div>
+    </div>
+
+    <p>Un <strong>switch</strong> (commutateur) est un équipement réseau de <strong>couche 2</strong> (liaison de données) qui connecte plusieurs appareils dans un réseau local et transmet intelligemment les trames entre eux en se basant sur les <strong>adresses MAC</strong>.</p>
+
+    <p><strong>Différence clé avec un hub :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Hub</strong> : Copie bêtement le signal sur tous les ports (broadcast physique). Couche 1. Obsolète.</li>
+      <li><strong>Switch</strong> : Lit l'adresse MAC destination et envoie la trame uniquement sur le bon port. Couche 2. Standard actuel.</li>
+    </ul>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen Network+</strong>
+        CompTIA teste : comment la table MAC est construite, les 3 actions du switch (forward/filter/flood), et la différence collision domain vs broadcast domain. Maîtrise ces concepts — ils reviennent dans plusieurs questions.
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. VOCABULAIRE -->
+  <div class="section">
+    <div class="section-label">Vocabulaire essentiel</div>
+    <h2>Les mots clés de ce cours</h2>
+
+    <div class="vocab">
+      <div class="vocab-term">MAC Address Table (CAM Table)</div>
+      <div>Table interne du switch qui associe chaque adresse MAC à un port spécifique. Aussi appelée CAM (Content Addressable Memory) table.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Apprentissage (Learning)</div>
+      <div>Processus par lequel le switch observe les adresses MAC sources des trames reçues et les ajoute à sa table MAC.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Forwarding (Acheminement)</div>
+      <div>Action d'envoyer une trame sur le port approprié selon la table MAC.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Filtering (Filtrage)</div>
+      <div>Action d'ignorer une trame si la destination est déjà sur le même port que la source (inutile de renvoyer).</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Flooding (Inondation)</div>
+      <div>Action d'envoyer une trame sur TOUS les ports (sauf celui d'origine) quand l'adresse MAC destination est inconnue ou que c'est un broadcast.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Collision Domain (Domaine de collision)</div>
+      <div>Zone du réseau où deux appareils peuvent entrer en collision s'ils transmettent en même temps.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Broadcast Domain (Domaine de diffusion)</div>
+      <div>Zone du réseau où un broadcast (FF:FF:FF:FF:FF:FF) est propagé. S'arrête au routeur.</div>
+    </div>
+  </div>
+
+  <!-- 3. TABLE MAC -->
+  <div class="section">
+    <div class="section-label">Apprentissage automatique</div>
+    <h2>La table MAC (CAM Table) — comment le switch apprend</h2>
+
+    <p>La <strong>table MAC</strong> (ou table CAM) est une base de données interne du switch qui contient :</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Adresse MAC</strong> de l'appareil</li>
+      <li><strong>Port</strong> sur lequel cet appareil est connecté</li>
+      <li><strong>Timestamp</strong> (horodatage de la dernière activité)</li>
+    </ul>
+
+    <h3>// Comment le switch remplit sa table MAC</h3>
+
+    <div class="step-box">
+      <div class="step-title">Étape 1 : Switch vierge — table MAC vide</div>
+      <div class="step-content">
+        Au démarrage, le switch ne connaît personne. Sa table MAC est complètement vide.
+      </div>
+    </div>
+
+    <div class="step-box">
+      <div class="step-title">Étape 2 : Observation de la MAC source</div>
+      <div class="step-content">
+        Quand le switch reçoit une trame sur le port 1, il regarde l'<strong>adresse MAC source</strong> :<br>
+        "Ah, l'appareil AA:BB:CC:DD:EE:01 est sur le port 1"<br>
+        Il ajoute cette association dans sa table MAC.
+      </div>
+    </div>
+
+    <div class="step-box">
+      <div class="step-title">Étape 3 : Apprentissage continu</div>
+      <div class="step-content">
+        Chaque fois qu'une trame arrive, le switch met à jour sa table MAC :<br>
+        - Si la MAC source est nouvelle → ajout dans la table<br>
+        - Si la MAC source existe déjà → mise à jour du timestamp
+      </div>
+    </div>
+
+    <div class="step-box">
+      <div class="step-title">Étape 4 : Expiration (Aging)</div>
+      <div class="step-content">
+        Les entrées dans la table MAC ont un <strong>timer d'expiration</strong> (généralement 300 secondes = 5 minutes).<br>
+        Si un appareil ne communique plus pendant 5 minutes → son entrée est supprimée de la table.<br>
+        Dès qu'il re-communique → il est ré-appris.
+      </div>
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>Pourquoi un timer d'expiration ?</strong>
+        Si un appareil est débranché du port 1 et rebranché sur le port 5, le switch doit oublier l'ancienne entrée (port 1) et apprendre la nouvelle (port 5). Le timer permet cette mise à jour automatique.
+      </div>
+    </div>
+
+    <h3>// Exemple de table MAC</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Adresse MAC</th><th>Port</th><th>Âge (secondes)</th></tr>
+        <tr><td>AA:BB:CC:11:11:11</td><td>1</td><td>45</td></tr>
+        <tr><td>AA:BB:CC:22:22:22</td><td>2</td><td>120</td></tr>
+        <tr><td>AA:BB:CC:33:33:33</td><td>3</td><td>5</td></tr>
+        <tr><td>AA:BB:CC:44:44:44</td><td>1</td><td>280</td></tr>
+      </table>
+    </div>
+    <p style="font-size:0.85rem;color:var(--muted)">Note : Deux appareils peuvent être sur le même port physique (ex: PC + téléphone IP en cascade, ou switch branché sur switch).</p>
+  </div>
+
+  <!-- 4. LES 3 ACTIONS -->
+  <div class="section">
+    <div class="section-label">Décisions du switch</div>
+    <h2>Les 3 actions du switch : Forward, Filter, Flood</h2>
+
+    <p>Quand un switch reçoit une trame, il prend une décision basée sur l'<strong>adresse MAC destination</strong> :</p>
+
+    <h3>// Action 1 : Forwarding (Acheminement)</h3>
+    <p><strong>Quand :</strong> La MAC destination est connue dans la table MAC et se trouve sur un port différent du port source.</p>
+    <p><strong>Action :</strong> Envoyer la trame uniquement sur le port de destination.</p>
+
+    <p><strong>Exemple :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9;font-size:0.88rem">
+      <li>PC1 (port 1) envoie une trame vers PC2 (MAC : AA:BB:CC:22:22:22)</li>
+      <li>Le switch consulte sa table MAC → AA:BB:CC:22:22:22 est sur le port 2</li>
+      <li>Le switch transmet (forward) la trame uniquement sur le port 2 ✅</li>
+      <li>Les ports 3, 4, 5... ne reçoivent rien</li>
+    </ul>
+
+    <h3>// Action 2 : Filtering (Filtrage)</h3>
+    <p><strong>Quand :</strong> La MAC destination est sur le même port que la MAC source.</p>
+    <p><strong>Action :</strong> Ignorer la trame (ne rien faire).</p>
+
+    <p><strong>Exemple :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9;font-size:0.88rem">
+      <li>PC1 et PC2 sont branchés sur le même port 1 (via un hub ou autre switch)</li>
+      <li>PC1 envoie vers PC2</li>
+      <li>Le switch voit : source sur port 1, destination sur port 1</li>
+      <li>Inutile de renvoyer → <strong>filtrage</strong> (la trame reste entre PC1 et PC2 localement) ✅</li>
+    </ul>
+
+    <h3>// Action 3 : Flooding (Inondation)</h3>
+    <p><strong>Quand :</strong> L'adresse MAC destination est <strong>inconnue</strong> (pas dans la table MAC) OU c'est une adresse <strong>broadcast</strong> (FF:FF:FF:FF:FF:FF).</p>
+    <p><strong>Action :</strong> Envoyer la trame sur TOUS les ports, sauf le port source.</p>
+
+    <p><strong>Exemple 1 — MAC inconnue :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9;font-size:0.88rem">
+      <li>PC1 (port 1) envoie vers MAC : AA:BB:CC:99:99:99</li>
+      <li>Le switch consulte sa table → AA:BB:CC:99:99:99 n'existe pas</li>
+      <li>Le switch inonde (flood) la trame sur les ports 2, 3, 4, 5... (tous sauf port 1)</li>
+      <li>Quand AA:BB:CC:99:99:99 répond, le switch apprend son port et ne floode plus ensuite</li>
+    </ul>
+
+    <p><strong>Exemple 2 — Broadcast :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9;font-size:0.88rem">
+      <li>PC1 envoie un broadcast (ex: requête ARP "Qui a l'IP 192.168.1.10 ?")</li>
+      <li>Destination MAC = FF:FF:FF:FF:FF:FF</li>
+      <li>Le switch inonde sur TOUS les ports (sauf port source)</li>
+      <li>Tout le monde reçoit le broadcast</li>
+    </ul>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen — résumé des 3 actions</strong>
+        <strong>Forward</strong> : MAC connue, port différent → envoyer sur le bon port<br>
+        <strong>Filter</strong> : MAC sur même port que source → ignorer<br>
+        <strong>Flood</strong> : MAC inconnue OU broadcast → envoyer partout (sauf source)
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. COLLISION DOMAIN -->
+  <div class="section">
+    <div class="section-label">Segmentation du réseau</div>
+    <h2>Collision Domain vs Broadcast Domain</h2>
+
+    <h3>// Collision Domain (Domaine de collision)</h3>
+    <p>Un <strong>domaine de collision</strong> est une zone du réseau où deux appareils peuvent entrer en <strong>collision</strong> s'ils transmettent en même temps sur le même support physique.</p>
+
+    <p><strong>Règle simple :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Hub</strong> : 1 seul domaine de collision pour TOUS les ports. Si 2 appareils envoient en même temps → collision.</li>
+      <li><strong>Switch</strong> : 1 domaine de collision PAR PORT. Chaque port est isolé → pas de collision possible entre ports.</li>
+    </ul>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🚗</span>
+      <div class="callout-body">
+        <strong>Analogie — route partagée vs routes séparées</strong>
+        <strong>Hub</strong> = une seule route pour tout le monde. 2 voitures se croisent → collision.<br>
+        <strong>Switch</strong> = chaque port a sa propre voie. Pas de collision possible — traffic isolé.
+      </div>
+    </div>
+
+    <p><strong>Exemple :</strong> Switch 24 ports → 24 domaines de collision (un par port).</p>
+
+    <h3>// Broadcast Domain (Domaine de diffusion)</h3>
+    <p>Un <strong>domaine de broadcast</strong> est une zone du réseau où un message broadcast (FF:FF:FF:FF:FF:FF) est propagé à tous les appareils.</p>
+
+    <p><strong>Règle simple :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Hub</strong> : 1 domaine de broadcast (tous les ports).</li>
+      <li><strong>Switch</strong> : 1 domaine de broadcast (tous les ports). Le switch transmet les broadcasts partout.</li>
+      <li><strong>Routeur</strong> : Segmente les broadcasts. Un broadcast ne traverse JAMAIS un routeur.</li>
+    </ul>
+
+    <p><strong>Important :</strong> Un switch Layer 2 (standard) <strong>ne segmente PAS</strong> les broadcasts. Si un PC envoie un broadcast, tous les autres PC du switch le reçoivent.</p>
+
+    <p>Pour segmenter les broadcasts au niveau switch → utiliser des <strong>VLANs</strong> (cours suivant).</p>
+
+    <h3>// Tableau comparatif</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Équipement</th><th>Domaines de collision</th><th>Domaines de broadcast</th></tr>
+        <tr>
+          <td><strong>Hub (4 ports)</strong></td>
+          <td>1 domaine total<br>(tous les ports partagent)</td>
+          <td>1 domaine total</td>
+        </tr>
+        <tr>
+          <td><strong>Switch (24 ports)</strong></td>
+          <td>24 domaines<br>(1 par port)</td>
+          <td>1 domaine total<br>(broadcast propagé partout)</td>
+        </tr>
+        <tr>
+          <td><strong>Routeur (2 interfaces)</strong></td>
+          <td>2 domaines<br>(1 par interface)</td>
+          <td>2 domaines<br>(broadcast s'arrête au routeur)</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Question type examen</strong>
+        "Un réseau a 3 switches connectés ensemble (pas de routeur). Combien de domaines de broadcast ?"<br>
+        <strong>Réponse : 1 seul</strong>. Tous les switches partagent le même domaine de broadcast. Seul un routeur segmente les broadcasts.
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">Comment un switch apprend-il les adresses MAC ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">En observant l'<strong>adresse MAC source</strong> de chaque trame reçue. Il associe cette MAC au port d'arrivée et l'enregistre dans sa table MAC.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">Quelle est la durée d'expiration typique d'une entrée dans la table MAC ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>300 secondes</strong> (5 minutes) par défaut. Si l'appareil ne communique plus pendant 5 min → entrée supprimée.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">Quelles sont les 3 actions possibles d'un switch ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Forward</strong> (acheminer vers le bon port), <strong>Filter</strong> (ignorer si même port source/dest), <strong>Flood</strong> (envoyer partout si MAC inconnue ou broadcast).</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">Question type examen : Un PC envoie une trame vers une MAC inconnue du switch. Que fait le switch ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Flooding</strong>. Le switch envoie la trame sur TOUS les ports sauf le port source, car il ne sait pas où se trouve la destination.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">Combien de domaines de collision dans un switch 48 ports ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>48 domaines de collision</strong> (1 par port). Chaque port est isolé → pas de collision entre ports.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">Question type examen : 5 switches Layer 2 connectés ensemble (pas de routeur). Combien de domaines de broadcast ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>1 seul domaine de broadcast</strong>. Tous les switches propagent les broadcasts. Seul un routeur segmente les domaines de broadcast.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">Quelle est la différence entre un hub et un switch concernant les collisions ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Hub</strong> : 1 domaine de collision pour tous les ports → collisions possibles<br><strong>Switch</strong> : 1 domaine de collision par port → pas de collision entre ports</div>
+  </div>
+
+  <!-- 7. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span>Le switch apprend les adresses MAC en observant la <strong>MAC source</strong> de chaque trame</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Table MAC = association (MAC → Port). Expiration : 300 secondes par défaut</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Forward</strong> : MAC connue, port différent → envoyer sur bon port</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Filter</strong> : MAC sur même port que source → ignorer</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Flood</strong> : MAC inconnue OU broadcast → envoyer partout sauf source</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Collision domain : Hub = 1 total, Switch = 1 par port</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Broadcast domain : Hub = 1, Switch = 1, Routeur = segmente (1 par interface)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Switch Layer 2 ne segmente PAS les broadcasts → utiliser VLANs ou routeur</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 11 : Topologies réseau</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">C12 · Phase 1</span>
+    <a class="nav-btn next" href="#">Cours 13 : VLAN — Configuration →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_c12_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>
