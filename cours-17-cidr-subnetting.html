@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 18 — CIDR et Subnetting · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .vocab { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; }
+  .vocab-term { font-family: 'IBM Plex Mono', monospace; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .calc-box { background: var(--bg2); border: 2px solid var(--accent); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .calc-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--accent); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .calc-content { font-size: 0.88rem; line-height: 1.8; font-family: 'IBM Plex Mono', monospace; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .comptia-box { background: rgba(251,191,36,0.05); border: 2px solid var(--amber); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .comptia-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--amber); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .comptia-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Phase 2 — IPv4</span> &nbsp;›&nbsp; Cours 18</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 2 · C18</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡⚡ Difficile</span>
+  </div>
+
+  <h1>CIDR et <span>Subnetting</span></h1>
+  <span class="tagline">// Notation CIDR, calcul réseau/broadcast/hôtes, masques /8 à /30 — découper un réseau</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise la notation CIDR (/24, /25, etc.)</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je sais calculer réseau, broadcast et nombre d'hôtes</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais les masques courants par cœur</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. C'EST QUOI -->
+  <div class="section">
+    <div class="section-label">Avant de commencer</div>
+    <h2>C'est quoi le subnetting — découper un réseau en sous-réseaux</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🏢</span>
+      <div class="callout-body">
+        <strong>Analogie — diviser un immeuble en appartements</strong>
+        Tu as un grand immeuble (réseau 192.168.1.0/24 = 256 adresses). Le subnetting, c'est comme diviser l'immeuble en plusieurs petits appartements (sous-réseaux). Au lieu d'un grand espace pour 254 personnes, tu crées 4 appartements de 62 personnes chacun. Plus facile à gérer, plus de sécurité, moins de bordel.
+      </div>
+    </div>
+
+    <p><strong>Subnetting</strong> = diviser un grand réseau en plusieurs sous-réseaux plus petits. <strong>CIDR</strong> (Classless Inter-Domain Routing) = notation moderne pour spécifier la taille d'un réseau.</p>
+
+    <p><strong>Pourquoi faire du subnetting ?</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Organisation</strong> : Séparer les départements (RH, IT, Finance) sur des sous-réseaux différents</li>
+      <li><strong>Sécurité</strong> : Isoler les réseaux sensibles (serveurs, VLAN invités)</li>
+      <li><strong>Performance</strong> : Réduire les domaines de broadcast → moins de trafic inutile</li>
+      <li><strong>Économie d'adresses</strong> : Utiliser exactement la taille nécessaire (pas de gaspillage)</li>
+    </ul>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen Network+</strong>
+        Le subnetting est L'UN DES SUJETS LES PLUS TESTÉS. CompTIA pose des questions de calcul direct : "Quel est le réseau ? Le broadcast ? Combien d'hôtes ?" Tu DOIS maîtriser les calculs rapides et connaître les masques courants par cœur.
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. VOCABULAIRE -->
+  <div class="section">
+    <div class="section-label">Vocabulaire essentiel</div>
+    <h2>Les mots clés de ce cours</h2>
+
+    <div class="vocab">
+      <div class="vocab-term">CIDR (Classless Inter-Domain Routing)</div>
+      <div>Notation moderne pour spécifier un masque. Format : IP/préfixe (ex: 192.168.1.0/24). Le /24 indique combien de bits sont à 1 dans le masque.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Masque de sous-réseau (Subnet Mask)</div>
+      <div>Nombre 32 bits qui définit quelle partie de l'IP = réseau et quelle partie = hôte. Format décimal (255.255.255.0) ou CIDR (/24).</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Adresse réseau (Network Address)</div>
+      <div>Premier IP du sous-réseau. Tous les bits hôte = 0. Non assignable à un appareil. Identifie le réseau lui-même.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Adresse broadcast</div>
+      <div>Dernier IP du sous-réseau. Tous les bits hôte = 1. Envoie à TOUS les hôtes du réseau. Non assignable.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Hôtes utilisables</div>
+      <div>IPs entre l'adresse réseau et le broadcast. Assignables aux appareils. Nombre = 2^(bits hôte) - 2.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Préfixe (Prefix Length)</div>
+      <div>Nombre de bits à 1 dans le masque. /24 = 24 bits réseau, 8 bits hôte. /25 = 25 bits réseau, 7 bits hôte.</div>
+    </div>
+  </div>
+
+  <!-- 3. CIDR NOTATION -->
+  <div class="section">
+    <div class="section-label">Notation moderne</div>
+    <h2>Notation CIDR — /8, /16, /24...</h2>
+
+    <p>La <strong>notation CIDR</strong> remplace le masque décimal par un simple nombre : <code>/préfixe</code></p>
+
+    <p><strong>Le préfixe indique combien de bits sont à 1 dans le masque (= partie réseau)</strong></p>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>CIDR</th><th>Masque décimal</th><th>Bits réseau</th><th>Bits hôte</th><th>Nombre d'hôtes</th></tr>
+        <tr><td>/8</td><td>255.0.0.0</td><td>8</td><td>24</td><td>16 777 214</td></tr>
+        <tr><td>/16</td><td>255.255.0.0</td><td>16</td><td>16</td><td>65 534</td></tr>
+        <tr><td>/24</td><td>255.255.255.0</td><td>24</td><td>8</td><td>254</td></tr>
+        <tr><td>/25</td><td>255.255.255.128</td><td>25</td><td>7</td><td>126</td></tr>
+        <tr><td>/26</td><td>255.255.255.192</td><td>26</td><td>6</td><td>62</td></tr>
+        <tr><td>/27</td><td>255.255.255.224</td><td>27</td><td>5</td><td>30</td></tr>
+        <tr><td>/28</td><td>255.255.255.240</td><td>28</td><td>4</td><td>14</td></tr>
+        <tr><td>/29</td><td>255.255.255.248</td><td>29</td><td>3</td><td>6</td></tr>
+        <tr><td>/30</td><td>255.255.255.252</td><td>30</td><td>2</td><td>2</td></tr>
+      </table>
+    </div>
+
+    <h3>// Formule magique</h3>
+    <p><strong>Nombre d'hôtes utilisables = 2^(bits hôte) - 2</strong></p>
+
+    <p><strong>Pourquoi -2 ?</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>-1 pour l'adresse réseau (tous bits hôte = 0)</li>
+      <li>-1 pour l'adresse broadcast (tous bits hôte = 1)</li>
+    </ul>
+
+    <p><strong>Exemples :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9;font-family:'IBM Plex Mono',monospace;font-size:0.85rem">
+      <li>/24 → 8 bits hôte → 2^8 - 2 = 256 - 2 = <strong>254 hôtes</strong></li>
+      <li>/25 → 7 bits hôte → 2^7 - 2 = 128 - 2 = <strong>126 hôtes</strong></li>
+      <li>/26 → 6 bits hôte → 2^6 - 2 = 64 - 2 = <strong>62 hôtes</strong></li>
+      <li>/30 → 2 bits hôte → 2^2 - 2 = 4 - 2 = <strong>2 hôtes</strong> (liaisons point-à-point)</li>
+    </ul>
+
+    <div class="callout ok">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>Mémoriser les puissances de 2</strong>
+        2^1=2, 2^2=4, 2^3=8, 2^4=16, 2^5=32, 2^6=64, 2^7=128, 2^8=256<br>
+        Indispensable pour les calculs rapides à l'examen.
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. CALCULS -->
+  <div class="section">
+    <div class="section-label">Méthode de calcul</div>
+    <h2>Calculer réseau, broadcast et plage d'hôtes</h2>
+
+    <p><strong>Méthode simple (sans binaire) pour /24, /25, /26, /27, /28, /29, /30</strong></p>
+
+    <h3>// Étape 1 : Identifier le masque et la taille de bloc</h3>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>CIDR</th><th>Masque (dernier octet)</th><th>Taille de bloc</th><th>Nb sous-réseaux (par /24)</th></tr>
+        <tr><td>/24</td><td>0</td><td>256</td><td>1</td></tr>
+        <tr><td>/25</td><td>128</td><td>128</td><td>2</td></tr>
+        <tr><td>/26</td><td>192</td><td>64</td><td>4</td></tr>
+        <tr><td>/27</td><td>224</td><td>32</td><td>8</td></tr>
+        <tr><td>/28</td><td>240</td><td>16</td><td>16</td></tr>
+        <tr><td>/29</td><td>248</td><td>8</td><td>32</td></tr>
+        <tr><td>/30</td><td>252</td><td>4</td><td>64</td></tr>
+      </table>
+    </div>
+
+    <p><strong>Taille de bloc = 256 - (valeur du dernier octet du masque)</strong></p>
+    <p>Exemple : /26 → masque = 255.255.255.192 → taille = 256 - 192 = 64</p>
+
+    <h3>// Étape 2 : Trouver l'adresse réseau</h3>
+    <p>Diviser le dernier octet de l'IP par la taille de bloc, puis multiplier par la taille de bloc.</p>
+
+    <p><strong>Exemple : 192.168.1.150/26</strong></p>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9;font-family:'IBM Plex Mono',monospace;font-size:0.85rem">
+      <li>Masque /26 → taille de bloc = 64</li>
+      <li>Dernier octet IP = 150</li>
+      <li>150 ÷ 64 = 2.34... → partie entière = 2</li>
+      <li>2 × 64 = 128</li>
+      <li><strong>Adresse réseau = 192.168.1.128</strong></li>
+    </ol>
+
+    <h3>// Étape 3 : Trouver le broadcast</h3>
+    <p>Adresse réseau + taille de bloc - 1</p>
+
+    <p><strong>Suite de l'exemple :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9;font-family:'IBM Plex Mono',monospace;font-size:0.85rem">
+      <li>Réseau = 192.168.1.128</li>
+      <li>Taille = 64</li>
+      <li>128 + 64 - 1 = 191</li>
+      <li><strong>Broadcast = 192.168.1.191</strong></li>
+    </ul>
+
+    <h3>// Étape 4 : Plage d'hôtes utilisables</h3>
+    <p>Entre réseau et broadcast (exclus)</p>
+
+    <p><strong>Suite de l'exemple :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9;font-family:'IBM Plex Mono',monospace;font-size:0.85rem">
+      <li>Premier hôte = réseau + 1 = <strong>192.168.1.129</strong></li>
+      <li>Dernier hôte = broadcast - 1 = <strong>192.168.1.190</strong></li>
+      <li>Plage utilisable : <strong>192.168.1.129 - 192.168.1.190</strong></li>
+      <li>Nombre : 62 hôtes (64 - 2)</li>
+    </ul>
+
+    <div class="calc-box">
+      <div class="calc-title">🧮 Résumé 192.168.1.150/26</div>
+      <div class="calc-content">
+        Réseau    : 192.168.1.128<br>
+        Masque    : 255.255.255.192<br>
+        Premier IP: 192.168.1.129<br>
+        Dernier IP: 192.168.1.190<br>
+        Broadcast : 192.168.1.191<br>
+        Nb hôtes  : 62
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. EXEMPLES -->
+  <div class="section">
+    <div class="section-label">Exercices guidés</div>
+    <h2>Exemples de calculs pas à pas</h2>
+
+    <h3>// Exemple 1 : 10.5.10.75/27</h3>
+
+    <div class="calc-box">
+      <div class="calc-title">📝 Calcul détaillé</div>
+      <div class="calc-content">
+        <strong>1. Taille de bloc :</strong> /27 → masque = 255.255.255.224 → taille = 256 - 224 = 32<br><br>
+        <strong>2. Adresse réseau :</strong><br>
+        &nbsp;&nbsp;75 ÷ 32 = 2.34 → partie entière = 2<br>
+        &nbsp;&nbsp;2 × 32 = 64<br>
+        &nbsp;&nbsp;Réseau = <strong>10.5.10.64</strong><br><br>
+        <strong>3. Broadcast :</strong><br>
+        &nbsp;&nbsp;64 + 32 - 1 = 95<br>
+        &nbsp;&nbsp;Broadcast = <strong>10.5.10.95</strong><br><br>
+        <strong>4. Plage hôtes :</strong><br>
+        &nbsp;&nbsp;Premier = <strong>10.5.10.65</strong><br>
+        &nbsp;&nbsp;Dernier = <strong>10.5.10.94</strong><br>
+        &nbsp;&nbsp;Nb hôtes = 30
+      </div>
+    </div>
+
+    <h3>// Exemple 2 : 172.16.50.200/28</h3>
+
+    <div class="calc-box">
+      <div class="calc-title">📝 Calcul détaillé</div>
+      <div class="calc-content">
+        <strong>1. Taille de bloc :</strong> /28 → masque = 255.255.255.240 → taille = 256 - 240 = 16<br><br>
+        <strong>2. Adresse réseau :</strong><br>
+        &nbsp;&nbsp;200 ÷ 16 = 12.5 → partie entière = 12<br>
+        &nbsp;&nbsp;12 × 16 = 192<br>
+        &nbsp;&nbsp;Réseau = <strong>172.16.50.192</strong><br><br>
+        <strong>3. Broadcast :</strong><br>
+        &nbsp;&nbsp;192 + 16 - 1 = 207<br>
+        &nbsp;&nbsp;Broadcast = <strong>172.16.50.207</strong><br><br>
+        <strong>4. Plage hôtes :</strong><br>
+        &nbsp;&nbsp;Premier = <strong>172.16.50.193</strong><br>
+        &nbsp;&nbsp;Dernier = <strong>172.16.50.206</strong><br>
+        &nbsp;&nbsp;Nb hôtes = 14
+      </div>
+    </div>
+
+    <h3>// Exemple 3 : 192.168.20.17/30 (liaison point-à-point)</h3>
+
+    <div class="calc-box">
+      <div class="calc-title">📝 Calcul détaillé</div>
+      <div class="calc-content">
+        <strong>1. Taille de bloc :</strong> /30 → masque = 255.255.255.252 → taille = 256 - 252 = 4<br><br>
+        <strong>2. Adresse réseau :</strong><br>
+        &nbsp;&nbsp;17 ÷ 4 = 4.25 → partie entière = 4<br>
+        &nbsp;&nbsp;4 × 4 = 16<br>
+        &nbsp;&nbsp;Réseau = <strong>192.168.20.16</strong><br><br>
+        <strong>3. Broadcast :</strong><br>
+        &nbsp;&nbsp;16 + 4 - 1 = 19<br>
+        &nbsp;&nbsp;Broadcast = <strong>192.168.20.19</strong><br><br>
+        <strong>4. Plage hôtes :</strong><br>
+        &nbsp;&nbsp;Premier = <strong>192.168.20.17</strong> (routeur 1)<br>
+        &nbsp;&nbsp;Dernier = <strong>192.168.20.18</strong> (routeur 2)<br>
+        &nbsp;&nbsp;Nb hôtes = 2 (parfait pour 2 routeurs)
+      </div>
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">🔗</span>
+      <div class="callout-body">
+        <strong>/30 pour liaisons point-à-point</strong>
+        Le /30 est le masque standard pour relier deux routeurs. 2 IPs utilisables exactement → pas de gaspillage. Très courant dans les WAN.
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. TABLEAU RÉFÉRENCE -->
+  <div class="section">
+    <div class="section-label">Tableau de référence</div>
+    <h2>Masques courants — à mémoriser pour l'examen</h2>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>CIDR</th><th>Masque</th><th>Hôtes</th><th>Taille bloc</th><th>Usage typique</th></tr>
+        <tr><td><strong>/8</strong></td><td>255.0.0.0</td><td>16 777 214</td><td>—</td><td>Classe A (très gros réseaux)</td></tr>
+        <tr><td><strong>/16</strong></td><td>255.255.0.0</td><td>65 534</td><td>—</td><td>Classe B (moyens réseaux)</td></tr>
+        <tr><td><strong>/24</strong></td><td>255.255.255.0</td><td>254</td><td>256</td><td>Standard petits réseaux</td></tr>
+        <tr><td><strong>/25</strong></td><td>255.255.255.128</td><td>126</td><td>128</td><td>Diviser un /24 en 2</td></tr>
+        <tr><td><strong>/26</strong></td><td>255.255.255.192</td><td>62</td><td>64</td><td>Diviser un /24 en 4</td></tr>
+        <tr><td><strong>/27</strong></td><td>255.255.255.224</td><td>30</td><td>32</td><td>Diviser un /24 en 8</td></tr>
+        <tr><td><strong>/28</strong></td><td>255.255.255.240</td><td>14</td><td>16</td><td>Petits départements</td></tr>
+        <tr><td><strong>/29</strong></td><td>255.255.255.248</td><td>6</td><td>8</td><td>Très petits groupes</td></tr>
+        <tr><td><strong>/30</strong></td><td>255.255.255.252</td><td>2</td><td>4</td><td>Liaison point-à-point</td></tr>
+        <tr><td><strong>/31</strong></td><td>255.255.255.254</td><td>2 (spécial)</td><td>2</td><td>Liaison P2P (RFC 3021)</td></tr>
+        <tr><td><strong>/32</strong></td><td>255.255.255.255</td><td>1 (host route)</td><td>1</td><td>Route hôte spécifique</td></tr>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>/31 cas particulier</strong>
+        Normalement, /31 = 0 hôte utilisable (2 IPs - 2 = 0). Mais RFC 3021 permet d'utiliser les 2 IPs pour des liaisons point-à-point entre routeurs (pas de broadcast nécessaire). Cisco le supporte.
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. CE QUI TROMPE LES CANDIDATS -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : Confondre nombre total vs hôtes utilisables</div>
+      <div class="trap-content">
+        /24 = 256 adresses au total, mais seulement <strong>254 utilisables</strong> (-2 pour réseau et broadcast).<br><br>
+        Question piège : "Combien d'appareils dans un /26 ?" → Réponse : <strong>62</strong> (pas 64 !)<br><br>
+        Toujours faire <strong>2^bits - 2</strong>, jamais oublier le -2.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : Oublier que réseau et broadcast ne sont pas utilisables</div>
+      <div class="trap-content">
+        Dans 192.168.1.0/24 :<br>
+        - 192.168.1.0 = réseau → <strong>ne PAS assigner</strong> ❌<br>
+        - 192.168.1.255 = broadcast → <strong>ne PAS assigner</strong> ❌<br>
+        - 192.168.1.1 à 192.168.1.254 = utilisables ✅
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : /30 a 4 adresses mais seulement 2 utilisables</div>
+      <div class="trap-content">
+        Réseau 192.168.1.16/30 :<br>
+        - 192.168.1.16 = réseau ❌<br>
+        - 192.168.1.17 = routeur 1 ✅<br>
+        - 192.168.1.18 = routeur 2 ✅<br>
+        - 192.168.1.19 = broadcast ❌<br><br>
+        Beaucoup pensent qu'on peut utiliser les 4 → FAUX.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #4 : Mauvais calcul de taille de bloc</div>
+      <div class="trap-content">
+        Erreur fréquente : penser que /25 = taille 255.<br>
+        <strong>FAUX</strong>. Formule : taille = 256 - (dernier octet du masque)<br><br>
+        /25 → masque = 255.255.255.<strong>128</strong> → taille = 256 - 128 = <strong>128</strong>
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #5 : Ne pas vérifier si l'IP appartient au réseau calculé</div>
+      <div class="trap-content">
+        Question : "192.168.1.200/26 — quelle est l'adresse réseau ?"<br><br>
+        Calcul : 200 ÷ 64 = 3.125 → 3 × 64 = <strong>192</strong><br>
+        Réseau = 192.168.1.192<br><br>
+        Piège : certains répondent .200 → FAUX, l'adresse réseau est TOUJOURS au début du bloc.
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. CE QUE COMPTIA PEUT TE POSER -->
+  <div class="section">
+    <div class="section-label">🎯 Questions types</div>
+    <h2>Ce que CompTIA peut te poser</h2>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #1 : Calcul réseau</div>
+      <div class="comptia-content">
+        "Un hôte a l'IP 172.16.35.120/27. Quelle est son adresse réseau ?"<br><br>
+        <strong>Calcul :</strong><br>
+        /27 → taille = 32<br>
+        120 ÷ 32 = 3.75 → 3 × 32 = 96<br>
+        <strong>Réponse : 172.16.35.96</strong>
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #2 : Calcul broadcast</div>
+      <div class="comptia-content">
+        "Réseau 10.10.10.128/26. Quelle est l'adresse broadcast ?"<br><br>
+        <strong>Calcul :</strong><br>
+        /26 → taille = 64<br>
+        Broadcast = 128 + 64 - 1 = 191<br>
+        <strong>Réponse : 10.10.10.191</strong>
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #3 : Nombre d'hôtes</div>
+      <div class="comptia-content">
+        "Combien d'hôtes utilisables dans un réseau /28 ?"<br><br>
+        <strong>Calcul :</strong><br>
+        /28 → 4 bits hôte<br>
+        2^4 - 2 = 16 - 2 = <strong>14 hôtes</strong>
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #4 : Vérification IP dans réseau</div>
+      <div class="comptia-content">
+        "192.168.50.75/26 — cette IP est-elle dans le même réseau que 192.168.50.100 ?"<br><br>
+        <strong>Calcul :</strong><br>
+        /26 → taille = 64<br>
+        75 ÷ 64 = 1 → 1 × 64 = 64 → réseau = 192.168.50.64<br>
+        100 ÷ 64 = 1 → 1 × 64 = 64 → réseau = 192.168.50.64<br>
+        <strong>Réponse : Oui</strong> (même réseau 192.168.50.64/26)
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">Combien d'hôtes utilisables dans un /25 ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">7 bits hôte → 2^7 - 2 = 128 - 2 = <strong>126 hôtes</strong></div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">Quel est le masque décimal de /26 ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>255.255.255.192</strong></div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">Quelle est la taille de bloc d'un /27 ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Masque = 255.255.255.224 → Taille = 256 - 224 = <strong>32</strong></div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">Question type examen : 192.168.10.50/26 — adresse réseau ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Taille = 64. 50 ÷ 64 = 0 → 0 × 64 = 0. Réseau = <strong>192.168.10.0</strong></div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">Question type examen : 172.16.20.200/28 — broadcast ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Taille = 16. 200 ÷ 16 = 12 → 12 × 16 = 192. Broadcast = 192 + 16 - 1 = 207. <strong>172.16.20.207</strong></div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">Question type examen : 10.5.5.75/27 — plage d'hôtes utilisables ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Taille = 32. 75 ÷ 32 = 2 → 2 × 32 = 64. Réseau = 10.5.5.64. Broadcast = 64 + 32 - 1 = 95. <strong>Plage : 10.5.5.65 - 10.5.5.94</strong></div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">Combien de sous-réseaux /26 peut-on créer à partir d'un /24 ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">/24 = 256 adresses. /26 = 64 adresses. 256 ÷ 64 = <strong>4 sous-réseaux</strong></div>
+  </div>
+
+  <!-- 10. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span>CIDR = notation /préfixe. /24 = 24 bits réseau, 8 bits hôte</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Hôtes utilisables = <strong>2^(bits hôte) - 2</strong> (toujours -2 pour réseau et broadcast)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Taille de bloc = <strong>256 - (dernier octet du masque)</strong></span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Réseau = (IP ÷ taille) × taille. Broadcast = réseau + taille - 1</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Masques à connaître : /24=254h, /25=126h, /26=62h, /27=30h, /28=14h, /29=6h, /30=2h</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>/30 = standard pour liaisons point-à-point (2 routeurs)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>PIÈGE : toujours faire -2, jamais oublier que réseau et broadcast ne sont pas utilisables</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Mémoriser les puissances de 2 : 2, 4, 8, 16, 32, 64, 128, 256</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 17 : Default Gateway</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">C18 · Phase 2</span>
+    <a class="nav-btn next" href="#">Cours 19 : ... →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_c18_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>
