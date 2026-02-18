@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 14 — Agrégation de liens (LACP) · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .vocab { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; }
+  .vocab-term { font-family: 'IBM Plex Mono', monospace; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .comptia-box { background: rgba(251,191,36,0.05); border: 2px solid var(--amber); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .comptia-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--amber); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .comptia-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Phase 1 — Fondamentaux</span> &nbsp;›&nbsp; Cours 14</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 1 · C14</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-lab">🧪 LAB</span>
+    <span class="pill pill-diff">⚡⚡☆ Moyen</span>
+  </div>
+
+  <h1>Agrégation de liens — <span>LACP</span></h1>
+  <span class="tagline">// Combiner plusieurs liens physiques en un lien logique — plus de bande passante + redondance</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends le principe de l'agrégation de liens</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais LACP active vs passive</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends le load balancing</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. C'EST QUOI -->
+  <div class="section">
+    <div class="section-label">Avant de commencer</div>
+    <h2>C'est quoi l'agrégation de liens — et pourquoi c'est utile</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🛣️</span>
+      <div class="callout-body">
+        <strong>Analogie — plusieurs voies d'autoroute</strong>
+        Un seul câble 1 Gbps = une voie d'autoroute. Limité à 1G de débit.<br>
+        4 câbles agrégés = 4 voies en parallèle = débit total de 4 Gbps. Si une voie se coupe → les 3 autres continuent de fonctionner.
+      </div>
+    </div>
+
+    <p><strong>Agrégation de liens</strong> (Link Aggregation ou Port Channel) = regrouper plusieurs liens physiques en un seul lien logique pour augmenter la bande passante et la redondance.</p>
+
+    <p><strong>Exemple concret :</strong> Tu as un serveur qui a besoin de 4 Gbps de débit vers le switch, mais chaque port fait seulement 1 Gbps. Solution : utiliser 4 ports en agrégation = 4 × 1G = 4 Gbps total.</p>
+
+    <h3>// Les avantages</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Avantage</th><th>Explication</th></tr>
+        <tr><td><strong>Bande passante accrue</strong></td><td>2 liens 1G agrégés = 2 Gbps. 4 liens 10G = 40 Gbps total.</td></tr>
+        <tr><td><strong>Redondance</strong></td><td>Si un lien tombe, le trafic continue sur les liens restants sans interruption.</td></tr>
+        <tr><td><strong>Load balancing</strong></td><td>Le trafic est réparti intelligemment sur tous les liens actifs.</td></tr>
+        <tr><td><strong>Pas de STP blocking</strong></td><td>Tous les liens sont actifs simultanément (STP voit l'agrégation comme un seul lien).</td></tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen Network+</strong>
+        CompTIA teste : LACP active vs passive, la différence entre 802.3ad et PAgP (Cisco propriétaire), et les algorithmes de load balancing. Maîtrise ces concepts — questions fréquentes.
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. VOCABULAIRE -->
+  <div class="section">
+    <div class="section-label">Vocabulaire essentiel</div>
+    <h2>Les mots clés de ce cours</h2>
+
+    <div class="vocab">
+      <div class="vocab-term">LACP (Link Aggregation Control Protocol)</div>
+      <div>Standard IEEE 802.3ad pour l'agrégation de liens. Multi-vendeur (fonctionne entre équipements de marques différentes).</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Port Channel (EtherChannel sur Cisco)</div>
+      <div>Le lien logique créé en regroupant plusieurs ports physiques. Vu comme un seul port par STP et les protocoles de routage.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">LACP Active</div>
+      <div>Mode où le port envoie activement des paquets LACP pour négocier l'agrégation.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">LACP Passive</div>
+      <div>Mode où le port attend de recevoir des paquets LACP avant de répondre. Ne démarre pas la négociation.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Load Balancing</div>
+      <div>Algorithme qui répartit le trafic entre les différents liens physiques de l'agrégation.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">PAgP (Port Aggregation Protocol)</div>
+      <div>Protocole propriétaire Cisco pour l'agrégation de liens. Fonctionne uniquement entre équipements Cisco. Obsolète, remplacé par LACP.</div>
+    </div>
+  </div>
+
+  <!-- 3. LACP -->
+  <div class="section">
+    <div class="section-label">Standard IEEE 802.3ad</div>
+    <h2>LACP — le standard d'agrégation multi-vendeur</h2>
+
+    <p><strong>LACP (Link Aggregation Control Protocol)</strong> défini par IEEE 802.3ad est le standard ouvert pour l'agrégation de liens. Il fonctionne entre équipements de fabricants différents (Cisco ↔ HP ↔ Juniper...).</p>
+
+    <h3>// Comment LACP fonctionne</h3>
+    <p>LACP utilise des <strong>LACPDU (LACP Data Units)</strong> — paquets échangés entre les deux switches pour négocier et maintenir l'agrégation.</p>
+
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Les deux switches envoient des LACPDU toutes les 30 secondes (ou 1 seconde en mode fast)</li>
+      <li>Les LACPDU contiennent : vitesse du port, duplex, priorité, ID système</li>
+      <li>Si les paramètres correspondent → l'agrégation est formée</li>
+      <li>Si un port ne reçoit plus de LACPDU pendant 90 secondes → il est retiré de l'agrégation</li>
+    </ol>
+
+    <h3>// Modes LACP : Active vs Passive</h3>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Mode</th><th>Comportement</th><th>Peut former agrégation avec...</th></tr>
+        <tr>
+          <td><strong>Active</strong></td>
+          <td>Envoie activement des LACPDU pour négocier</td>
+          <td>Active ou Passive</td>
+        </tr>
+        <tr>
+          <td><strong>Passive</strong></td>
+          <td>Attend de recevoir des LACPDU avant de répondre</td>
+          <td>Active uniquement (pas avec Passive)</td>
+        </tr>
+        <tr>
+          <td><strong>On (statique)</strong></td>
+          <td>Pas de négociation LACP. Agrégation forcée.</td>
+          <td>On uniquement (dangereux)</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Règle de compatibilité CRITIQUE</strong>
+        <strong>Passive + Passive = ÉCHEC</strong>. Les deux attendent que l'autre parle en premier → rien ne se passe → pas d'agrégation.<br><br>
+        <strong>Active + Passive = OK</strong><br>
+        <strong>Active + Active = OK</strong><br>
+        <strong>Bonne pratique :</strong> Mettre toujours un côté en Active (ou les deux).
+      </div>
+    </div>
+
+    <h3>// Configuration LACP (exemple Cisco)</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;line-height:1.8;">
+      <span style="color:var(--green)">Switch(config)#</span> interface range GigabitEthernet0/1-4<br>
+      <span style="color:var(--muted);font-style:italic">! Sélectionner les 4 ports à agréger</span><br>
+      <span style="color:var(--green)">Switch(config-if-range)#</span> channel-group 1 mode active<br>
+      <span style="color:var(--muted);font-style:italic">! Créer le Port-Channel 1 en mode LACP active</span><br>
+      <span style="color:var(--green)">Switch(config-if-range)#</span> exit<br>
+      <span style="color:var(--green)">Switch(config)#</span> interface Port-Channel1<br>
+      <span style="color:var(--green)">Switch(config-if)#</span> switchport mode trunk<br>
+      <span style="color:var(--muted);font-style:italic">! Configurer le Port-Channel comme trunk</span>
+    </div>
+
+    <p><strong>Résultat :</strong> Les 4 ports Gi0/1 à Gi0/4 forment un Port-Channel1 avec 4 Gbps de bande passante agrégée.</p>
+  </div>
+
+  <!-- 4. LOAD BALANCING -->
+  <div class="section">
+    <div class="section-label">Répartition du trafic</div>
+    <h2>Load Balancing — comment le trafic est distribué</h2>
+
+    <p>Le <strong>load balancing</strong> est l'algorithme qui décide quel lien physique utiliser pour chaque trame dans l'agrégation.</p>
+
+    <h3>// Algorithmes de load balancing courants</h3>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Algorithme</th><th>Critère</th><th>Avantage</th><th>Inconvénient</th></tr>
+        <tr>
+          <td><strong>src-mac</strong></td>
+          <td>MAC source</td>
+          <td>Simple, déterministe</td>
+          <td>Mauvais si peu de sources (ex: 1 serveur → 1 seul lien utilisé)</td>
+        </tr>
+        <tr>
+          <td><strong>dst-mac</strong></td>
+          <td>MAC destination</td>
+          <td>Simple</td>
+          <td>Mauvais si peu de destinations</td>
+        </tr>
+        <tr>
+          <td><strong>src-dst-mac</strong></td>
+          <td>MAC source + MAC destination</td>
+          <td>Meilleure distribution</td>
+          <td>Conversations identiques restent sur même lien</td></tr>
+        <tr>
+          <td><strong>src-ip</strong></td>
+          <td>IP source</td>
+          <td>Adapté au trafic IP</td>
+          <td>Idem src-mac</td>
+        </tr>
+        <tr>
+          <td><strong>dst-ip</strong></td>
+          <td>IP destination</td>
+          <td>Adapté au trafic IP</td>
+          <td>Idem dst-mac</td>
+        </tr>
+        <tr>
+          <td><strong>src-dst-ip</strong></td>
+          <td>IP source + IP destination</td>
+          <td>Bonne distribution pour IP</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><strong>src-dst-port</strong></td>
+          <td>IP source + IP destination + port TCP/UDP</td>
+          <td>Distribution optimale</td>
+          <td>Calcul plus complexe</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>// Comment ça marche en pratique</h3>
+    <p>L'algorithme fait un <strong>hash</strong> (calcul mathématique) sur les critères choisis, puis utilise le résultat pour sélectionner un lien.</p>
+
+    <p><strong>Exemple avec src-dst-ip :</strong></p>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9;font-size:0.88rem">
+      <li>Trame arrive : IP source = 192.168.1.10, IP destination = 10.0.0.50</li>
+      <li>Le switch calcule : hash(192.168.1.10 + 10.0.0.50) = résultat numérique</li>
+      <li>Il divise le résultat par le nombre de liens (ex: 4 liens) → reste = 0, 1, 2, ou 3</li>
+      <li>Il envoie la trame sur le lien correspondant (0 → lien 1, 1 → lien 2, etc.)</li>
+    </ol>
+
+    <p><strong>Important :</strong> Toutes les trames d'une même conversation (même IP source + destination) vont TOUJOURS sur le même lien. Cela préserve l'ordre des paquets.</p>
+
+    <div class="callout ok">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Quel algorithme choisir ?</strong>
+        <strong>src-dst-ip</strong> = bon compromis pour la plupart des cas<br>
+        <strong>src-dst-port</strong> = optimal pour serveurs avec beaucoup de connexions simultanées<br>
+        <strong>src-mac</strong> = simple mais éviter si peu de sources
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>PIÈGE — Agrégation ≠ débit par flux</strong>
+        4 liens 1G agrégés = <strong>4 Gbps total</strong>, mais <strong>PAS 4 Gbps par connexion</strong>.<br><br>
+        Une seule conversation (ex: 1 serveur → 1 client) utilise toujours UN SEUL lien physique → max 1 Gbps pour cette conversation.<br><br>
+        Le bénéfice vient quand tu as PLUSIEURS conversations simultanées qui se répartissent sur les différents liens.
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. RÈGLES DE CONFIGURATION -->
+  <div class="section">
+    <div class="section-label">Contraintes techniques</div>
+    <h2>Règles pour une agrégation réussie</h2>
+
+    <p>Pour qu'une agrégation fonctionne, <strong>TOUS les ports membres doivent avoir la même configuration</strong> :</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Paramètre</th><th>Règle</th></tr>
+        <tr><td><strong>Vitesse</strong></td><td>Tous les ports doivent avoir la même vitesse (ex: tous 1G, ou tous 10G). Ne pas mélanger.</td></tr>
+        <tr><td><strong>Duplex</strong></td><td>Tous les ports doivent être en full-duplex. Pas de half-duplex.</td></tr>
+        <tr><td><strong>VLAN</strong></td><td>Si access ports : même VLAN. Si trunk : mêmes VLANs autorisés + même Native VLAN.</td></tr>
+        <tr><td><strong>STP</strong></td><td>Mêmes paramètres STP (priorité, cost...)</td></tr>
+        <tr><td><strong>Type de câble</strong></td><td>Tous cuivre ou tous fibre. Même longueur recommandée.</td></tr>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Si incompatibilité détectée</strong>
+        Le switch met le port en état <strong>suspended</strong> (suspendu) et ne l'ajoute pas à l'agrégation. Le port reste inactif jusqu'à correction du problème.
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. CE QUI TROMPE LES CANDIDATS -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : Passive + Passive = agrégation</div>
+      <div class="trap-content">
+        Beaucoup de candidats pensent que LACP passive + passive fonctionne. <strong>FAUX</strong>.<br><br>
+        Passive attend que l'autre parle en premier. Si les deux sont en passive → personne ne parle → pas de négociation → pas d'agrégation.<br><br>
+        Il faut AU MOINS un côté en Active.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : Agrégation = débit multiplié par connexion</div>
+      <div class="trap-content">
+        4 liens 1G agrégés ≠ 4 Gbps par flux.<br><br>
+        Une seule conversation utilise UN SEUL lien physique → max 1 Gbps.<br>
+        Le bénéfice vient quand PLUSIEURS conversations simultanées se répartissent sur les liens.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : Mélanger LACP et PAgP</div>
+      <div class="trap-content">
+        <strong>LACP</strong> = standard IEEE 802.3ad, multi-vendeur<br>
+        <strong>PAgP</strong> = propriétaire Cisco, fonctionne uniquement entre équipements Cisco<br><br>
+        Tu NE PEUX PAS mélanger un côté LACP et un côté PAgP → l'agrégation échouera.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #4 : Nombre maximum de liens</div>
+      <div class="trap-content">
+        LACP supporte <strong>jusqu'à 16 ports membres</strong>, mais seulement <strong>8 actifs simultanément</strong>.<br><br>
+        Les 8 autres sont en standby. Si un lien actif tombe, un lien standby prend automatiquement le relais.
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. CE QUE COMPTIA PEUT TE POSER -->
+  <div class="section">
+    <div class="section-label">🎯 Questions types</div>
+    <h2>Ce que CompTIA peut te poser</h2>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #1 : LACP modes</div>
+      <div class="comptia-content">
+        "Un switch A a un port LACP en mode passive. Un switch B a un port LACP en mode passive. L'agrégation sera-t-elle formée ?"<br><br>
+        <strong>Réponse :</strong> Non. Passive + Passive = échec. Il faut au moins un côté en Active.
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #2 : Load balancing</div>
+      <div class="comptia-content">
+        "Un serveur unique envoie du trafic vers 100 clients via une agrégation de 4 liens. L'algorithme de load balancing est src-mac. Combien de liens seront utilisés ?"<br><br>
+        <strong>Réponse :</strong> 1 seul lien. Toutes les trames ont la même MAC source (le serveur) → même hash → même lien.
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #3 : Débit agrégé</div>
+      <div class="comptia-content">
+        "Une agrégation de 4 ports 1 Gbps est configurée. Quel est le débit maximum pour un seul flux TCP ?"<br><br>
+        <strong>Réponse :</strong> 1 Gbps. Un flux unique utilise un seul lien physique. L'agrégation ne multiplie pas le débit par connexion.
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #4 : Configuration invalide</div>
+      <div class="comptia-content">
+        "Un technicien configure une agrégation avec 2 ports en 1G et 2 ports en 10G. Que se passera-t-il ?"<br><br>
+        <strong>Réponse :</strong> Échec de l'agrégation. Tous les ports doivent avoir la même vitesse. Les ports 10G seront suspendus.
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">C'est quoi l'agrégation de liens ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Regrouper plusieurs liens physiques en un seul lien logique pour augmenter la bande passante totale et la redondance.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">Quelle est la différence entre LACP Active et Passive ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Active</strong> : envoie des LACPDU activement pour négocier<br><strong>Passive</strong> : attend de recevoir des LACPDU avant de répondre<br>Passive + Passive = échec (pas de négociation)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">3 ports 1G agrégés = quel débit total ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>3 Gbps total</strong> (agrégé). Mais un seul flux utilise max 1 Gbps (un seul lien physique).</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">Quel algorithme de load balancing pour un serveur unique qui sert beaucoup de clients ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>dst-ip</strong> ou <strong>dst-mac</strong>. Comme source unique, il faut distribuer par destination. Éviter src-mac (1 seule source → 1 seul lien).</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">Question type examen : Peut-on agréger 2 ports 1G + 2 ports 10G ensemble ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Non</strong>. Tous les ports d'une agrégation doivent avoir la même vitesse. L'agrégation échouera.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">Quelle est la différence entre LACP et PAgP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>LACP</strong> (IEEE 802.3ad) = standard multi-vendeur<br><strong>PAgP</strong> = propriétaire Cisco uniquement. Ne pas mélanger les deux.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">Combien de ports actifs maximum dans une agrégation LACP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>8 ports actifs</strong> simultanément (sur 16 max configurables). Les 8 autres en standby.</div>
+  </div>
+
+  <!-- 9. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span>Agrégation = plusieurs liens physiques → 1 lien logique (plus de bande passante + redondance)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>LACP</strong> (IEEE 802.3ad) = standard multi-vendeur. <strong>PAgP</strong> = Cisco propriétaire.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>LACP Active = envoie LACPDU. LACP Passive = attend LACPDU. Passive + Passive = échec.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Load balancing = algorithme qui répartit trafic. src-dst-ip = bon compromis.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Un seul flux utilise UN SEUL lien physique. Bénéfice = plusieurs flux simultanés.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Tous les ports doivent avoir : même vitesse, même duplex, même VLAN, même config.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>LACP = max 8 ports actifs simultanément (16 configurables, 8 en standby)</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 13 : STP / RSTP</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">C14 · Phase 1</span>
+    <a class="nav-btn next" href="#">Cours 15 : CDP / LLDP →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_c14_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>
