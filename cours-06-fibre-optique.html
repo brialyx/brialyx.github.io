@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 06 — Fibre optique · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .vocab { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; }
+  .vocab-term { font-family: 'IBM Plex Mono', monospace; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .fiber-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; margin: 18px 0; }
+  .fiber-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; transition: all 0.2s; }
+  .fiber-card:hover { border-color: rgba(56,189,248,0.3); transform: translateY(-2px); }
+  .fiber-card-title { font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 0.95rem; color: var(--accent); margin-bottom: 10px; }
+  .fiber-card-body { font-size: 0.85rem; line-height: 1.8; }
+  .fiber-card-body div { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(28,42,58,0.35); }
+  .fiber-card-body div:last-child { border-bottom: none; }
+  .fiber-card-body .lbl { color: var(--muted); font-size: 0.78rem; }
+  .fiber-card-body .val { font-weight: 600; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Phase 1 — Fondamentaux</span> &nbsp;›&nbsp; Cours 06</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 1 · C06</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡☆ Moyen</span>
+  </div>
+
+  <h1>Fibre <span>Optique</span></h1>
+  <span class="tagline">// La lumière au service des données — vitesse, distance et immunité aux interférences</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends la différence entre monomode et multimode</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais les types de connecteurs (LC, SC, ST, MT-RJ)</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je sais quand choisir la fibre vs le cuivre</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. C'EST QUOI -->
+  <div class="section">
+    <div class="section-label">Avant de commencer</div>
+    <h2>C'est quoi la fibre optique ?</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>Analogie — le câble cuivre vs la fibre optique</strong>
+        Le câble cuivre transporte de l'<strong>électricité</strong> (électrons). La fibre optique transporte de la <strong>lumière</strong> (photons). C'est comme comparer un tuyau d'eau à un rayon laser — la lumière va beaucoup plus vite et beaucoup plus loin sans perdre de puissance.
+      </div>
+    </div>
+
+    <p>Un <strong>câble fibre optique</strong> est un fil de verre (ou de plastique) ultra-fin — plus fin qu'un cheveu humain. La lumière voyage à l'intérieur du fil en rebondissant sur les parois grâce au principe de <strong>réflexion totale interne</strong>. Les données sont codées sous forme d'impulsions lumineuses : lumière = 1, pas de lumière = 0.</p>
+
+    <h3>// Pourquoi utiliser la fibre au lieu du cuivre ?</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Avantage</th><th>Pourquoi c'est important</th></tr>
+        <tr><td><strong>Distance énorme</strong></td><td>Des dizaines de kilomètres sans répéteur (vs 100m pour le cuivre)</td></tr>
+        <tr><td><strong>Débit très élevé</strong></td><td>Plusieurs Tbps possibles (vs quelques Gbps pour le cuivre)</td></tr>
+        <tr><td><strong>Immunité aux interférences</strong></td><td>Pas d'EMI/RFI — la lumière n'est pas affectée par les champs électromagnétiques</td></tr>
+        <tr><td><strong>Sécurité</strong></td><td>Impossible d'écouter le signal sans couper physiquement la fibre (détectable)</td></tr>
+        <tr><td><strong>Poids et encombrement</strong></td><td>Plus léger et plus fin que le cuivre équivalent</td></tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen Network+</strong>
+        CompTIA teste la différence entre fibre <strong>monomode</strong> (longue distance) et <strong>multimode</strong> (courte distance), ainsi que les types de connecteurs (LC, SC, ST…). Ces questions sont du par cœur — connais les specs et tu gagnes des points faciles.
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. VOCABULAIRE -->
+  <div class="section">
+    <div class="section-label">Vocabulaire essentiel</div>
+    <h2>Les mots clés de ce cours</h2>
+
+    <div class="vocab">
+      <div class="vocab-term">Cœur (Core)</div>
+      <div>Le centre du câble optique — un fil de verre ultra-pur où la lumière voyage. Son diamètre détermine le type de fibre (monomode ou multimode).</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Gaine optique (Cladding)</div>
+      <div>Couche de verre qui entoure le cœur. Elle a un indice de réfraction différent qui crée la réflexion totale interne — c'est ce qui fait rebondir la lumière dans le cœur.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Monomode (Single-Mode, SMF)</div>
+      <div>Fibre avec un cœur très fin (8-10 µm). Un seul rayon de lumière passe. Utilisée pour les <strong>longues distances</strong> (dizaines de km). Lumière laser.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Multimode (Multi-Mode, MMF)</div>
+      <div>Fibre avec un cœur plus large (50-62.5 µm). Plusieurs rayons de lumière passent en même temps. Utilisée pour les <strong>courtes distances</strong> (quelques centaines de mètres). Lumière LED.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Dispersion modale</div>
+      <div>Phénomène où les différents rayons de lumière (modes) arrivent à des moments légèrement différents dans la fibre multimode. C'est ce qui limite la distance en multimode — les signaux se brouillent.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Atténuation</div>
+      <div>Perte de puissance du signal lumineux au fur et à mesure qu'il parcourt la fibre. Mesurée en dB/km (décibels par kilomètre). Plus la fibre est de qualité, moins l'atténuation est forte.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Connecteur optique</div>
+      <div>Connecteur au bout du câble fibre qui permet de le brancher dans un équipement. Exemples : LC, SC, ST, MT-RJ. Chaque type a une forme et un système de verrouillage différent.</div>
+    </div>
+  </div>
+
+  <!-- 3. MONOMODE vs MULTIMODE -->
+  <div class="section">
+    <div class="section-label">La différence fondamentale</div>
+    <h2>Monomode vs Multimode — tout repose là-dessus</h2>
+
+    <p>C'est LA distinction critique que CompTIA teste. La différence vient du <strong>diamètre du cœur</strong> et du <strong>type de source lumineuse</strong>.</p>
+
+    <div class="fiber-cards">
+      <div class="fiber-card">
+        <div class="fiber-card-title">🔴 Fibre Monomode (SMF)</div>
+        <div class="fiber-card-body">
+          <div><span class="lbl">Diamètre du cœur</span><span class="val">8-10 µm</span></div>
+          <div><span class="lbl">Source lumineuse</span><span class="val">Laser</span></div>
+          <div><span class="lbl">Couleur du câble</span><span class="val">Jaune (standard)</span></div>
+          <div><span class="lbl">Distance</span><span class="val">40-80 km+</span></div>
+          <div><span class="lbl">Débit</span><span class="val">Très élevé (100G+)</span></div>
+          <div><span class="lbl">Coût</span><span class="val">Plus cher</span></div>
+          <div><span class="lbl">Usage</span><span class="val" style="font-size:0.75rem">Longue distance, WAN, datacenter</span></div>
+        </div>
+      </div>
+
+      <div class="fiber-card">
+        <div class="fiber-card-title">🟠 Fibre Multimode (MMF)</div>
+        <div class="fiber-card-body">
+          <div><span class="lbl">Diamètre du cœur</span><span class="val">50 ou 62.5 µm</span></div>
+          <div><span class="lbl">Source lumineuse</span><span class="val">LED</span></div>
+          <div><span class="lbl">Couleur du câble</span><span class="val">Orange (OM1/OM2) ou Aqua (OM3/OM4)</span></div>
+          <div><span class="lbl">Distance</span><span class="val">300m - 2km</span></div>
+          <div><span class="lbl">Débit</span><span class="val">Élevé (10-100G)</span></div>
+          <div><span class="lbl">Coût</span><span class="val">Moins cher</span></div>
+          <div><span class="lbl">Usage</span><span class="val" style="font-size:0.75rem">LAN, campus, datacenter courte distance</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🚂</span>
+      <div class="callout-body">
+        <strong>Analogie — un tunnel vs plusieurs voies</strong>
+        <strong>Monomode</strong> = un tunnel étroit où un seul train (rayon de lumière) passe à la fois. Il va très vite et très loin sans se perdre.<br>
+        <strong>Multimode</strong> = un tunnel large où plusieurs trains peuvent passer en même temps, mais ils vont à des vitesses légèrement différentes et finissent par se mélanger (dispersion modale). Distance limitée.
+      </div>
+    </div>
+
+    <h3>// Pourquoi la distance est limitée en multimode ?</h3>
+    <p>En multimode, plusieurs rayons de lumière voyagent en même temps à des angles différents. Certains rebondissent plus souvent que d'autres → ils parcourent une distance plus longue → ils arrivent plus tard. Au bout de quelques centaines de mètres, les signaux se chevauchent et deviennent illisibles. C'est la <strong>dispersion modale</strong>.</p>
+
+    <p>En monomode, un seul rayon passe → pas de dispersion → distance quasi illimitée (limitée uniquement par l'atténuation).</p>
+  </div>
+
+  <!-- 4. LES CATÉGORIES DE MULTIMODE -->
+  <div class="section">
+    <div class="section-label">Types de fibre multimode</div>
+    <h2>OM1, OM2, OM3, OM4, OM5 — les catégories multimode</h2>
+
+    <p>La fibre multimode existe en plusieurs "générations" qui permettent des débits et distances progressivement meilleurs.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Type</th><th>Diamètre cœur</th><th>Couleur</th><th>Distance max (10G)</th><th>Distance max (40/100G)</th><th>Usage</th></tr>
+        <tr>
+          <td><strong>OM1</strong></td>
+          <td>62.5 µm</td>
+          <td>Orange</td>
+          <td>33m</td>
+          <td>—</td>
+          <td>Ancien standard, rare aujourd'hui</td>
+        </tr>
+        <tr>
+          <td><strong>OM2</strong></td>
+          <td>50 µm</td>
+          <td>Orange</td>
+          <td>82m</td>
+          <td>—</td>
+          <td>Ancien, remplacé par OM3/OM4</td>
+        </tr>
+        <tr>
+          <td><strong>OM3</strong></td>
+          <td>50 µm</td>
+          <td>Aqua</td>
+          <td>300m</td>
+          <td>100m (40/100G)</td>
+          <td>Standard actuel datacenter courte distance</td>
+        </tr>
+        <tr>
+          <td><strong>OM4</strong></td>
+          <td>50 µm</td>
+          <td>Aqua</td>
+          <td>400m</td>
+          <td>150m (40/100G)</td>
+          <td>Datacenter moderne, distances intermédiaires</td>
+        </tr>
+        <tr>
+          <td><strong>OM5</strong></td>
+          <td>50 µm</td>
+          <td>Lime green</td>
+          <td>400m</td>
+          <td>150m (40/100G)</td>
+          <td>Nouveau, optimisé pour multiplexage WDM</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">🔑</span>
+      <div class="callout-body">
+        <strong>Pour l'examen — retenir le minimum</strong>
+        <strong>OM3/OM4</strong> = fibre multimode moderne (aqua), utilisée en datacenter.<br>
+        <strong>OM3</strong> : 300m en 10G<br>
+        <strong>OM4</strong> : 400m en 10G<br>
+        Les anciennes générations (OM1/OM2) sont orange et obsolètes.
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. LES CONNECTEURS -->
+  <div class="section">
+    <div class="section-label">Connecteurs fibre optique</div>
+    <h2>LC, SC, ST, MT-RJ — les types de connecteurs</h2>
+
+    <p>Contrairement au cuivre qui utilise partout le RJ-45, la fibre optique a plusieurs types de connecteurs selon l'application et l'âge de l'installation.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Connecteur</th><th>Nom complet</th><th>Description</th><th>Usage typique</th></tr>
+        <tr>
+          <td><strong>LC</strong></td>
+          <td>Lucent Connector<br>(ou Local Connector)</td>
+          <td>Petit connecteur carré avec un clip de verrouillage. Format compact. Ressemble à un mini RJ-45.<br><strong>Le plus courant aujourd'hui.</strong></td>
+          <td>Switches, SFP/SFP+ transceivers, datacenter moderne</td>
+        </tr>
+        <tr>
+          <td><strong>SC</strong></td>
+          <td>Subscriber Connector<br>(ou Standard Connector)</td>
+          <td>Connecteur carré plus large que LC, avec un système push-pull (tu pousses pour insérer, tu tires pour retirer).</td>
+          <td>Anciennes installations, ONT (box fibre), certains data centers</td>
+        </tr>
+        <tr>
+          <td><strong>ST</strong></td>
+          <td>Straight Tip</td>
+          <td>Connecteur rond avec un système de verrouillage à baïonnette (tu tournes pour verrouiller, comme un tuyau d'arrosage).</td>
+          <td>Ancien standard (années 90-2000), rare aujourd'hui</td>
+        </tr>
+        <tr>
+          <td><strong>MT-RJ</strong></td>
+          <td>Mechanical Transfer Registered Jack</td>
+          <td>Format compact similaire au RJ-45. Contient <strong>deux fibres</strong> (TX et RX) dans un seul connecteur.</td>
+          <td>Rare, utilisé dans certains environnements spécialisés</td>
+        </tr>
+        <tr>
+          <td><strong>MPO/MTP</strong></td>
+          <td>Multi-fiber Push On</td>
+          <td>Connecteur qui contient <strong>12 ou 24 fibres</strong> dans un seul connecteur. Haute densité.</td>
+          <td>Datacenter très haute densité, backbone 40/100/400G</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Pour l'examen — les connecteurs à connaître absolument</strong>
+        <strong>LC</strong> : le plus courant aujourd'hui, petit format, clip de verrouillage<br>
+        <strong>SC</strong> : carré, push-pull, box fibre / ancien datacenter<br>
+        <strong>ST</strong> : rond, baïonnette, ancien standard<br>
+        <strong>MPO/MTP</strong> : multi-fibres (12/24), datacenter haute densité
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. STANDARDS ETHERNET FIBRE -->
+  <div class="section">
+    <div class="section-label">Standards Ethernet sur fibre</div>
+    <h2>1000Base-SX, 10GBase-SR, 40GBase-LR…</h2>
+
+    <p>Les standards Ethernet sur fibre suivent une nomenclature précise. Voici comment les lire :</p>
+    <p><code><strong>10G</strong>Base-<strong>SR</strong></code> → <strong>10G</strong> = débit (10 Gigabit), <strong>SR</strong> = Short Range (courte distance, multimode)</p>
+
+    <h3>// Nomenclature des suffixes</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>-SX / -SR</strong> : Short Range (multimode, courte distance, LED)</li>
+      <li><strong>-LX / -LR</strong> : Long Range (monomode, longue distance, laser)</li>
+      <li><strong>-LH</strong> : Long Haul (très longue distance, dizaines de km)</li>
+      <li><strong>-ZR</strong> : Extended Range (distance extrême, 80+ km)</li>
+      <li><strong>-ER</strong> : Extended Range (40-80 km)</li>
+    </ul>
+
+    <h3>// Standards courants à connaître</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Standard</th><th>Débit</th><th>Type fibre</th><th>Distance max</th><th>Connecteur typique</th></tr>
+        <tr><td><strong>1000Base-SX</strong></td><td>1 Gbps</td><td>Multimode</td><td>220-550m</td><td>LC, SC</td></tr>
+        <tr><td><strong>1000Base-LX</strong></td><td>1 Gbps</td><td>Monomode ou Multimode</td><td>5 km (SM) / 550m (MM)</td><td>LC, SC</td></tr>
+        <tr><td><strong>10GBase-SR</strong></td><td>10 Gbps</td><td>Multimode (OM3/OM4)</td><td>300-400m</td><td>LC</td></tr>
+        <tr><td><strong>10GBase-LR</strong></td><td>10 Gbps</td><td>Monomode</td><td>10 km</td><td>LC</td></tr>
+        <tr><td><strong>10GBase-ER</strong></td><td>10 Gbps</td><td>Monomode</td><td>40 km</td><td>LC</td></tr>
+        <tr><td><strong>40GBase-SR4</strong></td><td>40 Gbps</td><td>Multimode (OM3/OM4)</td><td>100-150m</td><td>MPO/MTP</td></tr>
+        <tr><td><strong>100GBase-LR4</strong></td><td>100 Gbps</td><td>Monomode</td><td>10 km</td><td>LC ou MPO</td></tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>Règle simple pour retenir</strong>
+        Si le nom contient <strong>S</strong> (SX, SR) → <strong>Short</strong> → Multimode<br>
+        Si le nom contient <strong>L</strong> (LX, LR) → <strong>Long</strong> → Monomode
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. BIDIRECTIONNEL (BiDi) -->
+  <div class="section">
+    <div class="section-label">Technologie avancée</div>
+    <h2>Fibre bidirectionnelle (BiDi)</h2>
+
+    <p>Normalement, une connexion fibre nécessite <strong>deux fibres</strong> : une pour envoyer (TX) et une pour recevoir (RX). La technologie <strong>BiDi</strong> (Bidirectional) permet d'utiliser <strong>une seule fibre</strong> pour les deux sens de communication.</p>
+
+    <h3>// Comment ça marche ?</h3>
+    <p>BiDi utilise deux longueurs d'onde différentes de lumière sur la même fibre :</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Sens A → B : lumière à 1310 nm</li>
+      <li>Sens B → A : lumière à 1490 nm</li>
+    </ul>
+    <p>Les deux signaux voyagent en même temps dans la même fibre sans se perturber car ils ont des longueurs d'onde différentes.</p>
+
+    <h3>// Avantages</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Économie de 50% sur le câble fibre (une fibre au lieu de deux)</li>
+      <li>Réduit l'encombrement dans les conduits</li>
+      <li>Idéal pour les installations où tirer une deuxième fibre est difficile</li>
+    </ul>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Attention — incompatibilité</strong>
+        Les modules BiDi sont <strong>par paire</strong> : un côté émet à 1310nm / reçoit à 1490nm, l'autre côté fait l'inverse. Tu ne peux pas utiliser deux modules BiDi identiques — il faut un émetteur TX-1310 d'un côté et TX-1490 de l'autre. Souvent marqués "A" et "B".
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. TRANSCEIVERS SFP -->
+  <div class="section">
+    <div class="section-label">Modules optiques</div>
+    <h2>SFP, SFP+, QSFP — les transceivers</h2>
+
+    <p>Un <strong>transceiver</strong> (ou module optique) est un petit boîtier amovible qu'on insère dans un switch ou un routeur pour ajouter un port fibre. Il convertit les signaux électriques du switch en signaux optiques pour la fibre (et vice-versa).</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Type</th><th>Nom complet</th><th>Débit</th><th>Format</th><th>Usage</th></tr>
+        <tr><td><strong>SFP</strong></td><td>Small Form-factor Pluggable</td><td>1 Gbps</td><td>Petit module, 1 port LC</td><td>Gigabit Ethernet</td></tr>
+        <tr><td><strong>SFP+</strong></td><td>Enhanced SFP</td><td>10 Gbps</td><td>Même taille que SFP</td><td>10 Gigabit Ethernet</td></tr>
+        <tr><td><strong>SFP28</strong></td><td>SFP 28 Gbps</td><td>25 Gbps</td><td>Même taille que SFP</td><td>25G Ethernet (datacenter)</td></tr>
+        <tr><td><strong>QSFP</strong></td><td>Quad SFP</td><td>40 Gbps</td><td>Plus large (4 canaux)</td><td>40G Ethernet</td></tr>
+        <tr><td><strong>QSFP+</strong></td><td>Quad SFP+</td><td>40 Gbps</td><td>Amélioration de QSFP</td><td>40G Ethernet datacenter</td></tr>
+        <tr><td><strong>QSFP28</strong></td><td>Quad SFP 28</td><td>100 Gbps</td><td>4 × 25G = 100G</td><td>100G Ethernet datacenter</td></tr>
+      </table>
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">🔑</span>
+      <div class="callout-body">
+        <strong>Pourquoi utiliser des transceivers ?</strong>
+        Flexibilité : tu peux changer le type de connexion (fibre courte distance, fibre longue distance, cuivre) en changeant juste le module, sans changer le switch. C'est aussi moins cher — les ports optiques fixes coûtent plus cher à fabriquer.
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. QUAND CHOISIR FIBRE VS CUIVRE -->
+  <div class="section">
+    <div class="section-label">Décision pratique</div>
+    <h2>Fibre ou cuivre — comment choisir ?</h2>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>Choisir la fibre si…</th><th>Choisir le cuivre si…</th></tr>
+        <tr><td><strong>Distance</strong></td><td>&gt; 100 mètres</td><td>&lt; 100 mètres</td></tr>
+        <tr><td><strong>Débit</strong></td><td>&gt; 10 Gbps sur longue distance</td><td>1-10 Gbps suffit sur courte distance</td></tr>
+        <tr><td><strong>Environnement</strong></td><td>Interférences électromagnétiques fortes (usines, hôpitaux, aéroports)</td><td>Bureau classique sans interférences</td></tr>
+        <tr><td><strong>Sécurité</strong></td><td>Données sensibles — impossibilité d'écoute passive</td><td>Réseau interne de confiance</td></tr>
+        <tr><td><strong>Budget</strong></td><td>Budget disponible pour infrastructure longue durée</td><td>Budget limité, besoin immédiat</td></tr>
+        <tr><td><strong>Liaison inter-bâtiments</strong></td><td>Toujours (immunité foudre, longue distance)</td><td>Jamais (risque de surtension par la terre)</td></tr>
+      </table>
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Question type examen</strong>
+        "Une entreprise veut connecter deux bâtiments distants de 250 mètres. Quel câblage recommander ?"<br>
+        → <strong>Fibre optique</strong>. Le cuivre est limité à 100m. De plus, entre bâtiments, la fibre évite les problèmes de différence de potentiel électrique et de foudre.
+      </div>
+    </div>
+  </div>
+
+  <!-- 10. PROBLÈMES COURANTS -->
+  <div class="section">
+    <div class="section-label">Dépannage fibre</div>
+    <h2>Problèmes courants et solutions</h2>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Problème</th><th>Symptôme</th><th>Cause probable</th><th>Solution</th></tr>
+        <tr>
+          <td><strong>Pas de lien</strong></td>
+          <td>LED éteinte, pas de connexion</td>
+          <td>Fibre coupée, connecteur sale, mauvais type de module (MM vs SM)</td>
+          <td>Nettoyer connecteurs, vérifier type fibre, tester avec OTDR</td>
+        </tr>
+        <tr>
+          <td><strong>Perte de signal</strong></td>
+          <td>Connexion instable, erreurs CRC</td>
+          <td>Atténuation excessive, rayon de courbure trop serré</td>
+          <td>Éviter les pliures serrées (rayon min 3cm), vérifier budget optique</td>
+        </tr>
+        <tr>
+          <td><strong>Débit réduit</strong></td>
+          <td>Lenteur, paquets perdus</td>
+          <td>Dispersion modale (multimode trop long), connecteurs sales</td>
+          <td>Nettoyer, vérifier distance max pour le type de fibre</td>
+        </tr>
+        <tr>
+          <td><strong>TX/RX inversés</strong></td>
+          <td>Pas de lien</td>
+          <td>Fibres TX et RX interverties</td>
+          <td>Inverser les deux fibres</td>
+        </tr>
+        <tr>
+          <td><strong>Connecteur endommagé</strong></td>
+          <td>Pas de lien ou intermittent</td>
+          <td>Embout de connecteur rayé ou cassé</td>
+          <td>Remplacer le connecteur (nécessite équipement de polissage)</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">🔧</span>
+      <div class="callout-body">
+        <strong>Outils de diagnostic fibre</strong>
+        <strong>VFL</strong> (Visual Fault Locator) : laser rouge visible pour tracer la fibre et repérer les coupures<br>
+        <strong>OTDR</strong> (Optical Time-Domain Reflectometer) : appareil professionnel qui mesure l'atténuation et localise les défauts<br>
+        <strong>Power meter</strong> : mesure la puissance du signal optique en dBm
+      </div>
+    </div>
+  </div>
+
+  <!-- 11. PIÈGES -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges fréquents</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Piège 1 — Monomode = courte distance ?</strong>
+        Non ! C'est l'inverse. <strong>Monomode</strong> = longue distance (dizaines de km). <strong>Multimode</strong> = courte distance (centaines de mètres). Le nom "mono" fait penser à "moins bien" mais c'est faux.
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Piège 2 — Couleur du câble = type de fibre ?</strong>
+        Jaune = généralement monomode<br>
+        Orange = multimode ancien (OM1/OM2)<br>
+        Aqua = multimode moderne (OM3/OM4)<br>
+        Mais attention : ce n'est qu'une convention, pas une norme stricte. Toujours vérifier les specs du câble.
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Piège 3 — Connecteur LC = Local Connector ?</strong>
+        Plusieurs noms existent pour LC : Lucent Connector, Local Connector, Little Connector. À l'examen, accepte n'importe lequel. L'important est de savoir que c'est le connecteur <strong>petit format</strong> le plus courant aujourd'hui.
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Piège 4 — SFP et SFP+ sont interchangeables ?</strong>
+        Un port SFP+ accepte un module SFP (1G), mais un port SFP n'accepte pas un module SFP+ (10G). SFP+ est <strong>rétrocompatible</strong> vers le bas, mais pas l'inverse.
+      </div>
+    </div>
+  </div>
+
+  <!-- 12. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">Quelle est la différence principale entre monomode et multimode ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Monomode</strong> : cœur étroit (8-10 µm), laser, longue distance (dizaines de km), câble jaune<br><strong>Multimode</strong> : cœur large (50-62.5 µm), LED, courte distance (centaines de m), câble orange/aqua</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">Quel est le connecteur fibre le plus courant aujourd'hui ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>LC</strong> (Lucent Connector) — petit format avec clip de verrouillage. Utilisé dans les switches et transceivers SFP/SFP+.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">Un câble 10GBase-SR utilise quel type de fibre ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Multimode</strong>. Le suffixe <strong>SR</strong> = Short Range → multimode. Distance max : 300-400m avec OM3/OM4.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">Quelle est la distance maximum typique d'une fibre monomode ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">De <strong>10 km à 80+ km</strong> selon le standard (LR, ER, ZR). Certaines fibres monomode spécialisées peuvent atteindre plusieurs centaines de km.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">Pourquoi la fibre multimode a-t-elle une distance limitée ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">À cause de la <strong>dispersion modale</strong>. Plusieurs rayons de lumière voyagent à des vitesses légèrement différentes et finissent par se chevaucher, rendant le signal illisible au-delà de quelques centaines de mètres.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">Question type examen : Une entreprise doit relier deux bâtiments distants de 500m avec du 10 Gigabit Ethernet. Quel câblage recommander ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Fibre optique multimode OM3 ou OM4</strong> avec <strong>10GBase-SR</strong>. OM3 fait 300m, OM4 fait 400m → pour 500m il faut passer en monomode <strong>10GBase-LR</strong> (10 km max). Alternative : utiliser un répéteur fibre à mi-chemin avec OM4.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">Quelle est la couleur typique d'un câble fibre monomode ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Jaune</strong>. Multimode ancien = orange, multimode moderne (OM3/OM4) = aqua.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">08</span><span class="exq-text">Un module SFP peut-il être inséré dans un port SFP+ ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Oui</strong>. SFP+ est rétrocompatible — il accepte les modules SFP (1G) et fonctionne à 1G. Mais un port SFP ne peut pas accepter un module SFP+ (10G).</div>
+  </div>
+
+  <!-- 13. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Monomode</strong> : cœur 8-10µm, laser, longue distance (km), jaune</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Multimode</strong> : cœur 50-62.5µm, LED, courte distance (centaines de m), orange/aqua</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Connecteurs : <strong>LC</strong> (le plus courant), <strong>SC</strong> (push-pull), <strong>ST</strong> (baïonnette, ancien)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Standards : <strong>-SR/-SX</strong> = Short (multimode) · <strong>-LR/-LX</strong> = Long (monomode)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>OM3/OM4 = multimode moderne (aqua), 300-400m en 10G</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Transceivers : SFP (1G), SFP+ (10G), QSFP28 (100G)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Avantages fibre : distance énorme, immunité EMI, sécurité, débit élevé</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Liaison inter-bâtiments → <strong>toujours fibre</strong> (évite surtension, foudre)</span></div>
+    </div>
+  </div>
+
+  <!-- 14. EXAM -->
+  <div class="section">
+    <div class="section-label">Questions type examen</div>
+    <h2>❓ Ce que CompTIA peut te poser</h2>
+    <div class="callout exam"><span class="callout-icon">🎯</span><div class="callout-body"><strong>Q : Quel type de fibre pour une liaison de 15 km ?</strong><strong>Monomode</strong> (SMF). Multimode est limité à quelques centaines de mètres max.</div></div>
+    <div class="callout exam"><span class="callout-icon">🎯</span><div class="callout-body"><strong>Q : Un technicien installe du 10GBase-SR. Quel connecteur va-t-il probablement utiliser ?</strong><strong>LC</strong>. C'est le connecteur standard pour les modules SFP/SFP+ modernes.</div></div>
+    <div class="callout exam"><span class="callout-icon">🎯</span><div class="callout-body"><strong>Q : Pourquoi utiliser la fibre entre deux bâtiments plutôt que du cuivre ?</strong>Distance (fibre &gt; 100m), immunité à la foudre et aux différences de potentiel électrique entre bâtiments, pas d'interférences.</div></div>
+    <div class="callout exam"><span class="callout-icon">🎯</span><div class="callout-body"><strong>Q : Quelle est la principale limitation de la fibre multimode ?</strong>La <strong>dispersion modale</strong> limite la distance à quelques centaines de mètres max.</div></div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 05 : Types de câblage cuivre</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">C06 · Phase 1</span>
+    <a class="nav-btn next" href="#">Cours 07 : Équipements réseau (Hub, Switch, Routeur) →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_c06_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>
