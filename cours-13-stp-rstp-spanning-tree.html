@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 13 — STP / RSTP : Spanning Tree · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .vocab { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; }
+  .vocab-term { font-family: 'IBM Plex Mono', monospace; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .comptia-box { background: rgba(251,191,36,0.05); border: 2px solid var(--amber); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .comptia-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--amber); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .comptia-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Phase 1 — Fondamentaux</span> &nbsp;›&nbsp; Cours 13</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 1 · C13</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡⚡ Difficile</span>
+  </div>
+
+  <h1>STP / RSTP — <span>Spanning Tree</span></h1>
+  <span class="tagline">// Prévention des boucles réseau — Root Bridge, états des ports, BPDU</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends pourquoi les boucles sont dangereuses</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais l'élection du Root Bridge</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise les 4 états de ports STP</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. LE PROBLÈME -->
+  <div class="section">
+    <div class="section-label">Avant de commencer</div>
+    <h2>Le problème — les boucles réseau (loops)</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🔁</span>
+      <div class="callout-body">
+        <strong>Analogie — la salle des miroirs</strong>
+        Imagine deux miroirs face à face. Une lumière rebondit infiniment entre les deux. Pareil sur un réseau : une trame Ethernet broadcast envoyée dans une boucle circule INFINIMENT jusqu'à saturer complètement le réseau en quelques secondes.
+      </div>
+    </div>
+
+    <p><strong>Scénario problématique :</strong> Tu connectes 3 switches en triangle (Switch A ↔ Switch B ↔ Switch C ↔ Switch A). Un PC envoie un broadcast ARP. Que se passe-t-il ?</p>
+
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Switch A reçoit le broadcast et le flood sur tous les ports (vers B et C)</li>
+      <li>Switch B reçoit le broadcast et le flood (vers A et C)</li>
+      <li>Switch C reçoit le broadcast et le flood (vers A et B)</li>
+      <li>Le broadcast circule infiniment A → B → C → A → B → C...</li>
+      <li><strong>Résultat : Tempête de broadcast (Broadcast Storm)</strong> — le réseau sature en secondes</li>
+    </ol>
+
+    <h3>// Les 3 problèmes des boucles réseau</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Problème</th><th>Description</th></tr>
+        <tr><td><strong>Broadcast Storm</strong></td><td>Les broadcasts circulent infiniment, saturent la bande passante → réseau inutilisable</td></tr>
+        <tr><td><strong>Instabilité de la table MAC</strong></td><td>Le switch voit la même MAC sur plusieurs ports différents → confusion → table MAC corrompue</td></tr>
+        <tr><td><strong>Duplication de trames</strong></td><td>Une trame unicast peut arriver plusieurs fois au destinataire par chemins différents</td></tr>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">💥</span>
+      <div class="callout-body">
+        <strong>Impact réel</strong>
+        Sans STP, une boucle réseau provoque un crash total en 5-30 secondes. Les LED des switches clignotent à 100%, le réseau devient complètement inutilisable. La seule solution : débrancher physiquement un câble pour casser la boucle.
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>La solution : STP (Spanning Tree Protocol)</strong>
+        STP détecte automatiquement les boucles et BLOQUE certains ports pour créer une topologie sans boucle (arbre). Si un lien tombe, STP réactive automatiquement un port bloqué pour restaurer la connectivité.
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. VOCABULAIRE -->
+  <div class="section">
+    <div class="section-label">Vocabulaire essentiel</div>
+    <h2>Les mots clés de ce cours</h2>
+
+    <div class="vocab">
+      <div class="vocab-term">STP (Spanning Tree Protocol)</div>
+      <div>Protocole IEEE 802.1D qui prévient les boucles réseau en bloquant intelligemment certains ports. Temps de convergence : 30-50 secondes.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">RSTP (Rapid Spanning Tree Protocol)</div>
+      <div>Version rapide de STP (IEEE 802.1w). Convergence en 1-3 secondes au lieu de 30-50s. Rétrocompatible avec STP.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Root Bridge (Pont racine)</div>
+      <div>Le switch "maître" dans une topologie STP. C'est le point de référence central. Tous les autres switches calculent leurs chemins vers le Root Bridge.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">BPDU (Bridge Protocol Data Unit)</div>
+      <div>Messages échangés entre switches pour élire le Root Bridge, détecter les boucles, et déterminer quels ports bloquer.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Bridge ID</div>
+      <div">Identifiant unique d'un switch = Priorité (16 bits) + MAC address (48 bits). Utilisé pour élire le Root Bridge.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Root Port (RP)</div>
+      <div>Sur chaque switch non-root, c'est le port avec le chemin le plus court vers le Root Bridge. État : Forwarding.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Designated Port (DP)</div>
+      <div>Sur chaque segment, c'est le port qui envoie le trafic vers le Root Bridge. État : Forwarding.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Non-Designated Port (Blocked Port)</div>
+      <div>Port bloqué pour casser la boucle. N'envoie ni ne reçoit de trafic utilisateur (écoute uniquement les BPDU).</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">PortFast</div>
+      <div>Fonctionnalité qui permet à un port Access (connecté à un PC) de passer immédiatement en Forwarding sans attendre les états STP. Gain de temps au boot.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">BPDU Guard</div>
+      <div>Sécurité : si un BPDU est reçu sur un port PortFast (supposé connecter un PC), le port est automatiquement désactivé. Empêche les boucles accidentelles.</div>
+    </div>
+  </div>
+
+  <!-- 3. ROOT BRIDGE ELECTION -->
+  <div class="section">
+    <div class="section-label">Élection du chef</div>
+    <h2>Élection du Root Bridge — le switch maître</h2>
+
+    <p>Tous les switches d'un réseau participent à une <strong>élection démocratique</strong> pour désigner un Root Bridge (le switch de référence central).</p>
+
+    <h3>// Processus d'élection</h3>
+    <p><strong>Critère de sélection :</strong> Le switch avec le <strong>Bridge ID le plus BAS</strong> devient Root Bridge.</p>
+
+    <p><strong>Bridge ID = Priorité (16 bits) + MAC Address (48 bits)</strong></p>
+
+    <p><strong>Ordre de comparaison :</strong></p>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Priorité la plus basse</strong> gagne (par défaut = 32768 sur tous les switches)</li>
+      <li>Si égalité de priorité → <strong>MAC la plus basse</strong> gagne (tiebreaker automatique)</li>
+    </ol>
+
+    <p><strong>Exemple :</strong></p>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Switch</th><th>Priorité</th><th>MAC Address</th><th>Bridge ID</th><th>Résultat</th></tr>
+        <tr><td>Switch A</td><td>32768</td><td>00:1A:2B:3C:4D:01</td><td>32768.001A2B3C4D01</td><td>—</td></tr>
+        <tr><td>Switch B</td><td>32768</td><td>00:1A:2B:3C:4D:02</td><td>32768.001A2B3C4D02</td><td>—</td></tr>
+        <tr><td>Switch C</td><td>32768</td><td>00:1A:2B:3C:4D:00</td><td>32768.001A2B3C4D00</td><td style="color:var(--green)">✅ Root Bridge (MAC la plus basse)</td></tr>
+      </table>
+    </div>
+
+    <h3>// Forcer un switch comme Root Bridge</h3>
+    <p>En production, tu ne veux PAS que le Root Bridge soit choisi aléatoirement selon la MAC. Tu veux que ce soit ton switch le plus performant et central.</p>
+
+    <p><strong>Solution :</strong> Baisser manuellement la priorité du switch souhaité.</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;line-height:1.8;">
+      <span style="color:var(--green)">Switch(config)#</span> spanning-tree vlan 1 priority 4096<br>
+      <span style="color:var(--muted);font-style:italic">! Priorité = 4096 (doit être multiple de 4096)</span><br>
+      <span style="color:var(--muted);font-style:italic">! Valeurs possibles : 0, 4096, 8192, ..., 61440</span>
+    </div>
+
+    <p>Avec une priorité de 4096, ce switch deviendra Root Bridge (4096 < 32768 par défaut).</p>
+
+    <div class="callout ok">
+      <span class="callout-icon">🏆</span>
+      <div class="callout-body">
+        <strong>Bonne pratique</strong>
+        Core Switch (datacenter) = priorité 4096 (Root Bridge principal)<br>
+        Distribution Switch = priorité 8192 (Root Bridge de secours)<br>
+        Access Switches = priorité par défaut 32768
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. PORT STATES -->
+  <div class="section">
+    <div class="section-label">Cycle de vie des ports</div>
+    <h2>Les 4 états de ports STP</h2>
+
+    <p>Un port STP passe par plusieurs états avant d'être utilisable. <strong>Durée totale STP classique : 30-50 secondes</strong>.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>État</th><th>Durée</th><th>Écoute BPDU</th><th>Envoie BPDU</th><th>Apprend MAC</th><th>Forwarding</th></tr>
+        <tr>
+          <td><strong>Blocking</strong></td>
+          <td>∞</td>
+          <td>✅ Oui</td>
+          <td>❌ Non</td>
+          <td>❌ Non</td>
+          <td>❌ Non</td>
+        </tr>
+        <tr>
+          <td><strong>Listening</strong></td>
+          <td>15s</td>
+          <td>✅ Oui</td>
+          <td>✅ Oui</td>
+          <td>❌ Non</td>
+          <td>❌ Non</td>
+        </tr>
+        <tr>
+          <td><strong>Learning</strong></td>
+          <td>15s</td>
+          <td>✅ Oui</td>
+          <td>✅ Oui</td>
+          <td>✅ Oui</td>
+          <td>❌ Non</td>
+        </tr>
+        <tr>
+          <td><strong>Forwarding</strong></td>
+          <td>∞</td>
+          <td>✅ Oui</td>
+          <td>✅ Oui</td>
+          <td>✅ Oui</td>
+          <td>✅ Oui</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>// Détail de chaque état</h3>
+
+    <p><strong>1. Blocking (Bloqué)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Port désactivé pour casser la boucle</li>
+      <li>Écoute les BPDU (pour détecter si la topologie change)</li>
+      <li>N'envoie aucun trafic utilisateur</li>
+      <li>Durée : indéfinie (jusqu'à changement de topologie)</li>
+    </ul>
+
+    <p><strong>2. Listening (Écoute)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Le port se prépare à participer activement à STP</li>
+      <li>Écoute et envoie des BPDU</li>
+      <li>Ne transmet PAS encore de trafic utilisateur</li>
+      <li>Durée : 15 secondes (Forward Delay timer)</li>
+    </ul>
+
+    <p><strong>3. Learning (Apprentissage)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Le port commence à apprendre les adresses MAC</li>
+      <li>Remplit sa table MAC</li>
+      <li>Ne transmet PAS encore de trafic utilisateur</li>
+      <li>Durée : 15 secondes (Forward Delay timer)</li>
+    </ul>
+
+    <p><strong>4. Forwarding (Transmission)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Port pleinement opérationnel</li>
+      <li>Transmet le trafic utilisateur normalement</li>
+      <li>Continue d'écouter les BPDU</li>
+      <li>Durée : indéfinie (état normal)</li>
+    </ul>
+
+    <p><strong>Temps total de convergence STP :</strong> 15s (Listening) + 15s (Learning) = <strong>30 secondes minimum</strong></p>
+
+    <div class="callout warn">
+      <span class="callout-icon">⏱️</span>
+      <div class="callout-body">
+        <strong>Problème de STP classique</strong>
+        30-50 secondes de convergence, c'est TRÈS long. Si un lien tombe, le réseau est coupé pendant 30s avant que STP ne réactive un port bloqué. C'est pour ça que RSTP a été créé (convergence en 1-3s).
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. RSTP -->
+  <div class="section">
+    <div class="section-label">Version rapide</div>
+    <h2>RSTP (Rapid Spanning Tree) — convergence en secondes</h2>
+
+    <p><strong>RSTP (IEEE 802.1w)</strong> est une évolution de STP qui converge en <strong>1-3 secondes</strong> au lieu de 30-50 secondes.</p>
+
+    <h3>// Améliorations de RSTP</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Fonctionnalité</th><th>STP (802.1D)</th><th>RSTP (802.1w)</th></tr>
+        <tr><td>Convergence</td><td>30-50 secondes</td><td>1-3 secondes</td></tr>
+        <tr><td>États de ports</td><td>5 états (Disabled, Blocking, Listening, Learning, Forwarding)</td><td>3 états (Discarding, Learning, Forwarding)</td></tr>
+        <tr><td>Rôles de ports</td><td>Root, Designated, Non-Designated</td><td>Root, Designated, Alternate, Backup</td></tr>
+        <tr><td>Compatibilité</td><td>—</td><td>Rétrocompatible avec STP</td></tr>
+      </table>
+    </div>
+
+    <p><strong>Changements clés :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Pas d'état Listening</strong> : RSTP fusionne Blocking/Listening en un seul état "Discarding"</li>
+      <li><strong>Alternate Port</strong> : Port de backup pré-calculé qui peut activer instantanément si le Root Port tombe</li>
+      <li><strong>Proposal/Agreement</strong> : Négociation rapide entre switches pour activer un port sans attendre les timers</li>
+    </ul>
+
+    <div class="callout ok">
+      <span class="callout-icon">✅</span>
+      <div class="callout-body">
+        <strong>Standard moderne</strong>
+        RSTP est le standard actuel. Tous les switches modernes supportent RSTP. STP classique (802.1D) n'est plus utilisé que pour compatibilité avec du très vieux matériel.
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. PORTFAST & BPDU GUARD -->
+  <div class="section">
+    <div class="section-label">Optimisations</div>
+    <h2>PortFast et BPDU Guard — pour les access ports</h2>
+
+    <h3>// PortFast</h3>
+    <p><strong>Problème :</strong> Un PC branché sur un switch doit attendre 30s (STP) avant d'avoir accès au réseau. C'est inutile car un PC ne crée pas de boucle.</p>
+
+    <p><strong>Solution :</strong> PortFast permet au port de passer immédiatement en <strong>Forwarding</strong> sans passer par Listening/Learning.</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;line-height:1.8;">
+      <span style="color:var(--green)">Switch(config)#</span> interface FastEthernet0/1<br>
+      <span style="color:var(--green)">Switch(config-if)#</span> spanning-tree portfast<br>
+      <span style="color:var(--muted);font-style:italic">! Le port passe immédiatement en Forwarding</span>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>DANGER — PortFast uniquement sur Access Ports</strong>
+        N'active JAMAIS PortFast sur un port qui connecte un switch ou un hub → risque de boucle immédiate ! PortFast = uniquement pour PC, imprimantes, serveurs finaux.
+      </div>
+    </div>
+
+    <h3>// BPDU Guard</h3>
+    <p><strong>Problème :</strong> Si quelqu'un branche accidentellement un switch sur un port PortFast → boucle instantanée.</p>
+
+    <p><strong>Solution :</strong> BPDU Guard désactive automatiquement le port si un BPDU est reçu (= détecte qu'un switch a été branché).</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;line-height:1.8;">
+      <span style="color:var(--green)">Switch(config)#</span> interface FastEthernet0/1<br>
+      <span style="color:var(--green)">Switch(config-if)#</span> spanning-tree portfast<br>
+      <span style="color:var(--green)">Switch(config-if)#</span> spanning-tree bpduguard enable<br>
+      <span style="color:var(--muted);font-style:italic">! Si BPDU reçu → port shutdown immédiat (err-disabled)</span>
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">🔒</span>
+      <div class="callout-body">
+        <strong>Bonne pratique de sécurité</strong>
+        Active TOUJOURS BPDU Guard sur TOUS les ports PortFast. C'est une protection essentielle contre les boucles accidentelles.
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. CE QUI TROMPE LES CANDIDATS -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : Confondre Root Bridge et Root Port</div>
+      <div class="trap-content">
+        <strong>Root Bridge</strong> = le switch maître (1 seul dans tout le réseau)<br>
+        <strong>Root Port</strong> = sur chaque switch NON-root, c'est le port vers le Root Bridge<br><br>
+        Erreur fréquente : penser que le Root Bridge a des Root Ports → FAUX. Le Root Bridge n'a QUE des Designated Ports (tous en Forwarding).
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : Croire que STP bloque tous les liens redondants</div>
+      <div class="trap-content">
+        STP bloque uniquement les ports qui créent des BOUCLES. Si tu as 2 liens parallèles entre Switch A et Switch B, STP bloquera 1 des 2 liens (pas de boucle = pas de blocage ailleurs).
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : Confondre PortFast et RSTP</div>
+      <div class="trap-content">
+        <strong>PortFast</strong> = désactive STP sur un port Access (PC) → instant forwarding<br>
+        <strong>RSTP</strong> = version rapide de STP pour TOUT le réseau → convergence en 1-3s<br><br>
+        Ce n'est PAS la même chose. PortFast ne remplace pas STP/RSTP.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #4 : Temps de convergence</div>
+      <div class="trap-content">
+        Beaucoup de candidats pensent STP = 50s, RSTP = instantané. C'est faux.<br>
+        <strong>STP</strong> : 30-50 secondes<br>
+        <strong>RSTP</strong> : 1-3 secondes (pas instantané, mais très rapide)<br>
+        <strong>PortFast</strong> : vraiment instantané (0s), mais UNIQUEMENT pour access ports
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. CE QUE COMPTIA PEUT TE POSER -->
+  <div class="section">
+    <div class="section-label">🎯 Questions types</div>
+    <h2>Ce que CompTIA peut te poser</h2>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #1 : Élection Root Bridge</div>
+      <div class="comptia-content">
+        "Trois switches ont les Bridge ID suivants : Switch A (32768.001122334455), Switch B (4096.001122334466), Switch C (32768.001122334444). Lequel devient Root Bridge ?"<br><br>
+        <strong>Réponse :</strong> Switch B (priorité 4096 est la plus basse)
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #2 : Temps de convergence</div>
+      <div class="comptia-content">
+        "Un lien principal tombe sur un réseau STP classique. Combien de temps avant que le trafic soit rétabli via le lien de backup ?"<br><br>
+        <strong>Réponse :</strong> 30-50 secondes (Listening 15s + Learning 15s)
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #3 : PortFast danger</div>
+      <div class="comptia-content">
+        "Un technicien active PortFast sur un port trunk reliant deux switches. Quel est le risque ?"<br><br>
+        <strong>Réponse :</strong> Boucle réseau immédiate → broadcast storm → crash réseau. PortFast ne doit JAMAIS être activé sur un trunk.
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #4 : BPDU Guard</div>
+      <div class="comptia-content">
+        "Un port avec BPDU Guard reçoit un BPDU. Que se passe-t-il ?"<br><br>
+        <strong>Réponse :</strong> Le port passe en état err-disabled (shutdown automatique). Il faut le réactiver manuellement après avoir retiré le switch illégal.
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">Pourquoi les boucles réseau sont-elles dangereuses ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Les broadcasts circulent infiniment → <strong>Broadcast Storm</strong> → saturation bande passante → réseau inutilisable en quelques secondes. Table MAC corrompue + duplication de trames.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">Comment le Root Bridge est-il élu ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Switch avec le <strong>Bridge ID le plus bas</strong> → Bridge ID = Priorité (défaut 32768) + MAC. Si priorités égales, MAC la plus basse gagne.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">Quels sont les 4 états de ports STP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Blocking</strong> (bloqué), <strong>Listening</strong> (15s), <strong>Learning</strong> (15s), <strong>Forwarding</strong> (actif). Total : 30s minimum.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">Quelle est la différence entre STP et RSTP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>STP</strong> : convergence 30-50s, 5 états<br><strong>RSTP</strong> : convergence 1-3s, 3 états, rétrocompatible. RSTP est le standard moderne.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">À quoi sert PortFast ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Permet à un <strong>port Access (PC)</strong> de passer immédiatement en Forwarding sans attendre 30s. JAMAIS sur un trunk/port switch.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">À quoi sert BPDU Guard ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Désactive automatiquement un port PortFast si un BPDU est reçu (= switch branché). Protection contre boucles accidentelles.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">Question type examen : Le Root Bridge a-t-il des Root Ports ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Non</strong>. Le Root Bridge n'a QUE des Designated Ports (tous en Forwarding). Les Root Ports sont sur les switches NON-root (vers le Root Bridge).</div>
+  </div>
+
+  <!-- 10. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span>Boucle réseau → Broadcast Storm → crash en 5-30 secondes</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>STP (802.1D) prévient les boucles en bloquant intelligemment certains ports</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Root Bridge</strong> = switch avec Bridge ID le plus bas (Priorité + MAC)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>4 états STP : Blocking → Listening (15s) → Learning (15s) → Forwarding</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>RSTP (802.1w) = version rapide : convergence 1-3s au lieu de 30-50s</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>PortFast</strong> = instant forwarding sur access ports (PC). JAMAIS sur trunk.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>BPDU Guard</strong> = shutdown automatique si BPDU reçu sur port PortFast</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Root Bridge n'a QUE des Designated Ports. Root Ports = sur switches non-root.</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 12 : VLAN — Configuration</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">C13 · Phase 1</span>
+    <a class="nav-btn next" href="#">Cours 14 : Aggregation de liens (LACP) →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_c13_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>
