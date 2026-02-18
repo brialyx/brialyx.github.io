@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 08 — Standards Ethernet IEEE 802.3 · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .vocab { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; }
+  .vocab-term { font-family: 'IBM Plex Mono', monospace; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Phase 1 — Fondamentaux</span> &nbsp;›&nbsp; Cours 08</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 1 · C08</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-diff">⚡⚡☆ Moyen</span>
+  </div>
+
+  <h1>Standards <span>Ethernet IEEE 802.3</span></h1>
+  <span class="tagline">// Vitesses, duplex, auto-négociation et PoE — les normes officielles du réseau câblé</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais les standards Ethernet (10Base-T, 100Base-TX, 1000Base-T...)</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends Half-duplex vs Full-duplex</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais les standards PoE (802.3af, at, bt)</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. IEEE 802.3 -->
+  <div class="section">
+    <div class="section-label">Avant de commencer</div>
+    <h2>C'est quoi IEEE 802.3 — la norme Ethernet</h2>
+
+    <p><strong>IEEE 802.3</strong> est la norme technique officielle qui définit comment Ethernet fonctionne. Créée en 1983, elle est maintenue par l'IEEE (Institute of Electrical and Electronics Engineers) et mise à jour régulièrement pour ajouter de nouveaux standards de vitesse et de fonctionnalités.</p>
+
+    <div class="callout analogy">
+      <span class="callout-icon">📜</span>
+      <div class="callout-body">
+        <strong>Analogie — le code de la route</strong>
+        IEEE 802.3, c'est comme le code de la route pour les réseaux Ethernet. Tous les fabricants (Cisco, HP, Dell, Juniper…) doivent suivre les mêmes règles pour que leurs équipements puissent communiquer ensemble. Sans ça, chacun inventerait son propre système incompatible.
+      </div>
+    </div>
+
+    <h3>// Pourquoi c'est important ?</h3>
+    <p>Grâce à IEEE 802.3, tu peux brancher un PC Dell sur un switch Cisco avec un câble Belkin — et ça fonctionne. La standardisation garantit l'<strong>interopérabilité</strong> entre tous les équipements Ethernet du monde.</p>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen Network+</strong>
+        CompTIA teste massivement les standards Ethernet : connaître les vitesses, les distances max, les types de câbles, Half vs Full-duplex, et les différences entre PoE af/at/bt. C'est du par cœur — mais TRÈS rentable en points d'examen.
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. VOCABULAIRE -->
+  <div class="section">
+    <div class="section-label">Vocabulaire essentiel</div>
+    <h2>Les mots clés de ce cours</h2>
+
+    <div class="vocab">
+      <div class="vocab-term">BaseT / BaseTX</div>
+      <div>"Base" = transmission en bande de base (un seul signal à la fois). "T" = Twisted pair (paire torsadée cuivre). "TX" = version améliorée avec meilleure signalisation.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Half-Duplex</div>
+      <div>Communication dans les deux sens, mais pas simultanément. L'appareil peut envoyer OU recevoir, mais pas les deux en même temps (comme un talkie-walkie).</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Full-Duplex</div>
+      <div>Communication dans les deux sens simultanément. L'appareil peut envoyer ET recevoir en même temps (comme un téléphone).</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Auto-Negotiation (Auto-MDI/MDIX)</div>
+      <div>Capacité des équipements à négocier automatiquement la meilleure vitesse et le mode duplex. Également : détection auto du type de câble (droit vs croisé).</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">PoE (Power over Ethernet)</div>
+      <div>Technologie qui permet d'alimenter électriquement un appareil via le câble Ethernet (pas besoin de câble d'alimentation séparé).</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">PSE (Power Sourcing Equipment)</div>
+      <div>L'équipement qui FOURNIT l'électricité en PoE (typiquement un switch PoE ou un injecteur PoE).</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">PD (Powered Device)</div>
+      <div>L'appareil qui REÇOIT l'électricité en PoE (téléphone IP, caméra, point d'accès Wi-Fi…).</div>
+    </div>
+  </div>
+
+  <!-- 3. STANDARDS ETHERNET -->
+  <div class="section">
+    <div class="section-label">Les vitesses Ethernet</div>
+    <h2>10/100/1G/10G — les standards de débit</h2>
+
+    <p>Ethernet existe en plusieurs vitesses. Chaque vitesse a son propre standard IEEE 802.3 avec un nom technique.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Nom commercial</th><th>Standard IEEE</th><th>Débit</th><th>Câble</th><th>Distance max</th><th>Statut</th></tr>
+        <tr>
+          <td><strong>Ethernet</strong></td>
+          <td>10Base-T</td>
+          <td>10 Mbps</td>
+          <td>Cat3 ou supérieur, 2 paires</td>
+          <td>100m</td>
+          <td style="color:var(--red)">Obsolète</td>
+        </tr>
+        <tr>
+          <td><strong>Fast Ethernet</strong></td>
+          <td>100Base-TX</td>
+          <td>100 Mbps</td>
+          <td>Cat5 ou supérieur, 2 paires</td>
+          <td>100m</td>
+          <td style="color:var(--amber)">Rare, remplacé par 1G</td>
+        </tr>
+        <tr>
+          <td><strong>Gigabit Ethernet</strong></td>
+          <td>1000Base-T</td>
+          <td>1 Gbps (1000 Mbps)</td>
+          <td>Cat5e minimum, 4 paires</td>
+          <td>100m</td>
+          <td style="color:var(--green)">Standard actuel</td>
+        </tr>
+        <tr>
+          <td><strong>10 Gigabit Ethernet</strong></td>
+          <td>10GBase-T</td>
+          <td>10 Gbps</td>
+          <td>Cat6 (55m) ou Cat6a (100m), 4 paires</td>
+          <td>55m (Cat6) / 100m (Cat6a)</td>
+          <td style="color:var(--green)">Standard datacenter/entreprise</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">🔑</span>
+      <div class="callout-body">
+        <strong>Comment lire un standard Ethernet</strong>
+        Exemple : <strong>1000Base-T</strong><br>
+        - <strong>1000</strong> = vitesse en Mbps (1000 Mbps = 1 Gbps)<br>
+        - <strong>Base</strong> = transmission en bande de base<br>
+        - <strong>T</strong> = Twisted pair (paire torsadée cuivre)<br>
+        Autre exemple : <strong>10GBase-SR</strong> → 10G, fibre Short Range (multimode)
+      </div>
+    </div>
+
+    <h3>// Standards fibre optique</h3>
+    <p>Pour les connexions fibre, le suffixe change :</p>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Standard</th><th>Débit</th><th>Type de fibre</th><th>Distance typique</th></tr>
+        <tr><td>1000Base-SX</td><td>1 Gbps</td><td>Multimode</td><td>220-550m</td></tr>
+        <tr><td>1000Base-LX</td><td>1 Gbps</td><td>Monomode ou Multimode</td><td>5 km (SMF) / 550m (MMF)</td></tr>
+        <tr><td><strong>10GBase-SR</strong></td><td>10 Gbps</td><td>Multimode (Short Range)</td><td>300-400m (OM3/OM4)</td></tr>
+        <tr><td><strong>10GBase-LR</strong></td><td>10 Gbps</td><td>Monomode (Long Range)</td><td>10 km</td></tr>
+        <tr><td>10GBase-ER</td><td>10 Gbps</td><td>Monomode (Extended Range)</td><td>40 km</td></tr>
+      </table>
+    </div>
+
+    <p><strong>Règle simple :</strong> <strong>S</strong> (Short) = Multimode courte distance, <strong>L</strong> (Long) = Monomode longue distance, <strong>E</strong> (Extended) = Monomode très longue distance.</p>
+  </div>
+
+  <!-- 4. HALF vs FULL DUPLEX -->
+  <div class="section">
+    <div class="section-label">Modes de communication</div>
+    <h2>Half-Duplex vs Full-Duplex</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">📞</span>
+      <div class="callout-body">
+        <strong>Analogie — talkie-walkie vs téléphone</strong>
+        <strong>Half-Duplex</strong> = talkie-walkie. Tu parles, puis tu relâches le bouton et tu écoutes. Impossible de parler et écouter en même temps.<br>
+        <strong>Full-Duplex</strong> = téléphone. Tu peux parler et écouter simultanément. Les deux personnes peuvent s'interrompre.
+      </div>
+    </div>
+
+    <h3>// Half-Duplex</h3>
+    <p>En mode <strong>half-duplex</strong>, l'appareil peut envoyer OU recevoir, mais <strong>pas les deux en même temps</strong>. S'il essaie d'envoyer pendant qu'un autre appareil envoie aussi → <strong>collision</strong> → les deux doivent s'arrêter et réessayer.</p>
+
+    <p><strong>Mécanisme CSMA/CD</strong> (Carrier Sense Multiple Access with Collision Detection) :</p>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Écouter</strong> le câble (Carrier Sense)</li>
+      <li>Si libre → <strong>envoyer</strong> les données</li>
+      <li>Si collision détectée → <strong>arrêter</strong> immédiatement</li>
+      <li><strong>Attendre</strong> un délai aléatoire puis réessayer</li>
+    </ol>
+
+    <p><strong>Problème :</strong> Plus il y a d'appareils, plus il y a de collisions → performance dégradée. C'est pour ça que les hubs (toujours half-duplex) sont obsolètes.</p>
+
+    <h3>// Full-Duplex</h3>
+    <p>En mode <strong>full-duplex</strong>, l'appareil peut envoyer ET recevoir <strong>simultanément</strong>. Chaque direction utilise des paires de câbles séparées → pas de collision possible.</p>
+
+    <p><strong>Avantages :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Bande passante doublée</strong> : 1 Gbps en full-duplex = 1 Gbps envoi + 1 Gbps réception = 2 Gbps total</li>
+      <li><strong>Pas de collisions</strong> → CSMA/CD désactivé</li>
+      <li><strong>Performance maximale</strong></li>
+    </ul>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>Half-Duplex</th><th>Full-Duplex</th></tr>
+        <tr><td>Communication</td><td>Une direction à la fois</td><td>Deux directions simultanées</td></tr>
+        <tr><td>Collisions</td><td>Possibles (CSMA/CD)</td><td>Impossibles</td></tr>
+        <tr><td>Bande passante</td><td>Partagée</td><td>Dédiée (doublée)</td></tr>
+        <tr><td>Équipements</td><td>Hubs, très vieux switches</td><td>Switches modernes, tous les appareils récents</td></tr>
+        <tr><td>Statut</td><td style="color:var(--red)">Obsolète</td><td style="color:var(--green)">Standard actuel</td></tr>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Duplex Mismatch — erreur de configuration courante</strong>
+        Si un côté est en full-duplex et l'autre en half-duplex → <strong>problème de performance</strong>. Le côté full-duplex va envoyer pendant que l'autre reçoit, causant des "late collisions" et des erreurs. Symptômes : débit très lent, paquets perdus. Solution : configurer les deux côtés sur full-duplex ou utiliser auto-négociation.
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. AUTO-NEGOTIATION -->
+  <div class="section">
+    <div class="section-label">Configuration automatique</div>
+    <h2>Auto-Negotiation — détection automatique de la vitesse et du duplex</h2>
+
+    <p>L'<strong>auto-negotiation</strong> est un mécanisme qui permet à deux équipements Ethernet de négocier automatiquement la meilleure configuration commune : vitesse (10/100/1000 Mbps) et mode duplex (half/full).</p>
+
+    <h3>// Comment ça fonctionne</h3>
+    <p>Quand tu branches un câble, les deux équipements échangent des signaux électriques appelés <strong>FLP</strong> (Fast Link Pulse) qui annoncent leurs capacités :</p>
+
+    <p><strong>Exemple :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9;font-size:0.88rem">
+      <li>PC : "Je supporte 10/100/1000, half et full-duplex"</li>
+      <li>Switch : "Je supporte 10/100/1000, half et full-duplex"</li>
+      <li>Négociation : "OK, on prend le maximum commun → 1000 Mbps full-duplex" ✅</li>
+    </ul>
+
+    <h3>// Ordre de priorité (si pas d'accord parfait)</h3>
+    <p>L'auto-negotiation choisit le <strong>meilleur mode commun</strong> selon cet ordre de préférence :</p>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>1000Base-T full-duplex</li>
+      <li>1000Base-T half-duplex (très rare)</li>
+      <li>100Base-TX full-duplex</li>
+      <li>100Base-TX half-duplex</li>
+      <li>10Base-T full-duplex</li>
+      <li>10Base-T half-duplex</li>
+    </ol>
+
+    <h3>// Auto-MDI/MDIX — détection du type de câble</h3>
+    <p><strong>Auto-MDIX</strong> (Automatic Medium-Dependent Interface Crossover) est une extension de l'auto-negotiation qui détecte automatiquement si le câble branché est un <strong>câble droit</strong> ou un <strong>câble croisé</strong>, et inverse les signaux si nécessaire.</p>
+
+    <p><strong>Résultat :</strong> Depuis ~2010, tu peux brancher n'importe quel câble (droit ou croisé) sur n'importe quel équipement moderne — ça marchera toujours. Les câbles croisés sont devenus obsolètes.</p>
+
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>Recommandation</strong>
+        Utilise TOUJOURS l'auto-negotiation sauf si tu as une raison très spécifique de forcer une vitesse/duplex (compatibilité avec du très vieux matériel). La configuration manuelle crée plus de problèmes qu'elle n'en résout.
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. PoE -->
+  <div class="section">
+    <div class="section-label">Alimentation par câble Ethernet</div>
+    <h2>PoE — Power over Ethernet (802.3af / at / bt)</h2>
+
+    <p><strong>PoE</strong> (Power over Ethernet) permet d'alimenter électriquement un appareil via le câble Ethernet — pas besoin de câble d'alimentation séparé. Le switch envoie à la fois les données ET l'électricité sur les mêmes fils.</p>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🔌</span>
+      <div class="callout-body">
+        <strong>Analogie — USB-C qui charge ton téléphone</strong>
+        Comme USB-C qui transporte données + électricité dans un seul câble, PoE fait pareil pour Ethernet. Un seul câble pour tout : réseau + alimentation.
+      </div>
+    </div>
+
+    <h3>// Les 3 standards PoE</h3>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Standard</th><th>Nom commercial</th><th>Puissance max</th><th>Puissance à l'appareil</th><th>Appareils typiques</th></tr>
+        <tr>
+          <td><strong>802.3af</strong></td>
+          <td>PoE</td>
+          <td>15.4W</td>
+          <td>12.95W (perte dans câble)</td>
+          <td>Téléphones IP, petites caméras IP, points d'accès Wi-Fi basiques</td>
+        </tr>
+        <tr>
+          <td><strong>802.3at</strong></td>
+          <td>PoE+ (PoE Plus)</td>
+          <td>30W</td>
+          <td>25.5W</td>
+          <td>Points d'accès Wi-Fi performants (Wi-Fi 6), caméras PTZ, tablettes murales</td>
+        </tr>
+        <tr>
+          <td><strong>802.3bt</strong></td>
+          <td>PoE++ (Ultra PoE / 4PPoE)</td>
+          <td>60W (Type 3) ou 100W (Type 4)</td>
+          <td>51W / 71W</td>
+          <td>Écrans, mini-PC, bornes Wi-Fi 6E, LED lighting, caméras 4K PTZ</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">🔑</span>
+      <div class="callout-body">
+        <strong>Rétrocompatibilité PoE</strong>
+        Un switch <strong>802.3bt</strong> (PoE++) peut alimenter des appareils <strong>802.3at</strong> (PoE+) et <strong>802.3af</strong> (PoE). Il fournit juste la puissance dont l'appareil a besoin. La rétrocompatibilité fonctionne toujours vers le bas.
+      </div>
+    </div>
+
+    <h3>// Comment PoE fonctionne</h3>
+    <p><strong>1. Détection (Detection)</strong> : Le switch (PSE) envoie un signal de test pour vérifier si l'appareil branché supporte PoE.</p>
+    <p><strong>2. Classification (Classification)</strong> : L'appareil (PD) indique de combien de puissance il a besoin (classe 0 à 8).</p>
+    <p><strong>3. Alimentation (Power)</strong> : Le switch fournit la puissance demandée.</p>
+    <p><strong>4. Surveillance (Monitoring)</strong> : Le switch surveille en continu. Si l'appareil est débranché ou échoue, il coupe l'alimentation.</p>
+
+    <h3>// Paires utilisées</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Mode A</strong> : Alimentation sur les paires de données (1-2 et 3-6). Compatible 10/100 Mbps (qui n'utilisent que 2 paires).</li>
+      <li><strong>Mode B</strong> : Alimentation sur les paires inutilisées (4-5 et 7-8). Utilisé en 10/100 Mbps uniquement.</li>
+      <li><strong>802.3bt (PoE++)</strong> : Utilise les 4 paires pour fournir jusqu'à 100W.</li>
+    </ul>
+
+    <h3>// Avantages PoE</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Installation simplifiée</strong> : un seul câble, pas besoin de prise électrique à proximité</li>
+      <li><strong>Flexibilité</strong> : placer les appareils n'importe où (plafond, mur, extérieur…)</li>
+      <li><strong>Coût réduit</strong> : pas besoin d'électricien pour tirer du 220V</li>
+      <li><strong>Alimentation centralisée</strong> : onduleur sur le switch = tous les appareils PoE protégés</li>
+    </ul>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Budget PoE du switch</strong>
+        Un switch a un <strong>budget PoE total</strong>. Exemple : switch 24 ports avec budget 370W. Si chaque port utilise 30W (PoE+) → 24 × 30 = 720W nécessaires, mais le switch ne peut fournir que 370W. Tu ne pourras alimenter que 12 ports simultanément (370 / 30 = 12). Vérifie toujours le budget PoE total du switch.
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">Quel est le standard IEEE pour Gigabit Ethernet sur cuivre ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>1000Base-T</strong>. Nécessite Cat5e minimum, utilise 4 paires, distance max 100m.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">Quelle est la différence entre half-duplex et full-duplex ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Half-duplex</strong> : une direction à la fois, collisions possibles, obsolète<br><strong>Full-duplex</strong> : deux directions simultanées, pas de collision, bande passante doublée, standard actuel</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">Combien de watts fournit 802.3af (PoE standard) ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>15.4W</strong> au switch, mais seulement <strong>12.95W</strong> arrivent à l'appareil (pertes dans le câble). Suffisant pour téléphone IP ou petite caméra.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">Question type examen : Un technicien veut installer un point d'accès Wi-Fi 6 au plafond loin de toute prise électrique. Quel standard PoE minimum ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>802.3at (PoE+)</strong>. Wi-Fi 6 performant consomme ~20-25W → 802.3af (15.4W) insuffisant. Il faut PoE+ (30W).</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">C'est quoi Auto-MDIX ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Automatic Medium-Dependent Interface Crossover</strong> — détecte automatiquement si le câble est droit ou croisé et inverse les signaux si nécessaire. Résultat : câbles croisés obsolètes depuis ~2010.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">Question type examen : Un lien entre PC et switch fonctionne, mais le débit est très lent avec beaucoup de "late collisions". Quelle est la cause probable ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Duplex mismatch</strong>. Un côté est probablement en full-duplex, l'autre en half-duplex. Solution : configurer les deux en full-duplex ou activer auto-négociation.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">Quelle distance maximum pour 10GBase-T sur Cat6 ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>55 mètres</strong> maximum sur Cat6. Pour atteindre 100m en 10G, il faut du <strong>Cat6a</strong>.</div>
+  </div>
+
+  <!-- 8. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>10Base-T</strong> = 10 Mbps, <strong>100Base-TX</strong> = 100 Mbps (Fast Ethernet), <strong>1000Base-T</strong> = 1 Gbps, <strong>10GBase-T</strong> = 10 Gbps</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Half-duplex = une direction à la fois, collisions (obsolète). Full-duplex = deux directions simultanées, standard actuel</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Auto-negotiation négocie vitesse + duplex automatiquement. Auto-MDIX détecte câble droit vs croisé</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>PoE 802.3af</strong> = 15.4W, <strong>802.3at</strong> = 30W (PoE+), <strong>802.3bt</strong> = 60-100W (PoE++)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>10GBase-T : 55m sur Cat6, 100m sur Cat6a</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Fibre : SR (Short Range) = multimode, LR (Long Range) = monomode</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Duplex mismatch = late collisions + débit lent → vérifier config duplex des deux côtés</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 07 : Connecteurs & transceivers</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">C08 · Phase 1</span>
+    <a class="nav-btn next" href="#">Cours 09 : Équipements réseau (Hub/Switch/Routeur) →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_c08_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>

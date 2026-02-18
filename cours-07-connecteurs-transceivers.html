@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 07 — Connecteurs & Transceivers · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-proto { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .vocab { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; }
+  .vocab-term { font-family: 'IBM Plex Mono', monospace; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Phase 1 — Fondamentaux</span> &nbsp;›&nbsp; Cours 07</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 1 · C07</span>
+    <span class="pill pill-proto">PROTO</span>
+    <span class="pill pill-diff">⚡⚡☆ Moyen</span>
+  </div>
+
+  <h1>Connecteurs & <span>Transceivers</span></h1>
+  <span class="tagline">// SFP, SFP+, QSFP, DAC, BiDi, GBIC — les modules optiques et leurs usages</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais les différents types de transceivers (SFP, SFP+, QSFP...)</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends DAC et BiDi</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je sais quand utiliser quel format</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. C'EST QUOI -->
+  <div class="section">
+    <div class="section-label">Avant de commencer</div>
+    <h2>C'est quoi un transceiver — et pourquoi c'est modulaire</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🔌</span>
+      <div class="callout-body">
+        <strong>Analogie — les adaptateurs universels</strong>
+        Un transceiver, c'est comme un adaptateur de voyage pour prises électriques. Ton switch a un port standard (le slot), et tu y insères le module adapté à ton besoin : fibre courte distance, fibre longue distance, ou même cuivre. Tu changes le module, pas le switch.
+      </div>
+    </div>
+
+    <p>Un <strong>transceiver</strong> (ou module optique) est un petit boîtier amovible qu'on insère dans un switch ou un routeur pour ajouter un port réseau. Il convertit les signaux électriques du switch en signaux optiques (ou cuivre) et vice-versa.</p>
+
+    <h3>// Pourquoi utiliser des transceivers ?</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Avantage</th><th>Explication</th></tr>
+        <tr><td><strong>Flexibilité</strong></td><td>Tu peux changer le type de connexion sans changer le switch. Fibre courte → longue distance ? Change juste le module.</td></tr>
+        <tr><td><strong>Coût</strong></td><td>Les ports fixes coûtent plus cher à fabriquer. Les slots vides + modules achetés au besoin = moins cher.</td></tr>
+        <tr><td><strong>Évolutivité</strong></td><td>Passer de 1G à 10G ? Remplace les modules SFP par des SFP+, garde le même switch.</td></tr>
+        <tr><td><strong>Standardisation</strong></td><td>Un seul type de switch avec des slots universels, et tu choisis les modules selon tes besoins.</td></tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen Network+</strong>
+        CompTIA teste les différences entre SFP, SFP+, QSFP, et les cas d'usage de DAC et BiDi. Connais les débits et formats par cœur — c'est du par cœur facile qui rapporte des points.
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. VOCABULAIRE -->
+  <div class="section">
+    <div class="section-label">Vocabulaire essentiel</div>
+    <h2>Les mots clés de ce cours</h2>
+
+    <div class="vocab">
+      <div class="vocab-term">Transceiver</div>
+      <div>Module optique ou cuivre amovible. TRANSmit + reCEIVER = il émet ET reçoit. Convertit électrique ↔ optique.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Hot-swappable</div>
+      <div>Peut être inséré ou retiré à chaud (sans éteindre l'équipement). Tous les transceivers modernes le sont.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Form Factor</div>
+      <div>Le format physique du module (taille, connecteur). SFP, SFP+, QSFP ont des tailles différentes.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">MSA (Multi-Source Agreement)</div>
+      <div>Accord industrie qui standardise les specs. Permet à différents fabricants de faire des modules compatibles.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">DOM (Digital Optical Monitoring)</div>
+      <div>Fonction qui permet au switch de lire la puissance optique, température, tension du module en temps réel.</div>
+    </div>
+  </div>
+
+  <!-- 3. LES FORMATS PRINCIPAUX -->
+  <div class="section">
+    <div class="section-label">Formats de transceivers</div>
+    <h2>GBIC, SFP, SFP+, SFP28, QSFP, QSFP+, QSFP28</h2>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Format</th><th>Nom complet</th><th>Débit</th><th>Taille</th><th>Usage</th><th>Statut</th></tr>
+        <tr>
+          <td><strong>GBIC</strong></td>
+          <td>Gigabit Interface Converter</td>
+          <td>1 Gbps</td>
+          <td>Grand (taille d'un paquet de cartes)</td>
+          <td>Gigabit Ethernet ancien</td>
+          <td style="color:var(--red)">Obsolète</td>
+        </tr>
+        <tr>
+          <td><strong>SFP</strong></td>
+          <td>Small Form-factor Pluggable</td>
+          <td>1 Gbps</td>
+          <td>Petit, 1 port LC</td>
+          <td>Gigabit Ethernet</td>
+          <td style="color:var(--green)">Standard actuel</td>
+        </tr>
+        <tr>
+          <td><strong>SFP+</strong></td>
+          <td>Enhanced SFP</td>
+          <td>10 Gbps</td>
+          <td>Même taille que SFP</td>
+          <td>10 Gigabit Ethernet</td>
+          <td style="color:var(--green)">Standard actuel</td>
+        </tr>
+        <tr>
+          <td><strong>SFP28</strong></td>
+          <td>SFP 28 Gbps</td>
+          <td>25 Gbps</td>
+          <td>Même taille que SFP</td>
+          <td>25G Ethernet datacenter</td>
+          <td style="color:var(--accent)">Moderne</td>
+        </tr>
+        <tr>
+          <td><strong>QSFP</strong></td>
+          <td>Quad SFP</td>
+          <td>40 Gbps</td>
+          <td>Plus large (4 canaux)</td>
+          <td>40G Ethernet</td>
+          <td style="color:var(--green)">Standard actuel</td>
+        </tr>
+        <tr>
+          <td><strong>QSFP+</strong></td>
+          <td>Quad SFP+</td>
+          <td>40 Gbps</td>
+          <td>Même taille que QSFP</td>
+          <td>40G Ethernet datacenter</td>
+          <td style="color:var(--green)">Standard actuel</td>
+        </tr>
+        <tr>
+          <td><strong>QSFP28</strong></td>
+          <td>Quad SFP 28</td>
+          <td>100 Gbps</td>
+          <td>4 × 25G = 100G</td>
+          <td>100G Ethernet datacenter</td>
+          <td style="color:var(--accent)">Moderne</td>
+        </tr>
+        <tr>
+          <td><strong>QSFP-DD</strong></td>
+          <td>QSFP Double Density</td>
+          <td>400 Gbps</td>
+          <td>8 voies</td>
+          <td>400G Ethernet datacenter</td>
+          <td style="color:var(--purple)">Très récent</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">🔑</span>
+      <div class="callout-body">
+        <strong>Règle simple pour retenir</strong>
+        <strong>SFP</strong> = 1G<br>
+        <strong>SFP+</strong> = 10G<br>
+        <strong>SFP28</strong> = 25G<br>
+        <strong>QSFP</strong> (Quad) = 4 canaux → 40G ou 100G selon la version<br>
+        Le "+" signifie "enhanced" (amélioré). Le nombre = débit par canal.
+      </div>
+    </div>
+
+    <h3>// Rétrocompatibilité</h3>
+    <p><strong>Important :</strong> Un port SFP+ accepte un module SFP (1G), mais un port SFP n'accepte pas un module SFP+ (10G). La rétrocompatibilité fonctionne <strong>vers le bas</strong> uniquement.</p>
+
+    <p><strong>Exemple :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Port SFP+ → peut recevoir SFP ✅ (tourne à 1G)</li>
+      <li>Port SFP → ne peut PAS recevoir SFP+ ❌ (physiquement compatible mais électriquement non)</li>
+    </ul>
+  </div>
+
+  <!-- 4. DAC -->
+  <div class="section">
+    <div class="section-label">Câbles Twinax</div>
+    <h2>DAC — Direct Attach Copper</h2>
+
+    <p>Un <strong>DAC</strong> (Direct Attach Copper) est un câble cuivre avec des transceivers intégrés aux deux extrémités. Tu n'as pas besoin de fibre — c'est du cuivre direct.</p>
+
+    <h3>// Types de DAC</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Type</th><th>Description</th><th>Distance max</th><th>Usage</th></tr>
+        <tr>
+          <td><strong>Passive DAC</strong></td>
+          <td>Câble cuivre simple sans circuits actifs. Moins cher.</td>
+          <td>5-7 mètres</td>
+          <td>Connexions très courtes dans un rack (switch-to-switch, switch-to-serveur)</td>
+        </tr>
+        <tr>
+          <td><strong>Active DAC</strong></td>
+          <td>Câble avec circuits actifs pour régénérer le signal. Plus cher.</td>
+          <td>10-15 mètres</td>
+          <td>Connexions courtes entre racks adjacents</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>// Avantages du DAC</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Moins cher</strong> qu'acheter 2 transceivers optiques + câble fibre</li>
+      <li><strong>Consomme moins</strong> (0.1-0.5W vs 1-2W pour l'optique)</li>
+      <li><strong>Latence plus faible</strong> (conversion électrique → optique éliminée)</li>
+      <li><strong>Plug-and-play</strong> — pas de nettoyage de connecteurs optiques</li>
+    </ul>
+
+    <h3>// Inconvénients du DAC</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Distance très limitée</strong> (max 15m)</li>
+      <li><strong>Câble rigide</strong> — difficile à router dans les conduits</li>
+      <li><strong>Pas de flexibilité</strong> — longueur fixe (impossible de rallonger)</li>
+    </ul>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen — quand utiliser DAC ?</strong>
+        Courtes distances (&lt; 7m), même rack ou racks adjacents, budget serré, faible latence critique. Dès que la distance dépasse 15m → passer à la fibre optique.
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. BiDi -->
+  <div class="section">
+    <div class="section-label">Bidirectionnel</div>
+    <h2>BiDi — Bidirectional Fiber</h2>
+
+    <p>Un transceiver <strong>BiDi</strong> (Bidirectional) permet d'utiliser <strong>une seule fibre</strong> pour les deux sens de communication au lieu de deux. Économie de 50% sur le câblage fibre.</p>
+
+    <h3>// Comment ça marche ?</h3>
+    <p>BiDi utilise <strong>deux longueurs d'onde différentes</strong> de lumière sur la même fibre :</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Sens A → B : lumière à 1310 nm</li>
+      <li>Sens B → A : lumière à 1490 nm (ou 1550 nm selon le standard)</li>
+    </ul>
+    <p>Les deux signaux voyagent simultanément dans la même fibre sans se perturber car ils ont des longueurs d'onde différentes.</p>
+
+    <h3>// Avantages BiDi</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Économie de 50% sur le câble fibre (1 fibre au lieu de 2)</li>
+      <li>Réduit l'encombrement dans les conduits</li>
+      <li>Idéal quand tirer une deuxième fibre est difficile ou impossible</li>
+    </ul>
+
+    <h3>// Inconvénients et pièges BiDi</h3>
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Modules BiDi vendus par paires !</strong>
+        Les modules BiDi sont <strong>asymétriques</strong> :<br>
+        - Côté A : émet à 1310nm, reçoit à 1490nm<br>
+        - Côté B : émet à 1490nm, reçoit à 1310nm<br><br>
+        Tu ne peux PAS utiliser deux modules identiques — il faut un module "A" et un module "B". Souvent marqués TX-1310 / TX-1490.
+      </div>
+    </div>
+
+    <p><strong>Utilisation typique :</strong> Connexions point-to-point où on manque de fibres disponibles. Datacenters, campus, liaisons inter-bâtiments.</p>
+  </div>
+
+  <!-- 6. GBIC -->
+  <div class="section">
+    <div class="section-label">L'ancêtre</div>
+    <h2>GBIC — Gigabit Interface Converter</h2>
+
+    <p>Le <strong>GBIC</strong> est l'ancêtre des transceivers modernes. Créé en 1995 pour le Gigabit Ethernet, il a été remplacé par le SFP (beaucoup plus petit) au début des années 2000.</p>
+
+    <h3>// Pourquoi GBIC est obsolète ?</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>GBIC (ancien)</th><th>SFP (moderne)</th></tr>
+        <tr><td>Grande taille (comme un paquet de cartes)</td><td>Petit (la moitié de la taille)</td></tr>
+        <tr><td>Prend beaucoup de place sur le switch</td><td>Permet plus de ports sur le même équipement</td></tr>
+        <tr><td>Connecteur SC (push-pull)</td><td>Connecteur LC (plus petit)</td></tr>
+        <tr><td>1 Gbps maximum</td><td>1 Gbps (SFP) à 100 Gbps (QSFP28)</td></tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>Pour l'examen</strong>
+        CompTIA peut mentionner GBIC dans une question pour vérifier que tu sais que c'est obsolète. Si tu vois GBIC dans une proposition de réponse pour un nouveau déploiement → c'est la mauvaise réponse. Choisis SFP/SFP+ à la place.
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. CAS D'USAGE -->
+  <div class="section">
+    <div class="section-label">Quand utiliser quoi ?</div>
+    <h2>Guide de sélection — quel transceiver choisir</h2>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Besoin</th><th>Solution recommandée</th><th>Pourquoi</th></tr>
+        <tr>
+          <td>1G, courte distance (100-300m), budget limité</td>
+          <td><strong>SFP multimode</strong></td>
+          <td>Standard, économique, fibre MMF moins chère</td>
+        </tr>
+        <tr>
+          <td>1G, longue distance (&gt;2km)</td>
+          <td><strong>SFP monomode</strong></td>
+          <td>SMF fait des dizaines de km</td>
+        </tr>
+        <tr>
+          <td>10G, courte distance (300-400m), datacenter</td>
+          <td><strong>SFP+ multimode (OM3/OM4)</strong></td>
+          <td>Standard datacenter actuel</td>
+        </tr>
+        <tr>
+          <td>10G, longue distance (&gt;10km), WAN</td>
+          <td><strong>SFP+ monomode</strong></td>
+          <td>SMF fait 10-80km selon le modèle</td>
+        </tr>
+        <tr>
+          <td>Très courte distance (&lt;7m), même rack</td>
+          <td><strong>DAC passif</strong></td>
+          <td>Moins cher, moins de latence, moins de consommation</td>
+        </tr>
+        <tr>
+          <td>100G, datacenter moderne</td>
+          <td><strong>QSFP28</strong></td>
+          <td>Standard 100G actuel</td>
+        </tr>
+        <tr>
+          <td>Une seule fibre disponible</td>
+          <td><strong>BiDi</strong></td>
+          <td>Utilise 1 fibre au lieu de 2</td>
+        </tr>
+        <tr>
+          <td>Switch ancien avec port GBIC</td>
+          <td><strong>GBIC</strong> (si vraiment obligé)</td>
+          <td>Obsolète mais peut être nécessaire pour du vieux matériel</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 8. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">Quelle est la différence entre SFP et SFP+ ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>SFP</strong> = 1 Gbps (Gigabit Ethernet)<br><strong>SFP+</strong> = 10 Gbps (10 Gigabit Ethernet)<br>Même taille physique, débits différents.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">Un port SFP+ peut-il accepter un module SFP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Oui</strong>. SFP+ est rétrocompatible — il accepte SFP (1G) et fonctionne à 1G. Mais un port SFP ne peut PAS accepter SFP+ (10G).</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">C'est quoi un DAC ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Direct Attach Copper</strong> — câble cuivre avec transceivers intégrés aux extrémités. Moins cher que la fibre, mais limité à 5-15m max.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">Question type examen : Un technicien doit connecter deux switches dans le même rack (distance 3m). Quelle solution la plus économique ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>DAC passif</strong>. Distance courte (&lt;7m), même rack → DAC est moins cher qu'acheter 2 transceivers optiques + câble fibre.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">Pourquoi les modules BiDi sont vendus par paire ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Les modules BiDi sont <strong>asymétriques</strong>. Un côté émet à 1310nm / reçoit à 1490nm, l'autre fait l'inverse. Tu ne peux pas utiliser deux modules identiques.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">GBIC est-il encore utilisé aujourd'hui ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Non, GBIC est obsolète</strong>. Remplacé par SFP qui est plus petit et plus performant. On ne trouve GBIC que sur du vieux matériel.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">Question type examen : Un datacenter veut du 100G Ethernet. Quel format de transceiver ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>QSFP28</strong>. C'est le standard actuel pour 100 Gigabit Ethernet (4 canaux × 25G = 100G).</div>
+  </div>
+
+  <!-- 9. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>SFP</strong> = 1G, <strong>SFP+</strong> = 10G, <strong>SFP28</strong> = 25G, <strong>QSFP28</strong> = 100G</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>SFP+ accepte SFP (rétrocompatibilité vers le bas), mais pas l'inverse</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>DAC</strong> = cuivre direct, 5-15m max, moins cher, idéal dans un rack</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>BiDi</strong> = 1 fibre pour 2 sens (au lieu de 2 fibres), modules vendus par paire</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>GBIC</strong> = ancien, grand, obsolète — remplacé par SFP</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Transceivers = hot-swappable (changeables à chaud)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>QSFP (Quad) = 4 canaux → débits élevés (40G, 100G, 400G)</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 06 : Câblage fibre optique</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">C07 · Phase 1</span>
+    <a class="nav-btn next" href="#">Cours 08 : Standards Ethernet IEEE 802.3 →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_c07_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>
