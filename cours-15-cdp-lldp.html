@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 15 — CDP / LLDP · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-proto { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .vocab { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; }
+  .vocab-term { font-family: 'IBM Plex Mono', monospace; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .comptia-box { background: rgba(251,191,36,0.05); border: 2px solid var(--amber); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .comptia-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--amber); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .comptia-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Phase 1 — Fondamentaux</span> &nbsp;›&nbsp; Cours 15</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 1 · C15</span>
+    <span class="pill pill-proto">PROTO</span>
+    <span class="pill pill-lab">🧪 LAB</span>
+    <span class="pill pill-diff">⚡☆☆ Facile</span>
+  </div>
+
+  <h1>CDP / <span>LLDP</span></h1>
+  <span class="tagline">// Protocoles de découverte de voisins — cartographie automatique et dépannage simplifié</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends à quoi servent CDP et LLDP</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais la différence CDP vs LLDP</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je sais quand désactiver ces protocoles (sécurité)</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. C'EST QUOI -->
+  <div class="section">
+    <div class="section-label">Avant de commencer</div>
+    <h2>C'est quoi CDP et LLDP — découverte automatique des voisins</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">👋</span>
+      <div class="callout-body">
+        <strong>Analogie — se présenter à ses voisins</strong>
+        Imagine que tu emménages dans un nouvel immeuble. CDP/LLDP, c'est comme si chaque voisin se présentait automatiquement toutes les 30 secondes : "Bonjour, je suis l'appartement 12, mon nom est Switch-A, mon numéro de téléphone est 192.168.1.10". Tu sais instantanément qui habite où sans sonner à toutes les portes.
+      </div>
+    </div>
+
+    <p><strong>CDP (Cisco Discovery Protocol)</strong> et <strong>LLDP (Link Layer Discovery Protocol)</strong> sont des protocoles de <strong>couche 2</strong> qui permettent aux équipements réseau de découvrir automatiquement leurs voisins directement connectés.</p>
+
+    <p><strong>Ce qu'ils font :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Chaque équipement envoie périodiquement des messages annonçant son identité</li>
+      <li>Ces messages contiennent : nom de l'appareil, modèle, adresse IP, port, capacités…</li>
+      <li>Les voisins reçoivent ces informations et les stockent dans une table</li>
+      <li>Tu peux consulter cette table pour savoir qui est connecté où</li>
+    </ul>
+
+    <h3>// À quoi ça sert ?</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Usage</th><th>Exemple</th></tr>
+        <tr><td><strong>Cartographie réseau</strong></td><td>Découvrir la topologie automatiquement sans documentation manuelle</td></tr>
+        <tr><td><strong>Dépannage</strong></td><td>"Le PC est branché sur quel port du switch ?" → CDP/LLDP te le dit</td></tr>
+        <tr><td><strong>Vérification de câblage</strong></td><td>Confirmer qu'un câble relie bien Switch A port 1 à Switch B port 5</td></tr>
+        <tr><td><strong>Inventory</strong></td><td>Lister tous les modèles et versions logicielles sans se déplacer</td></tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen Network+</strong>
+        CompTIA teste : différence CDP vs LLDP (propriétaire vs standard), risques de sécurité, quand désactiver. Sache que ces protocoles sont TRÈS utiles pour le dépannage mais présentent un risque de fuite d'informations.
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. VOCABULAIRE -->
+  <div class="section">
+    <div class="section-label">Vocabulaire essentiel</div>
+    <h2>Les mots clés de ce cours</h2>
+
+    <div class="vocab">
+      <div class="vocab-term">CDP (Cisco Discovery Protocol)</div>
+      <div>Protocole propriétaire Cisco de couche 2. Découverte automatique des voisins Cisco. Activé par défaut sur tous les équipements Cisco.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">LLDP (Link Layer Discovery Protocol)</div>
+      <div>Standard IEEE 802.1AB. Version multi-vendeur de CDP. Fonctionne entre équipements de marques différentes.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Neighbor (Voisin)</div>
+      <div>Équipement directement connecté (câble physique) à un port de ton appareil.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">TLV (Type-Length-Value)</div>
+      <div>Format des données dans les messages LLDP/CDP. Chaque information (nom, IP, modèle…) est encodée en TLV.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">LLDP-MED</div>
+      <div>Extension LLDP pour les équipements VoIP (téléphones IP). Ajoute des informations spécifiques voix (VLAN voix, PoE…).</div>
+    </div>
+  </div>
+
+  <!-- 3. CDP -->
+  <div class="section">
+    <div class="section-label">Protocole Cisco</div>
+    <h2>CDP — Cisco Discovery Protocol</h2>
+
+    <p><strong>CDP</strong> est un protocole propriétaire Cisco activé par défaut sur tous les routeurs et switches Cisco.</p>
+
+    <h3>// Caractéristiques CDP</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Caractéristique</th><th>Valeur</th></tr>
+        <tr><td>Standard</td><td>Propriétaire Cisco uniquement</td></tr>
+        <tr><td>Couche OSI</td><td>Couche 2 (Data Link)</td></tr>
+        <tr><td>Fréquence d'envoi</td><td>60 secondes (configurable)</td></tr>
+        <tr><td>Holdtime</td><td>180 secondes (durée de validité de l'entrée)</td></tr>
+        <tr><td>Multicast address</td><td>01:00:0C:CC:CC:CC</td></tr>
+        <tr><td>Par défaut</td><td>Activé sur tous les ports</td></tr>
+      </table>
+    </div>
+
+    <h3>// Informations fournies par CDP</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Device ID</strong> : Nom d'hôte de l'appareil voisin</li>
+      <li><strong>IP Address</strong> : Adresse IP de management</li>
+      <li><strong>Platform</strong> : Modèle de l'équipement (ex: "Cisco WS-C2960-24TT-L")</li>
+      <li><strong>Capabilities</strong> : Type d'appareil (Router, Switch, Phone…)</li>
+      <li><strong>Local Interface</strong> : Ton port local</li>
+      <li><strong>Port ID</strong> : Le port du voisin connecté à toi</li>
+      <li><strong>Version</strong> : Version du logiciel IOS</li>
+      <li><strong>VTP Domain</strong> : Domaine VTP (si configuré)</li>
+      <li><strong>Duplex</strong> : Half ou Full-duplex</li>
+      <li><strong>Native VLAN</strong> : VLAN natif du trunk</li>
+    </ul>
+
+    <h3>// Commandes CDP (Cisco)</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;line-height:1.8;">
+      <span style="color:var(--green)">Switch#</span> show cdp neighbors<br>
+      <span style="color:var(--muted);font-style:italic">! Afficher la liste des voisins (compact)</span><br><br>
+      <span style="color:var(--green)">Switch#</span> show cdp neighbors detail<br>
+      <span style="color:var(--muted);font-style:italic">! Afficher toutes les infos détaillées</span><br><br>
+      <span style="color:var(--green)">Switch#</span> show cdp entry *<br>
+      <span style="color:var(--muted);font-style:italic">! Idem que detail</span><br><br>
+      <span style="color:var(--green)">Switch#</span> show cdp interface<br>
+      <span style="color:var(--muted);font-style:italic">! Voir sur quels ports CDP est actif</span><br><br>
+      <span style="color:var(--green)">Switch(config)#</span> no cdp run<br>
+      <span style="color:var(--muted);font-style:italic">! Désactiver CDP globalement (sécurité)</span><br><br>
+      <span style="color:var(--green)">Switch(config-if)#</span> no cdp enable<br>
+      <span style="color:var(--muted);font-style:italic">! Désactiver CDP sur un port spécifique</span>
+    </div>
+  </div>
+
+  <!-- 4. LLDP -->
+  <div class="section">
+    <div class="section-label">Standard IEEE 802.1AB</div>
+    <h2>LLDP — Link Layer Discovery Protocol</h2>
+
+    <p><strong>LLDP</strong> est le standard ouvert IEEE 802.1AB. C'est l'équivalent multi-vendeur de CDP.</p>
+
+    <h3>// Caractéristiques LLDP</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Caractéristique</th><th>Valeur</th></tr>
+        <tr><td>Standard</td><td>IEEE 802.1AB (multi-vendeur)</td></tr>
+        <tr><td>Couche OSI</td><td>Couche 2 (Data Link)</td></tr>
+        <tr><td>Fréquence d'envoi</td><td>30 secondes (configurable)</td></tr>
+        <tr><td>Holdtime</td><td>120 secondes (4 × timer d'envoi)</td></tr>
+        <tr><td>Multicast address</td><td>01:80:C2:00:00:0E</td></tr>
+        <tr><td>Par défaut</td><td>Désactivé sur Cisco (activé sur la plupart des autres vendeurs)</td></tr>
+      </table>
+    </div>
+
+    <h3>// Différences CDP vs LLDP</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>CDP</th><th>LLDP</th></tr>
+        <tr><td><strong>Standard</strong></td><td>Propriétaire Cisco</td><td>IEEE 802.1AB (ouvert)</td></tr>
+        <tr><td><strong>Multi-vendeur</strong></td><td>Non (Cisco uniquement)</td><td>Oui (tous fabricants)</td></tr>
+        <tr><td><strong>Par défaut Cisco</strong></td><td>Activé</td><td>Désactivé</td></tr>
+        <tr><td><strong>Fréquence</strong></td><td>60s</td><td>30s</td></tr>
+        <tr><td><strong>Informations</strong></td><td>Plus complètes (VTP domain, native VLAN…)</td><td>Moins détaillées</td></tr>
+        <tr><td><strong>Extension VoIP</strong></td><td>Non</td><td>Oui (LLDP-MED)</td></tr>
+      </table>
+    </div>
+
+    <h3>// Commandes LLDP (Cisco)</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;line-height:1.8;">
+      <span style="color:var(--green)">Switch(config)#</span> lldp run<br>
+      <span style="color:var(--muted);font-style:italic">! Activer LLDP globalement (désactivé par défaut)</span><br><br>
+      <span style="color:var(--green)">Switch#</span> show lldp neighbors<br>
+      <span style="color:var(--muted);font-style:italic">! Afficher la liste des voisins LLDP</span><br><br>
+      <span style="color:var(--green)">Switch#</span> show lldp neighbors detail<br>
+      <span style="color:var(--muted);font-style:italic">! Afficher toutes les infos détaillées</span><br><br>
+      <span style="color:var(--green)">Switch(config)#</span> no lldp run<br>
+      <span style="color:var(--muted);font-style:italic">! Désactiver LLDP globalement</span>
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">🌍</span>
+      <div class="callout-body">
+        <strong>Quand utiliser LLDP vs CDP ?</strong>
+        <strong>Réseau 100% Cisco</strong> → CDP suffit (déjà activé par défaut)<br>
+        <strong>Réseau multi-vendeur</strong> (Cisco + HP + Juniper…) → utiliser LLDP<br>
+        <strong>VoIP</strong> → LLDP-MED est le standard (meilleur support téléphones IP)
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. SÉCURITÉ -->
+  <div class="section">
+    <div class="section-label">Risques et bonnes pratiques</div>
+    <h2>Sécurité — quand désactiver CDP/LLDP</h2>
+
+    <div class="callout warn">
+      <span class="callout-icon">🔓</span>
+      <div class="callout-body">
+        <strong>Risque de sécurité — fuite d'informations</strong>
+        CDP et LLDP révèlent BEAUCOUP d'informations sensibles :<br>
+        - Nom d'hôte du switch<br>
+        - Modèle exact (permet de chercher des vulnérabilités spécifiques)<br>
+        - Version du logiciel (permet d'identifier les failles)<br>
+        - Adresse IP de management<br>
+        - VLANs configurés<br><br>
+        Un attaquant branché sur le réseau reçoit toutes ces infos gratuitement → reconnaissance facilitée.
+      </div>
+    </div>
+
+    <h3>// Bonnes pratiques de sécurité</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Scénario</th><th>Recommandation</th></tr>
+        <tr><td><strong>Ports Access (PC, imprimantes)</strong></td><td>Désactiver CDP/LLDP. Un PC n'a pas besoin de découvrir le switch.</td></tr>
+        <tr><td><strong>Ports Trunk (switch-to-switch)</strong></td><td>Garder activé (utile pour la cartographie et le dépannage)</td></tr>
+        <tr><td><strong>Ports vers téléphones IP</strong></td><td>Garder LLDP-MED activé (nécessaire pour VLAN voix et PoE)</td></tr>
+        <tr><td><strong>Ports exposés à l'extérieur</strong></td><td>Désactiver absolument (risque maximal)</td></tr>
+        <tr><td><strong>Environnement haute sécurité</strong></td><td>Désactiver partout, utiliser une documentation manuelle</td></tr>
+      </table>
+    </div>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;line-height:1.8;">
+      <span style="color:var(--muted);font-style:italic">! Désactiver CDP sur tous les ports Access (template)</span><br>
+      <span style="color:var(--green)">Switch(config)#</span> interface range FastEthernet0/1-24<br>
+      <span style="color:var(--green)">Switch(config-if-range)#</span> no cdp enable<br>
+      <span style="color:var(--green)">Switch(config-if-range)#</span> no lldp transmit<br>
+      <span style="color:var(--green)">Switch(config-if-range)#</span> no lldp receive
+    </div>
+  </div>
+
+  <!-- 6. CE QUI TROMPE LES CANDIDATS -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : CDP/LLDP traversent les routeurs</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. CDP et LLDP sont des protocoles de <strong>couche 2</strong> uniquement.<br><br>
+        Ils découvrent les voisins <strong>directement connectés</strong> (câble physique). Ils ne traversent PAS les routeurs. Un switch ne verra jamais un switch de l'autre côté d'un routeur via CDP/LLDP.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : LLDP activé par défaut sur Cisco</div>
+      <div class="trap-content">
+        Sur Cisco, <strong>CDP</strong> est activé par défaut, mais <strong>LLDP est désactivé</strong> par défaut.<br><br>
+        Il faut explicitement activer LLDP avec <code>lldp run</code>.<br><br>
+        Sur la plupart des autres vendeurs (HP, Juniper...), LLDP est activé par défaut.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : CDP/LLDP sont sans danger</div>
+      <div class="trap-content">
+        Beaucoup de candidats pensent que CDP/LLDP sont des protocoles inoffensifs "juste pour le dépannage". <strong>FAUX</strong>.<br><br>
+        Ils révèlent des informations critiques (modèle, version logicielle, IP management…) qui facilitent énormément les attaques. C'est une <strong>faille de sécurité</strong> si mal configuré.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #4 : Confondre CDP et LLDP-MED</div>
+      <div class="trap-content">
+        <strong>CDP</strong> = protocole Cisco général<br>
+        <strong>LLDP-MED</strong> = extension LLDP spécifique pour équipements VoIP (téléphones IP)<br><br>
+        LLDP-MED ajoute des TLV spécifiques : VLAN voix, priorité PoE, inventaire téléphonie… Ce n'est PAS la même chose que LLDP standard.
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. CE QUE COMPTIA PEUT TE POSER -->
+  <div class="section">
+    <div class="section-label">🎯 Questions types</div>
+    <h2>Ce que CompTIA peut te poser</h2>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #1 : CDP vs LLDP</div>
+      <div class="comptia-content">
+        "Un réseau contient des switches Cisco, HP et Juniper. Quel protocole de découverte utiliser pour cartographier tout le réseau ?"<br><br>
+        <strong>Réponse :</strong> LLDP (standard multi-vendeur). CDP ne fonctionne qu'entre équipements Cisco.
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #2 : Sécurité</div>
+      <div class="comptia-content">
+        "Un administrateur veut renforcer la sécurité des ports Access où les utilisateurs branchent leurs PC. Quelle action concernant CDP ?"<br><br>
+        <strong>Réponse :</strong> Désactiver CDP sur ces ports (<code>no cdp enable</code>). Un PC n'a pas besoin de découvrir le switch et cela évite la fuite d'informations.
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #3 : Portée du protocole</div>
+      <div class="comptia-content">
+        "Un switch Cisco est connecté à un routeur, qui est connecté à un autre switch Cisco. Le premier switch pourra-t-il voir le deuxième switch via CDP ?"<br><br>
+        <strong>Réponse :</strong> Non. CDP est couche 2 uniquement → ne traverse pas les routeurs (couche 3). Chaque switch ne voit que ses voisins directs.
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #4 : Dépannage</div>
+      <div class="comptia-content">
+        "Un technicien veut vérifier sur quel port du switch un serveur est branché, sans accéder physiquement au switch. Quelle commande ?"<br><br>
+        <strong>Réponse :</strong> <code>show cdp neighbors detail</code> ou <code>show lldp neighbors detail</code>. Permet de voir quel appareil est sur quel port.
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">À quoi servent CDP et LLDP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Découverte automatique des équipements voisins directement connectés. Facilite la cartographie réseau et le dépannage.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">Quelle est la différence entre CDP et LLDP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>CDP</strong> : propriétaire Cisco uniquement<br><strong>LLDP</strong> : standard IEEE 802.1AB, multi-vendeur</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">CDP/LLDP traversent-ils les routeurs ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Non</strong>. Protocoles couche 2 uniquement. Ne découvrent que les voisins directement connectés (câble physique).</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">Quel protocole est activé par défaut sur Cisco ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>CDP</strong> est activé par défaut. <strong>LLDP</strong> est désactivé par défaut (il faut <code>lldp run</code>).</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">Pourquoi désactiver CDP sur les ports Access ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Sécurité</strong>. CDP révèle des infos sensibles (modèle, version, IP…). Un PC n'a pas besoin de ces infos → risque de fuite.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">Question type examen : Un réseau a des switches Cisco et HP. Quel protocole pour cartographier tout le réseau ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>LLDP</strong>. Standard multi-vendeur qui fonctionne entre Cisco et HP. CDP ne fonctionne qu'entre Cisco.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">À quelle fréquence CDP envoie-t-il ses messages par défaut ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>60 secondes</strong> (toutes les minutes). LLDP = 30 secondes par défaut.</div>
+  </div>
+
+  <!-- 9. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span>CDP/LLDP = découverte automatique des voisins directement connectés (couche 2)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>CDP</strong> : Cisco propriétaire, activé par défaut, fréquence 60s</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>LLDP</strong> : IEEE 802.1AB standard, multi-vendeur, désactivé par défaut sur Cisco, fréquence 30s</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Ne traversent PAS les routeurs (couche 2 uniquement)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Infos fournies : nom, modèle, IP, version, port, capacités, VLAN…</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Sécurité</strong> : désactiver sur ports Access (fuite d'informations sensibles)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Garder actif sur trunks (utile dépannage). LLDP-MED pour téléphones IP.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Commandes : <code>show cdp neighbors detail</code> / <code>show lldp neighbors detail</code></span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 14 : Agrégation de liens (LACP)</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">C15 · Phase 1</span>
+    <a class="nav-btn next" href="#">Cours 16 : Adressage IPv4 — bases →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_c15_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>

@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 16 — Adressage IPv4 : bases · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .vocab { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; }
+  .vocab-term { font-family: 'IBM Plex Mono', monospace; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .comptia-box { background: rgba(251,191,36,0.05); border: 2px solid var(--amber); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .comptia-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--amber); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .comptia-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Phase 2 — IPv4</span> &nbsp;›&nbsp; Cours 16</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 2 · C16</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡☆ Moyen</span>
+  </div>
+
+  <h1>Adressage <span>IPv4</span> — Bases</h1>
+  <span class="tagline">// Classes A/B/C/D/E, adresses privées RFC 1918, loopback, broadcast</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais les 5 classes IPv4 et leurs plages</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise les adresses privées RFC 1918</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je sais reconnaître loopback, APIPA, broadcast</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. C'EST QUOI -->
+  <div class="section">
+    <div class="section-label">Avant de commencer</div>
+    <h2>C'est quoi une adresse IPv4 — structure de base</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🏠</span>
+      <div class="callout-body">
+        <strong>Analogie — adresse postale</strong>
+        Une adresse IPv4, c'est comme une adresse postale. Elle permet d'identifier de manière unique un appareil sur un réseau, tout comme ton adresse postale identifie ta maison parmi des millions d'autres.
+      </div>
+    </div>
+
+    <p>Une <strong>adresse IPv4</strong> est un identifiant unique de <strong>32 bits</strong> (4 octets) assigné à chaque appareil connecté à un réseau TCP/IP.</p>
+
+    <h3>// Format d'une adresse IPv4</h3>
+    <p><strong>Notation décimale pointée :</strong> <code>192.168.1.10</code></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9;font-family:'IBM Plex Mono',monospace;font-size:0.85rem">
+      <li>4 octets séparés par des points</li>
+      <li>Chaque octet = 8 bits = valeur de 0 à 255</li>
+      <li>Total = 32 bits = 2³² = ~4,3 milliards d'adresses possibles</li>
+    </ul>
+
+    <p><strong>Exemple :</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;line-height:1.8;">
+      Notation décimale : <strong style="color:var(--accent)">192.168.1.10</strong><br>
+      Notation binaire  : <strong style="color:var(--green)">11000000.10101000.00000001.00001010</strong><br>
+      <span style="color:var(--muted)">└─ 8 bits ─┘ └─ 8 bits ─┘ └─ 8 bits ─┘ └─ 8 bits ─┘</span>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen Network+</strong>
+        CompTIA teste massivement IPv4 : classes A/B/C, adresses privées RFC 1918, loopback 127.0.0.1, APIPA 169.254.x.x, broadcast. C'est l'un des sujets les plus importants — à maîtriser absolument.
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. VOCABULAIRE -->
+  <div class="section">
+    <div class="section-label">Vocabulaire essentiel</div>
+    <h2>Les mots clés de ce cours</h2>
+
+    <div class="vocab">
+      <div class="vocab-term">Adresse IPv4</div>
+      <div>Identifiant unique 32 bits d'un appareil sur un réseau IP. Format : xxx.xxx.xxx.xxx (0-255 par octet).</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Classe IPv4</div>
+      <div>Catégorie d'adresse basée sur le premier octet. Classes A, B, C (unicast), D (multicast), E (réservé).</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Adresse publique</div>
+      <div>Adresse routable sur Internet, unique mondialement. Attribuée par les RIR (Registres Internet Régionaux).</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Adresse privée (RFC 1918)</div>
+      <div>Adresse non routable sur Internet, utilisée en réseau local. Plages : 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Loopback</div>
+      <div>Adresse 127.0.0.1 — boucle interne de la machine. Teste la pile TCP/IP sans passer par le réseau.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">APIPA (Automatic Private IP Addressing)</div>
+      <div>Plage 169.254.0.0/16 — auto-configuration quand DHCP échoue. Indique un problème réseau.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Broadcast</div>
+      <div>Adresse spéciale envoyée à TOUS les appareils du réseau. Dernier IP du sous-réseau (ex: 192.168.1.255).</div>
+    </div>
+  </div>
+
+  <!-- 3. CLASSES -->
+  <div class="section">
+    <div class="section-label">Classification historique</div>
+    <h2>Les 5 classes IPv4 — A, B, C, D, E</h2>
+
+    <p>Historiquement, les adresses IPv4 étaient divisées en 5 classes basées sur le <strong>premier octet</strong>. Ce système est aujourd'hui obsolète (remplacé par CIDR), mais CompTIA le teste encore.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Classe</th><th>Plage 1er octet</th><th>Masque par défaut</th><th>Nb réseaux</th><th>Nb hôtes/réseau</th><th>Usage</th></tr>
+        <tr>
+          <td><strong>A</strong></td>
+          <td>1-126</td>
+          <td>255.0.0.0 (/8)</td>
+          <td>126</td>
+          <td>16 777 214</td>
+          <td>Très gros réseaux (gouvernements, ISP)</td>
+        </tr>
+        <tr>
+          <td><strong>B</strong></td>
+          <td>128-191</td>
+          <td>255.255.0.0 (/16)</td>
+          <td>16 384</td>
+          <td>65 534</td>
+          <td>Moyennes entreprises</td>
+        </tr>
+        <tr>
+          <td><strong>C</strong></td>
+          <td>192-223</td>
+          <td>255.255.255.0 (/24)</td>
+          <td>2 097 152</td>
+          <td>254</td>
+          <td>Petits réseaux (PME, particuliers)</td>
+        </tr>
+        <tr>
+          <td><strong>D</strong></td>
+          <td>224-239</td>
+          <td>—</td>
+          <td>—</td>
+          <td>—</td>
+          <td>Multicast (IPTV, vidéoconférence)</td>
+        </tr>
+        <tr>
+          <td><strong>E</strong></td>
+          <td>240-255</td>
+          <td>—</td>
+          <td>—</td>
+          <td>—</td>
+          <td>Réservé (expérimental, non utilisable)</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>// Comment identifier la classe</h3>
+    <p>Regarde uniquement le <strong>premier octet</strong> de l'adresse :</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;line-height:1.8;">
+      10.5.12.8      → Premier octet = 10  → Classe <strong style="color:var(--green)">A</strong><br>
+      172.16.0.1     → Premier octet = 172 → Classe <strong style="color:var(--accent)">B</strong><br>
+      192.168.1.1    → Premier octet = 192 → Classe <strong style="color:var(--purple)">C</strong><br>
+      224.0.0.1      → Premier octet = 224 → Classe <strong style="color:var(--amber)">D</strong> (multicast)<br>
+      240.1.1.1      → Premier octet = 240 → Classe <strong style="color:var(--red)">E</strong> (réservé)
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Pourquoi manque 127.x.x.x ?</strong>
+        La plage <code>127.0.0.0 - 127.255.255.255</code> est réservée pour le <strong>loopback</strong> (adresse interne de la machine). Elle ne peut PAS être utilisée comme adresse réseau normale. C'est pour ça qu'il n'y a pas de Classe A entre 126 et 128.
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. ADRESSES PRIVÉES -->
+  <div class="section">
+    <div class="section-label">RFC 1918</div>
+    <h2>Adresses privées — pour les réseaux locaux</h2>
+
+    <p>Les <strong>adresses privées</strong> (définies par RFC 1918) sont des plages d'adresses <strong>non routables sur Internet</strong>. Elles sont réservées pour les réseaux locaux (LAN).</p>
+
+    <h3>// Les 3 plages privées</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Classe</th><th>Plage privée</th><th>Notation CIDR</th><th>Nb réseaux</th><th>Usage typique</th></tr>
+        <tr>
+          <td><strong>A</strong></td>
+          <td>10.0.0.0 - 10.255.255.255</td>
+          <td>10.0.0.0/8</td>
+          <td>1 énorme réseau</td>
+          <td>Grandes entreprises, datacenters</td>
+        </tr>
+        <tr>
+          <td><strong>B</strong></td>
+          <td>172.16.0.0 - 172.31.255.255</td>
+          <td>172.16.0.0/12</td>
+          <td>16 réseaux /16</td>
+          <td>Moyennes entreprises</td>
+        </tr>
+        <tr>
+          <td><strong>C</strong></td>
+          <td>192.168.0.0 - 192.168.255.255</td>
+          <td>192.168.0.0/16</td>
+          <td>256 réseaux /24</td>
+          <td>Maisons, petits bureaux</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>// Pourquoi des adresses privées ?</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Pénurie d'IPv4</strong> : Seulement 4,3 milliards d'adresses. Pas assez pour tous les appareils mondiaux.</li>
+      <li><strong>NAT (Network Address Translation)</strong> : Traduit les IPs privées en IP publique pour accéder à Internet.</li>
+      <li><strong>Sécurité</strong> : Isolation du réseau interne. Pas accessible directement depuis Internet.</li>
+      <li><strong>Réutilisabilité</strong> : Chaque entreprise/maison peut utiliser 192.168.1.x sans conflit.</li>
+    </ul>
+
+    <div class="callout ok">
+      <span class="callout-icon">🏠</span>
+      <div class="callout-body">
+        <strong>Exemple typique — réseau domestique</strong>
+        Ton box Internet a :<br>
+        - <strong>IP publique</strong> (ex: 82.64.123.45) — visible sur Internet, unique mondialement<br>
+        - <strong>IP privée LAN</strong> (ex: 192.168.1.1) — pour ton réseau local<br><br>
+        Tous tes appareils (PC, téléphone, imprimante) ont des IPs privées 192.168.1.x. Quand tu vas sur Internet, la box traduit (NAT) ton IP privée en IP publique.
+      </div>
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>PIÈGE EXAMEN — 172.x.x.x</strong>
+        Attention : seule la plage <strong>172.16.0.0 à 172.31.255.255</strong> est privée !<br><br>
+        <code>172.15.x.x</code> = publique ❌<br>
+        <code>172.16.x.x à 172.31.x.x</code> = privée ✅<br>
+        <code>172.32.x.x</code> = publique ❌<br><br>
+        CompTIA adore ce piège. Vérifie toujours le 2e octet.
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. ADRESSES SPÉCIALES -->
+  <div class="section">
+    <div class="section-label">Plages réservées</div>
+    <h2>Adresses spéciales — loopback, APIPA, broadcast</h2>
+
+    <h3>// 127.0.0.1 — Loopback (localhost)</h3>
+    <p><strong>Plage complète :</strong> 127.0.0.0 - 127.255.255.255</p>
+    <p><strong>Adresse standard :</strong> <code>127.0.0.1</code></p>
+
+    <p><strong>Rôle :</strong> Adresse de <strong>boucle locale</strong> (loopback). Pointe toujours vers la machine elle-même, sans passer par le réseau physique.</p>
+
+    <p><strong>Usages :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Tester la pile TCP/IP : <code>ping 127.0.0.1</code> → si échec, problème logiciel</li>
+      <li>Applications locales : serveur web de développement (http://127.0.0.1:8080)</li>
+      <li>Services internes qui écoutent uniquement en local</li>
+    </ul>
+
+    <h3>// 169.254.x.x — APIPA</h3>
+    <p><strong>Plage :</strong> 169.254.0.0 - 169.254.255.255</p>
+
+    <p><strong>Rôle :</strong> <strong>APIPA</strong> (Automatic Private IP Addressing) — auto-configuration quand le client DHCP <strong>échoue</strong> à obtenir une IP.</p>
+
+    <p><strong>Scénario typique :</strong></p>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>PC démarre, cherche un serveur DHCP</li>
+      <li>Aucun serveur DHCP ne répond (serveur down, câble débranché…)</li>
+      <li>Windows s'auto-attribue une IP 169.254.x.x aléatoire</li>
+      <li>Le PC peut communiquer avec d'autres PC APIPA sur le même LAN, mais PAS d'accès Internet</li>
+    </ol>
+
+    <div class="callout warn">
+      <span class="callout-icon">🚨</span>
+      <div class="callout-body">
+        <strong>APIPA = indicateur de problème</strong>
+        Si tu vois une adresse <code>169.254.x.x</code> sur un PC → <strong>problème DHCP</strong>.<br><br>
+        Vérifications :<br>
+        - Serveur DHCP actif ?<br>
+        - Câble réseau branché ?<br>
+        - Switch allumé ?<br>
+        - VLAN correct ?
+      </div>
+    </div>
+
+    <h3>// 0.0.0.0</h3>
+    <p><strong>Significations selon le contexte :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Route par défaut</strong> : 0.0.0.0/0 = "toutes les destinations" (default gateway)</li>
+      <li><strong>Écoute sur toutes les interfaces</strong> : Un serveur qui bind sur 0.0.0.0 écoute sur toutes les IPs locales</li>
+      <li><strong>Aucune adresse assignée</strong> : Avant configuration DHCP, l'interface peut afficher 0.0.0.0</li>
+    </ul>
+
+    <h3>// 255.255.255.255 — Broadcast limité</h3>
+    <p><strong>Broadcast limité</strong> au réseau local uniquement. Ne traverse PAS les routeurs.</p>
+    <p><strong>Exemple :</strong> Requête DHCP Discovery utilise 255.255.255.255 comme destination.</p>
+
+    <h3>// x.x.x.0 et x.x.x.255 — Adresse réseau et broadcast</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Adresse réseau</strong> : Premier IP du sous-réseau (ex: 192.168.1.0). Identifie le réseau lui-même. Non assignable à un hôte.</li>
+      <li><strong>Adresse broadcast</strong> : Dernier IP du sous-réseau (ex: 192.168.1.255). Envoi à TOUS les hôtes du réseau. Non assignable.</li>
+    </ul>
+
+    <p><strong>Exemple réseau 192.168.1.0/24 :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9;font-family:'IBM Plex Mono',monospace;font-size:0.85rem">
+      <li>192.168.1.0   → Adresse réseau ❌ (ne pas utiliser)</li>
+      <li>192.168.1.1   → Gateway typique ✅</li>
+      <li>192.168.1.2-254 → Hôtes utilisables ✅</li>
+      <li>192.168.1.255 → Broadcast ❌ (ne pas utiliser)</li>
+    </ul>
+  </div>
+
+  <!-- 6. CE QUI TROMPE LES CANDIDATS -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : 172.x.x.x est toujours privé</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Seule la plage <strong>172.16.0.0 à 172.31.255.255</strong> est privée.<br><br>
+        <code>172.15.1.1</code> = publique (avant 172.16)<br>
+        <code>172.32.1.1</code> = publique (après 172.31)<br><br>
+        Vérifie TOUJOURS le 2e octet pour les adresses 172.x.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : 127.x.x.x c'est juste 127.0.0.1</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Toute la plage <strong>127.0.0.0 à 127.255.255.255</strong> est loopback.<br><br>
+        <code>127.0.0.1</code> = loopback ✅<br>
+        <code>127.5.10.99</code> = loopback aussi ✅<br>
+        <code>127.255.255.254</code> = loopback aussi ✅<br><br>
+        Bien que 127.0.0.1 soit l'adresse standard, toute adresse commençant par 127 est loopback.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : Classes = masques fixes</div>
+      <div class="trap-content">
+        Beaucoup pensent qu'une Classe C a TOUJOURS le masque /24. <strong>FAUX avec CIDR</strong>.<br><br>
+        Aujourd'hui, les masques sont flexibles :<br>
+        - <code>192.168.1.0/25</code> = Classe C, mais masque /25 (non /24)<br>
+        - <code>10.0.0.0/16</code> = Classe A, mais masque /16 (non /8)<br><br>
+        Les classes définissent la PLAGE de l'adresse, pas le masque obligatoire.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #4 : 169.254.x.x c'est normal</div>
+      <div class="trap-content">
+        <strong>NON</strong>. Une adresse APIPA (169.254.x.x) indique un <strong>PROBLÈME</strong>.<br><br>
+        Le DHCP a échoué. Diagnostic :<br>
+        - Serveur DHCP down ?<br>
+        - Câble débranché ?<br>
+        - Mauvais VLAN ?<br><br>
+        Ce n'est JAMAIS la configuration souhaitée en production.
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. CE QUE COMPTIA PEUT TE POSER -->
+  <div class="section">
+    <div class="section-label">🎯 Questions types</div>
+    <h2>Ce que CompTIA peut te poser</h2>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #1 : Identifier une adresse privée</div>
+      <div class="comptia-content">
+        "Parmi les adresses suivantes, laquelle est une adresse privée ?<br>
+        A) 172.15.1.1<br>
+        B) 172.16.1.1<br>
+        C) 172.32.1.1<br>
+        D) 10.256.1.1"<br><br>
+        <strong>Réponse : B) 172.16.1.1</strong><br>
+        A et C sont publiques (hors plage 172.16-31). D est invalide (256 > 255).
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #2 : Diagnostic APIPA</div>
+      <div class="comptia-content">
+        "Un utilisateur ne peut pas accéder à Internet. Vous vérifiez son IP : 169.254.120.5. Quelle est la cause probable ?"<br><br>
+        <strong>Réponse :</strong> Le client DHCP a échoué. Vérifier que le serveur DHCP est actif et accessible.
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #3 : Classe IPv4</div>
+      <div class="comptia-content">
+        "L'adresse 201.45.67.89 appartient à quelle classe ?"<br><br>
+        <strong>Réponse :</strong> Classe C (premier octet 192-223).
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #4 : Loopback</div>
+      <div class="comptia-content">
+        "Un administrateur ping 127.0.0.1 avec succès. Qu'est-ce que cela prouve ?"<br><br>
+        <strong>Réponse :</strong> La pile TCP/IP de la machine fonctionne correctement. Cela ne prouve PAS que la carte réseau ou le câble fonctionne (loopback = interne uniquement).
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">Quelles sont les 3 plages d'adresses privées RFC 1918 ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>10.0.0.0/8</strong> (10.0.0.0 - 10.255.255.255)<br><strong>172.16.0.0/12</strong> (172.16.0.0 - 172.31.255.255)<br><strong>192.168.0.0/16</strong> (192.168.0.0 - 192.168.255.255)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">172.20.5.10 est-elle une adresse privée ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Oui</strong>. 172.20 est dans la plage privée 172.16-172.31 ✅</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">172.32.1.1 est-elle une adresse privée ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Non</strong>. 172.32 est HORS de la plage privée (172.16-172.31). C'est une adresse publique ❌</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">Un PC a l'IP 169.254.89.12. Quel est le problème ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>APIPA</strong> = échec DHCP. Le serveur DHCP n'a pas répondu. Vérifier : serveur DHCP actif ? câble branché ? VLAN correct ?</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">127.5.5.5 est-elle une adresse loopback valide ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Oui</strong>. Toute la plage 127.0.0.0 - 127.255.255.255 est loopback. Pas seulement 127.0.0.1.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">Question type examen : 224.0.0.5 appartient à quelle classe ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Classe <strong>D</strong> (224-239 = multicast)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">Dans le réseau 192.168.10.0/24, quelles IPs sont utilisables pour des hôtes ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>192.168.10.1 à 192.168.10.254</strong><br>192.168.10.0 = adresse réseau ❌<br>192.168.10.255 = broadcast ❌</div>
+  </div>
+
+  <!-- 9. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span>IPv4 = 32 bits, format xxx.xxx.xxx.xxx (0-255 par octet), ~4,3 milliards d'adresses</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Classes : A (1-126), B (128-191), C (192-223), D (224-239 multicast), E (240-255 réservé)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Privées RFC 1918 : <strong>10.0.0.0/8</strong>, <strong>172.16.0.0/12</strong>, <strong>192.168.0.0/16</strong></span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>PIÈGE</strong> : 172.x privé SEULEMENT si 172.16-172.31. Hors de ça = publique.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Loopback : <strong>127.0.0.0 - 127.255.255.255</strong> (toute la plage, pas juste 127.0.0.1)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>APIPA : <strong>169.254.x.x</strong> = problème DHCP (serveur down ou inaccessible)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Broadcast : x.x.x.255 (dernier IP du sous-réseau). Réseau : x.x.x.0 (premier IP)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>255.255.255.255 = broadcast limité (local seulement, ne traverse pas routeurs)</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 15 : CDP / LLDP</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">C16 · Phase 2</span>
+    <a class="nav-btn next" href="#">Cours 17 : Default Gateway →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_c16_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>
