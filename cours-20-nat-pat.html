@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 20 — NAT / PAT · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .vocab { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; }
+  .vocab-term { font-family: 'IBM Plex Mono', monospace; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .comptia-box { background: rgba(251,191,36,0.05); border: 2px solid var(--amber); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .comptia-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--amber); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .comptia-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Phase 2 — IPv4</span> &nbsp;›&nbsp; Cours 20</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 2 · C20</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-lab">🧪 LAB</span>
+    <span class="pill pill-diff">⚡⚡⚡ Difficile</span>
+  </div>
+
+  <h1>NAT / <span>PAT</span></h1>
+  <span class="tagline">// Network Address Translation — traduire IP privées ↔ publiques pour accéder à Internet</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends pourquoi NAT existe</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais Static NAT, Dynamic NAT et PAT</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise Inside/Outside Local/Global</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. C'EST QUOI -->
+  <div class="section">
+    <div class="section-label">Avant de commencer</div>
+    <h2>C'est quoi NAT — traduire IP privées en publiques</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🏢</span>
+      <div class="callout-body">
+        <strong>Analogie — standard téléphonique d'entreprise</strong>
+        Une entreprise a 1 numéro public (01.23.45.67.89) mais 500 téléphones internes (postes 100, 101, 102...). Le standard traduit : quand le poste 105 appelle dehors, le destinataire voit le numéro public de l'entreprise. En retour, le standard redirige vers le bon poste. NAT fait pareil avec les IPs.
+      </div>
+    </div>
+
+    <p><strong>NAT (Network Address Translation)</strong> = technique qui traduit les <strong>adresses IP privées</strong> (réseau local) en <strong>adresses IP publiques</strong> (Internet) et inversement.</p>
+
+    <h3>// Pourquoi NAT existe</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Problème</th><th>Solution NAT</th></tr>
+        <tr><td><strong>Pénurie IPv4</strong></td><td>Réutiliser les IPs privées (10.x, 192.168.x) dans chaque réseau + 1 seule IP publique</td></tr>
+        <tr><td><strong>Coût</strong></td><td>1 IP publique suffit pour 1000 appareils (au lieu de 1000 IPs publiques)</td></tr>
+        <tr><td><strong>Sécurité</strong></td><td>Les IPs internes sont cachées, invisible depuis Internet</td></tr>
+        <tr><td><strong>Flexibilité</strong></td><td>Changer d'ISP = changer juste 1 IP publique, pas tout le réseau interne</td></tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen Network+</strong>
+        CompTIA teste : différence Static/Dynamic/PAT, vocabulaire Inside/Outside Local/Global, troubleshooting NAT, limites du NAT. Maîtrise les 3 types de NAT — c'est essentiel.
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. VOCABULAIRE -->
+  <div class="section">
+    <div class="section-label">Vocabulaire essentiel</div>
+    <h2>Les mots clés de ce cours</h2>
+
+    <div class="vocab">
+      <div class="vocab-term">Inside Local</div>
+      <div>Adresse IP privée d'un hôte sur le réseau interne AVANT traduction. Ex: 192.168.1.10</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Inside Global</div>
+      <div>Adresse IP publique représentant l'hôte interne sur Internet APRÈS traduction. Ex: 203.0.113.5</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Outside Local</div>
+      <div>Adresse IP d'un hôte externe vu depuis le réseau interne (généralement = Outside Global sauf cas spéciaux)</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Outside Global</div>
+      <div>Adresse IP publique réelle d'un hôte sur Internet. Ex: 8.8.8.8</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Static NAT</div>
+      <div>Traduction 1:1 permanente. 1 IP privée → toujours la même IP publique. Pour serveurs accessibles depuis Internet.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Dynamic NAT</div>
+      <div>Traduction 1:1 temporaire depuis un pool d'IPs publiques. 1ère IP privée qui demande = 1ère IP publique du pool.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">PAT (Port Address Translation)</div>
+      <div>Aussi appelé NAT Overload. Traduction N:1. Plusieurs IPs privées → 1 seule IP publique (différenciation par ports). Standard des box Internet.</div>
+    </div>
+  </div>
+
+  <!-- 3. INSIDE OUTSIDE -->
+  <div class="section">
+    <div class="section-label">Terminologie Cisco</div>
+    <h2>Inside/Outside Local/Global — comprendre le vocabulaire</h2>
+
+    <p><strong>La terminologie Cisco utilise 4 termes pour désigner les adresses :</strong></p>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Terme</th><th>Signification</th><th>Exemple</th></tr>
+        <tr><td><strong>Inside Local</strong></td><td>IP privée de l'hôte interne (avant NAT)</td><td>192.168.1.10</td></tr>
+        <tr><td><strong>Inside Global</strong></td><td>IP publique représentant l'hôte interne (après NAT)</td><td>203.0.113.5</td></tr>
+        <tr><td><strong>Outside Local</strong></td><td>IP externe vue depuis l'intérieur (= Outside Global généralement)</td><td>8.8.8.8</td></tr>
+        <tr><td><strong>Outside Global</strong></td><td>IP publique réelle sur Internet</td><td>8.8.8.8</td></tr>
+      </table>
+    </div>
+
+    <h3>// Schéma simplifié</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;line-height:1.8;">
+      <span style="color:var(--muted)">────────────── RÉSEAU INTERNE ──────────────┊──── INTERNET ────</span><br><br>
+      PC: 192.168.1.10 ────────→ [ROUTEUR NAT] ────────→ Serveur: 8.8.8.8<br>
+      <span style="color:var(--green)">Inside Local</span>             <span style="color:var(--accent)">Inside Global</span>         <span style="color:var(--purple)">Outside Global</span><br>
+      <span style="color:var(--green)">(privée)</span>                <span style="color:var(--accent)">(publique)</span>           <span style="color:var(--purple)">(publique)</span><br><br>
+      
+      Traduction NAT: 192.168.1.10 → 203.0.113.5<br>
+      Le serveur 8.8.8.8 voit la requête venir de 203.0.113.5
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>Simplification</strong>
+        Dans la plupart des cas, Outside Local = Outside Global (même IP). La distinction existe surtout pour des cas avancés (NAT cascadé, VPN...).
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. STATIC NAT -->
+  <div class="section">
+    <div class="section-label">Type 1</div>
+    <h2>Static NAT — traduction 1:1 permanente</h2>
+
+    <p><strong>Principe :</strong> 1 IP privée interne = TOUJOURS la même IP publique. Traduction permanente et bidirectionnelle.</p>
+
+    <h3>// Fonctionnement</h3>
+    <p>Tu configures manuellement : "192.168.1.10 → toujours 203.0.113.10"</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Trafic sortant : 192.168.1.10 → traduit en 203.0.113.10</li>
+      <li>Trafic entrant : 203.0.113.10 → traduit en 192.168.1.10</li>
+      <li>Fonctionne dans les deux sens</li>
+      <li>Traduction active 24/7, même si l'appareil ne communique pas</li>
+    </ul>
+
+    <h3>// Usage typique</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Serveurs Web</strong> accessibles depuis Internet</li>
+      <li><strong>Serveurs Mail</strong></li>
+      <li><strong>Serveurs FTP</strong></li>
+      <li>Tout service qui doit être joignable de l'extérieur</li>
+    </ul>
+
+    <p><strong>Exemple :</strong> Serveur web interne 10.0.0.50 → Static NAT vers IP publique 203.0.113.20. Les utilisateurs Internet vont sur http://203.0.113.20 → routeur traduit vers 10.0.0.50.</p>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Limitation</strong>
+        Static NAT nécessite 1 IP publique par serveur. Si tu as 10 serveurs web → 10 IPs publiques. Pas économique pour un grand nombre d'appareils.
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. DYNAMIC NAT -->
+  <div class="section">
+    <div class="section-label">Type 2</div>
+    <h2>Dynamic NAT — traduction 1:1 temporaire depuis un pool</h2>
+
+    <p><strong>Principe :</strong> Pool d'IPs publiques. Premier arrivé = première IP du pool. Traduction temporaire (libérée après timeout).</p>
+
+    <h3>// Fonctionnement</h3>
+    <p>Tu configures un pool : "203.0.113.10 - 203.0.113.20" (10 IPs publiques)</p>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>PC1 (192.168.1.10) envoie vers Internet → obtient 203.0.113.10</li>
+      <li>PC2 (192.168.1.20) envoie vers Internet → obtient 203.0.113.11</li>
+      <li>PC3 (192.168.1.30) envoie vers Internet → obtient 203.0.113.12</li>
+      <li>...</li>
+      <li>PC11 tente d'envoyer → ÉCHEC (pool épuisé, 10 IPs seulement)</li>
+      <li>Après timeout (ex: 5 min), les traductions sont libérées</li>
+    </ol>
+
+    <h3>// Avantages et inconvénients</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>✅ Avantages</th><th>❌ Inconvénients</th></tr>
+        <tr><td>Moins d'IPs publiques que d'appareils</td><td>Pool peut s'épuiser (+ d'hôtes que d'IPs)</td></tr>
+        <tr><td>Allocation dynamique selon besoin</td><td>Pas de connexions entrantes (serveurs)</td></tr>
+        <tr><td>Simple à configurer</td><td>Gaspillage si timeout trop long</td></tr>
+      </table>
+    </div>
+
+    <p><strong>Usage :</strong> Rarement utilisé en pratique. PAT (voir après) est bien meilleur car 1 seule IP publique suffit pour des milliers d'appareils.</p>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Question type examen</strong>
+        "Une entreprise a 100 PC et un pool Dynamic NAT de 20 IPs publiques. Que se passe-t-il si 25 PC essaient simultanément d'accéder à Internet ?"<br><br>
+        <strong>Réponse :</strong> Les 20 premiers obtiennent une IP publique. Les 5 suivants échouent (pool épuisé) jusqu'à ce qu'une traduction expire.
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. PAT -->
+  <div class="section">
+    <div class="section-label">Type 3 — Standard actuel</div>
+    <h2>PAT (Port Address Translation) — N appareils → 1 IP publique</h2>
+
+    <p><strong>Aussi appelé :</strong> NAT Overload, NAPT (Network Address Port Translation), IP Masquerading</p>
+
+    <p><strong>Principe :</strong> Plusieurs IPs privées → 1 seule IP publique. Différenciation par <strong>ports source</strong>.</p>
+
+    <h3>// Fonctionnement détaillé</h3>
+
+    <p><strong>Exemple : 3 PC accèdent à Google simultanément</strong></p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--green)">AVANT NAT (côté interne) :</strong><br>
+      PC1: 192.168.1.10:5000 → 8.8.8.8:443<br>
+      PC2: 192.168.1.20:5001 → 8.8.8.8:443<br>
+      PC3: 192.168.1.30:5002 → 8.8.8.8:443<br><br>
+
+      <strong style="color:var(--accent)">APRÈS NAT (côté Internet) :</strong><br>
+      Routeur: 203.0.113.5:10000 → 8.8.8.8:443<br>
+      Routeur: 203.0.113.5:10001 → 8.8.8.8:443<br>
+      Routeur: 203.0.113.5:10002 → 8.8.8.8:443<br><br>
+
+      <strong style="color:var(--purple)">TABLE NAT :</strong><br>
+      Inside Local        | Inside Global        | Outside<br>
+      192.168.1.10:5000  → 203.0.113.5:10000  ↔ 8.8.8.8:443<br>
+      192.168.1.20:5001  → 203.0.113.5:10001  ↔ 8.8.8.8:443<br>
+      192.168.1.30:5002  → 203.0.113.5:10002  ↔ 8.8.8.8:443
+    </div>
+
+    <p><strong>Étapes :</strong></p>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>PC1 envoie paquet : SRC = 192.168.1.10:5000, DST = 8.8.8.8:443</li>
+      <li>Routeur NAT reçoit, crée entrée table : 192.168.1.10:5000 → 203.0.113.5:10000</li>
+      <li>Routeur modifie paquet : SRC = 203.0.113.5:10000, DST = 8.8.8.8:443</li>
+      <li>Google reçoit, répond vers 203.0.113.5:10000</li>
+      <li>Routeur consulte table, trouve 203.0.113.5:10000 → 192.168.1.10:5000</li>
+      <li>Routeur modifie réponse : SRC = 8.8.8.8:443, DST = 192.168.1.10:5000</li>
+      <li>PC1 reçoit la réponse</li>
+    </ol>
+
+    <h3>// Avantages de PAT</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>1 seule IP publique</strong> pour des milliers d'appareils (65 535 ports disponibles)</li>
+      <li><strong>Économie maximale</strong> : toutes les box Internet utilisent PAT</li>
+      <li><strong>Sécurité</strong> : IPs internes complètement cachées</li>
+      <li><strong>Pas d'épuisement</strong> : contrairement à Dynamic NAT</li>
+    </ul>
+
+    <div class="callout ok">
+      <span class="callout-icon">🏠</span>
+      <div class="callout-body">
+        <strong>Ta box Internet utilise PAT</strong>
+        Chez toi : 10 appareils (PC, téléphone, tablette...) avec IPs privées 192.168.1.x. Tous partagent 1 seule IP publique fournie par ton FAI. C'est du PAT !
+      </div>
+    </div>
+
+    <h3>// Limitation de PAT</h3>
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Connexions entrantes impossibles</strong>
+        Depuis Internet, impossible de contacter directement un PC derrière PAT. Solution : <strong>Port Forwarding</strong> (redirection de port) configuré manuellement sur la box.
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. COMPARAISON -->
+  <div class="section">
+    <div class="section-label">Tableau comparatif</div>
+    <h2>Static vs Dynamic vs PAT</h2>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>Static NAT</th><th>Dynamic NAT</th><th>PAT</th></tr>
+        <tr><td>Traduction</td><td>1:1 permanente</td><td>1:1 temporaire</td><td>N:1 par ports</td></tr>
+        <tr><td>IPs publiques</td><td>1 par appareil</td><td>Pool (moins que hôtes)</td><td>1 seule suffit</td></tr>
+        <tr><td>Connexions entrantes</td><td>✅ Oui</td><td>❌ Non</td><td>❌ Non (sauf port forwarding)</td></tr>
+        <tr><td>Économie adresses</td><td>❌ Faible</td><td>⚠️ Moyenne</td><td>✅ Maximale</td></tr>
+        <tr><td>Usage</td><td>Serveurs accessibles</td><td>Rare</td><td>Standard (box Internet)</td></tr>
+        <tr><td>Limite hôtes</td><td>= nb IPs publiques</td><td>= taille pool</td><td>~65 000 par IP publique</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 8. CE QUI TROMPE LES CANDIDATS -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : Confondre NAT et PAT</div>
+      <div class="trap-content">
+        <strong>NAT</strong> = terme générique (Static, Dynamic, PAT)<br>
+        <strong>PAT</strong> = type spécifique de NAT qui utilise les ports<br><br>
+        Dire "mon routeur fait du NAT" est vague. Précis = "mon routeur fait du PAT (NAT Overload)".
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : Inside Local = IP privée toujours</div>
+      <div class="trap-content">
+        <strong>PRESQUE vrai</strong>, mais pas toujours. Inside Local = IP vue côté interne, qui est généralement privée, mais peut techniquement être publique dans certains designs (rare).
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : PAT peut servir des serveurs</div>
+      <div class="trap-content">
+        <strong>FAUX</strong> par défaut. Connexions entrantes spontanées = impossibles avec PAT simple.<br><br>
+        Solution : Port Forwarding (manuel) ou Static NAT pour les serveurs.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #4 : NAT résout la pénurie IPv4</div>
+      <div class="trap-content">
+        NAT <strong>atténue</strong> la pénurie, ne la résout pas. C'est une rustine temporaire. La vraie solution = <strong>IPv6</strong>.
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. CE QUE COMPTIA PEUT TE POSER -->
+  <div class="section">
+    <div class="section-label">🎯 Questions types</div>
+    <h2>Ce que CompTIA peut te poser</h2>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #1 : Choix de type NAT</div>
+      <div class="comptia-content">
+        "Une entreprise veut héberger un serveur web accessible depuis Internet avec IP privée 10.0.0.50. Quel type de NAT utiliser ?"<br><br>
+        <strong>Réponse : Static NAT</strong>. Traduction permanente 1:1 pour que le serveur soit joignable de l'extérieur.
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #2 : Terminologie</div>
+      <div class="comptia-content">
+        "PC avec IP 192.168.1.10 accède à Internet via routeur NAT avec IP publique 203.0.113.5. Quel terme désigne 192.168.1.10 ?"<br><br>
+        <strong>Réponse : Inside Local</strong> (IP privée interne avant traduction).
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #3 : PAT limitation</div>
+      <div class="comptia-content">
+        "Un utilisateur derrière PAT veut héberger un serveur web. Que doit-il configurer ?"<br><br>
+        <strong>Réponse : Port Forwarding</strong> (redirection de port) sur la box pour rediriger port 80 externe vers l'IP interne du serveur.
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #4 : Dynamic NAT pool</div>
+      <div class="comptia-content">
+        "Dynamic NAT avec pool de 5 IPs publiques. 8 PC tentent d'accéder à Internet. Combien réussissent ?"<br><br>
+        <strong>Réponse : 5</strong>. Les 3 autres échouent (pool épuisé) jusqu'à ce qu'une traduction expire.
+      </div>
+    </div>
+  </div>
+
+  <!-- 10. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">C'est quoi NAT et pourquoi ça existe ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Network Address Translation — traduit IPs privées ↔ publiques. Existe pour pallier la pénurie IPv4, économiser IPs publiques, et cacher réseau interne.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">Quelle est la différence entre Static NAT et PAT ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Static NAT</strong> : 1:1 permanent, 1 IP publique par appareil, connexions entrantes OK<br><strong>PAT</strong> : N:1 par ports, 1 IP publique pour tous, pas de connexions entrantes (sauf port forwarding)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">C'est quoi Inside Local ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">IP privée d'un hôte interne AVANT traduction NAT. Ex: 192.168.1.10</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">C'est quoi Inside Global ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">IP publique représentant l'hôte interne APRÈS traduction NAT. Ex: 203.0.113.5</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">Question type examen : 50 PC, pool Dynamic NAT de 10 IPs. 15 PC accèdent simultanément. Combien réussissent ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>10</strong>. Les 5 autres échouent (pool épuisé).</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">Quel type NAT utilise ta box Internet à la maison ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>PAT (NAT Overload)</strong>. Tous tes appareils partagent 1 seule IP publique fournie par le FAI.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">Peut-on héberger un serveur web derrière PAT sans configuration ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Non</strong> ❌. PAT bloque connexions entrantes. Il faut configurer Port Forwarding (redirection port 80 externe → IP serveur interne).</div>
+  </div>
+
+  <!-- 11. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span>NAT = traduit IPs privées ↔ publiques pour économiser IPs et cacher réseau interne</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Static NAT :</strong> 1:1 permanent, serveurs accessibles, 1 IP publique par appareil</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Dynamic NAT :</strong> 1:1 temporaire depuis pool, rare en pratique</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>PAT (Overload) :</strong> N:1 par ports, 1 IP publique pour tous, standard box Internet</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Inside Local = IP privée interne. Inside Global = IP publique externe.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>PAT limite : pas de connexions entrantes (serveurs) sans Port Forwarding</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>PAT différencie appareils via ports source (65K ports disponibles)</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 19 : Adresses spéciales IPv4</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">C20 · Phase 2</span>
+    <a class="nav-btn next" href="#">Cours 21 : IPv6 — bases →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_c20_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>

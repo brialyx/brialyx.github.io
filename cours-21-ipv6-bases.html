@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 21 — IPv6 : bases · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .vocab { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; }
+  .vocab-term { font-family: 'IBM Plex Mono', monospace; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .comptia-box { background: rgba(251,191,36,0.05); border: 2px solid var(--amber); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .comptia-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--amber); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .comptia-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Phase 3 — IPv6</span> &nbsp;›&nbsp; Cours 21</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 3 · C21</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡☆ Moyen</span>
+  </div>
+
+  <h1>Adressage <span>IPv6</span> — Bases</h1>
+  <span class="tagline">// Format 128 bits, notation abrégée (:: et groupes zéro), types d'adresses, préfixes courants</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends le format 128 bits d'IPv6</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise la notation abrégée (:: et zéros)</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais les types d'adresses IPv6</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. C'EST QUOI -->
+  <div class="section">
+    <div class="section-label">Avant de commencer</div>
+    <h2>C'est quoi IPv6 — le successeur d'IPv4</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">📞</span>
+      <div class="callout-body">
+        <strong>Analogie — passer de 10 à 39 chiffres de téléphone</strong>
+        IPv4 = numéros à 10 chiffres (4,3 milliards de possibilités) → saturés.<br>
+        IPv6 = numéros à 39 chiffres (340 undécillions d'adresses) → impossible à saturer de notre vivant !
+      </div>
+    </div>
+
+    <p><strong>IPv6 (Internet Protocol version 6)</strong> est la nouvelle version du protocole IP, conçue pour remplacer IPv4 face à la pénurie d'adresses.</p>
+
+    <h3>// IPv4 vs IPv6 — comparaison rapide</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>IPv4</th><th>IPv6</th></tr>
+        <tr><td>Taille adresse</td><td>32 bits</td><td>128 bits</td></tr>
+        <tr><td>Nombre d'adresses</td><td>4,3 milliards (~4 × 10⁹)</td><td>340 undécillions (~3,4 × 10³⁸)</td></tr>
+        <tr><td>Notation</td><td>Décimale pointée (192.168.1.1)</td><td>Hexadécimale : groupes (2001:db8::1)</td></tr>
+        <tr><td>Longueur</td><td>Courte (15 caractères max)</td><td>Longue (39 caractères complet)</td></tr>
+        <tr><td>Masque</td><td>/24, 255.255.255.0</td><td>/64 (uniquement notation /x)</td></tr>
+        <tr><td>Configuration</td><td>DHCP ou manuelle</td><td>SLAAC auto ou DHCPv6</td></tr>
+        <tr><td>Broadcast</td><td>Oui (x.x.x.255)</td><td>Non (remplacé par multicast)</td></tr>
+        <tr><td>NAT</td><td>Obligatoire (pénurie)</td><td>Inutile (adresses infinies)</td></tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen Network+</strong>
+        CompTIA teste : format 128 bits, notation abrégée (règles :: et suppression zéros), types d'adresses (unicast/multicast/anycast), préfixes courants (2001::/32, fe80::/10...). Maîtrise la notation — questions très fréquentes.
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. FORMAT -->
+  <div class="section">
+    <div class="section-label">Structure de l'adresse</div>
+    <h2>Format IPv6 — 128 bits en hexadécimal</h2>
+
+    <p><strong>Une adresse IPv6 complète = 8 groupes de 4 chiffres hexadécimaux séparés par :</strong></p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;line-height:1.8;">
+      <strong style="color:var(--accent)">Format complet :</strong><br>
+      2001:0db8:85a3:0000:0000:8a2e:0370:7334<br><br>
+      
+      <span style="color:var(--muted)">├─ Groupe 1 ─┤ ├─ Groupe 2 ─┤ ... ├─ Groupe 8 ─┤</span><br>
+      <span style="color:var(--muted)">&nbsp;&nbsp;&nbsp;&nbsp;2001&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0db8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7334</span><br><br>
+
+      <strong style="color:var(--green)">128 bits total :</strong><br>
+      8 groupes × 16 bits = 128 bits<br>
+      Chaque groupe = 4 chiffres hexa = 16 bits
+    </div>
+
+    <h3>// Hexadécimal rappel</h3>
+    <p>IPv6 utilise l'hexadécimal (base 16) : <code>0-9 a-f</code></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9;font-family:'IBM Plex Mono',monospace;font-size:0.85rem">
+      <li>0 = 0, 1 = 1, ... 9 = 9</li>
+      <li>a = 10, b = 11, c = 12, d = 13, e = 14, f = 15</li>
+      <li>Exemple : 0db8 = 0×4096 + 13×256 + 11×16 + 8 = 3512 en décimal</li>
+    </ul>
+
+    <h3>// Structure préfixe + interface</h3>
+    <p>Une adresse IPv6 se divise typiquement en 2 parties :</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;line-height:1.8;">
+      2001:0db8:85a3:0000 : 0000:8a2e:0370:7334<br>
+      <span style="color:var(--accent)">└────── Préfixe ──────┘</span> <span style="color:var(--green)">└─── Interface ID ───┘</span><br><br>
+      
+      <strong style="color:var(--accent)">Préfixe réseau (/64)</strong> : identifie le réseau (comme réseau en IPv4)<br>
+      <strong style="color:var(--green)">Interface ID (64 bits)</strong> : identifie l'hôte sur ce réseau<br><br>
+      
+      Standard : <strong>/64</strong> pour les réseaux locaux (64 bits préfixe + 64 bits hôte)
+    </div>
+  </div>
+
+  <!-- 3. NOTATION ABRÉGÉE -->
+  <div class="section">
+    <div class="section-label">Simplification</div>
+    <h2>Notation abrégée — règles pour raccourcir les adresses</h2>
+
+    <p>Les adresses IPv6 complètes sont longues → notation abrégée pour simplifier.</p>
+
+    <h3>// Règle 1 : Supprimer les zéros de tête</h3>
+    <p>Dans chaque groupe, on peut supprimer les zéros en début de groupe (mais pas tous !).</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;line-height:1.8;">
+      <strong style="color:var(--muted)">Complet :</strong><br>
+      2001:0db8:0000:0042:0000:8a2e:0370:7334<br><br>
+
+      <strong style="color:var(--accent)">Après suppression zéros de tête :</strong><br>
+      2001:db8:0:42:0:8a2e:370:7334<br><br>
+
+      <span style="color:var(--muted)">0db8 → db8 (suppression du 0 de tête)</span><br>
+      <span style="color:var(--muted)">0000 → 0 (mais garder 1 zéro minimum)</span><br>
+      <span style="color:var(--muted)">0042 → 42</span><br>
+      <span style="color:var(--muted)">0370 → 370</span>
+    </div>
+
+    <h3>// Règle 2 : Remplacer séquence de zéros par ::</h3>
+    <p><strong>Une seule fois</strong> dans l'adresse, on peut remplacer une séquence de groupes <code>0000</code> consécutifs par <code>::</code></p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;line-height:1.8;">
+      <strong style="color:var(--muted)">Après règle 1 :</strong><br>
+      2001:db8:0:42:0:8a2e:370:7334<br><br>
+
+      <strong style="color:var(--red)">⚠️ Impossible d'utiliser :: ici</strong><br>
+      Les zéros ne sont pas consécutifs (0:42:0 a un 42 au milieu)<br><br>
+
+      <strong style="color:var(--green)">Exemple où :: fonctionne :</strong><br>
+      2001:db8:0:0:0:0:0:1<br>
+      → 2001:db8::1 (5 groupes de 0 consécutifs remplacés par ::)
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>RÈGLE CRITIQUE — :: une seule fois</strong>
+        On ne peut utiliser <code>::</code> qu'<strong>UNE SEULE FOIS</strong> dans une adresse. Sinon, impossible de savoir combien de groupes de zéros chaque :: représente.<br><br>
+        <strong>INVALIDE :</strong> 2001::85a3::7334 ❌ (ambigu)<br>
+        <strong>VALIDE :</strong> 2001:0:0:85a3:0:0:0:7334 → 2001::85a3:0:0:0:7334 ✅
+      </div>
+    </div>
+
+    <h3>// Exemples de notation abrégée</h3>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Complet</th><th>Abrégé</th><th>Explication</th></tr>
+        <tr>
+          <td>2001:0db8:0000:0000:0000:0000:0000:0001</td>
+          <td><strong>2001:db8::1</strong></td>
+          <td>6 groupes de 0 → ::</td>
+        </tr>
+        <tr>
+          <td>fe80:0000:0000:0000:0202:b3ff:fe1e:8329</td>
+          <td><strong>fe80::202:b3ff:fe1e:8329</strong></td>
+          <td>3 groupes de 0 → ::</td>
+        </tr>
+        <tr>
+          <td>0000:0000:0000:0000:0000:0000:0000:0001</td>
+          <td><strong>::1</strong></td>
+          <td>7 groupes de 0 → :: (loopback)</td>
+        </tr>
+        <tr>
+          <td>0000:0000:0000:0000:0000:0000:0000:0000</td>
+          <td><strong>::</strong></td>
+          <td>8 groupes de 0 → :: (adresse non spécifiée)</td>
+        </tr>
+        <tr>
+          <td>2001:0db8:85a3:0000:0000:8a2e:0370:7334</td>
+          <td><strong>2001:db8:85a3::8a2e:370:7334</strong></td>
+          <td>2 groupes de 0 → ::</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 4. TYPES D'ADRESSES -->
+  <div class="section">
+    <div class="section-label">Classification</div>
+    <h2>Types d'adresses IPv6 — unicast, multicast, anycast</h2>
+
+    <p>IPv6 a <strong>3 types</strong> d'adresses (pas de broadcast) :</p>
+
+    <h3>// 1. Unicast — 1 destinataire unique</h3>
+    <p><strong>Principe :</strong> 1 adresse = 1 interface. Comme en IPv4.</p>
+
+    <p><strong>Types d'unicast :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Global Unicast (GUA)</strong> : Équivalent IPv4 publique, routable sur Internet. Commence par <code>2000::/3</code> (en pratique 2001-3fff)</li>
+      <li><strong>Link-Local</strong> : Communication sur le lien local uniquement. <code>fe80::/10</code>. Auto-configuré, non routable.</li>
+      <li><strong>Unique Local (ULA)</strong> : Équivalent IPv4 privée RFC 1918. <code>fc00::/7</code> (en pratique fd00::/8). Non routable Internet.</li>
+    </ul>
+
+    <h3>// 2. Multicast — groupe d'interfaces</h3>
+    <p><strong>Principe :</strong> Envoi à un groupe d'interfaces abonnées. Commence par <code>ff00::/8</code></p>
+
+    <p><strong>Multicast courants :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9;font-family:'IBM Plex Mono',monospace;font-size:0.85rem">
+      <li>ff02::1 — Tous les nœuds du lien local</li>
+      <li>ff02::2 — Tous les routeurs du lien local</li>
+      <li>ff02::5 — OSPFv3 routers</li>
+      <li>ff02::6 — OSPFv3 designated routers</li>
+    </ul>
+
+    <h3>// 3. Anycast — interface la plus proche</h3>
+    <p><strong>Principe :</strong> Plusieurs interfaces partagent la même adresse. Le paquet va vers la plus proche (routing).</p>
+    <p><strong>Usage :</strong> Load balancing, DNS root servers, CDN.</p>
+    <p><strong>Format :</strong> Même format qu'unicast, distinction faite par configuration.</p>
+
+    <div class="callout ok">
+      <span class="callout-icon">🚫</span>
+      <div class="callout-body">
+        <strong>Pas de broadcast en IPv6</strong>
+        IPv6 n'a PAS de broadcast (255.255.255.255 en IPv4). Remplacé par <strong>multicast</strong> ff02::1 (tous les nœuds locaux).
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. PRÉFIXES COURANTS -->
+  <div class="section">
+    <div class="section-label">Plages importantes</div>
+    <h2>Préfixes IPv6 courants — à connaître pour l'examen</h2>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Préfixe</th><th>Type</th><th>Usage</th><th>Routable</th></tr>
+        <tr><td><code>::/128</code></td><td>Unspecified</td><td>Adresse non configurée (0.0.0.0 en IPv4)</td><td>Non</td></tr>
+        <tr><td><code>::1/128</code></td><td>Loopback</td><td>Boucle locale (127.0.0.1 en IPv4)</td><td>Non</td></tr>
+        <tr><td><code>fe80::/10</code></td><td>Link-Local</td><td>Communication lien local uniquement</td><td>Non</td></tr>
+        <tr><td><code>fc00::/7</code></td><td>Unique Local (ULA)</td><td>Privé (RFC 1918 en IPv4)</td><td>Non</td></tr>
+        <tr><td><code>fd00::/8</code></td><td>ULA (pratique)</td><td>Sous-ensemble ULA utilisé en pratique</td><td>Non</td></tr>
+        <tr><td><code>ff00::/8</code></td><td>Multicast</td><td>Diffusion groupée</td><td>Oui*</td></tr>
+        <tr><td><code>2000::/3</code></td><td>Global Unicast</td><td>Adresses publiques Internet</td><td>Oui</td></tr>
+        <tr><td><code>2001:db8::/32</code></td><td>Documentation</td><td>Exemples et docs (TEST-NET en IPv4)</td><td>Non</td></tr>
+      </table>
+    </div>
+
+    <h3>// Adresses spéciales à retenir</h3>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;line-height:1.8;">
+      <strong style="color:var(--green)">::1</strong> — Loopback (localhost)<br>
+      Équivalent 127.0.0.1 en IPv4. Test pile TCP/IP local.<br><br>
+
+      <strong style="color:var(--accent)">fe80::/10</strong> — Link-Local<br>
+      Auto-configuré sur chaque interface. Communication locale uniquement.<br>
+      Exemple : fe80::1, fe80::a00:27ff:fe4e:66a1<br><br>
+
+      <strong style="color:var(--purple)">2001:db8::/32</strong> — Documentation<br>
+      Réservé pour exemples. Jamais utilisé en production réelle.<br><br>
+
+      <strong style="color:var(--amber)">ff02::1</strong> — All-Nodes Multicast<br>
+      Remplace broadcast IPv4. Tous les nœuds du lien local.
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>À mémoriser pour l'examen</strong>
+        <strong>::1</strong> = loopback<br>
+        <strong>fe80::/10</strong> = link-local<br>
+        <strong>2001::/3</strong> = global unicast (Internet)<br>
+        <strong>ff00::/8</strong> = multicast<br>
+        <strong>fc00::/7</strong> = unique local (privé)<br>
+        CompTIA teste régulièrement l'identification des types d'adresses.
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. CE QUI TROMPE LES CANDIDATS -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : Utiliser :: plusieurs fois</div>
+      <div class="trap-content">
+        <strong>INVALIDE :</strong> 2001::db8::1 ❌<br>
+        <strong>VALIDE :</strong> 2001:0:0:0:db8:0:0:1 → 2001::db8:0:0:1 ✅<br><br>
+        On ne peut utiliser <code>::</code> qu'une seule fois. Sinon ambigu.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : Supprimer tous les zéros d'un groupe</div>
+      <div class="trap-content">
+        <strong>FAUX :</strong> 2001:db8::42::1 ❌<br>
+        Si un groupe contient que des zéros, on peut le réduire à un seul 0, mais pas supprimer complètement (sauf avec ::).<br><br>
+        <strong>Correct :</strong> 2001:db8:0:42:0:0:0:1 → 2001:db8:0:42::1 ✅
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : Link-Local = privé</div>
+      <div class="trap-content">
+        <strong>Link-Local (fe80::/10)</strong> ≠ Privé<br>
+        <strong>Unique Local (fc00::/7)</strong> = Privé<br><br>
+        Link-Local = communication sur le lien uniquement (comme 169.254 APIPA)<br>
+        Unique Local = équivalent 10.x, 192.168.x (RFC 1918)
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #4 : IPv6 a du broadcast</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. IPv6 n'a PAS de broadcast.<br>
+        Remplacé par <strong>multicast</strong> ff02::1 (all-nodes).<br><br>
+        Broadcast IPv4 (255.255.255.255) n'existe pas en IPv6.
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. CE QUE COMPTIA PEUT TE POSER -->
+  <div class="section">
+    <div class="section-label">🎯 Questions types</div>
+    <h2>Ce que CompTIA peut te poser</h2>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #1 : Abréviation</div>
+      <div class="comptia-content">
+        "Quelle est la forme abrégée de 2001:0db8:0000:0000:0000:ff00:0042:8329 ?"<br><br>
+        <strong>Réponse : 2001:db8::ff00:42:8329</strong><br>
+        Suppression zéros de tête + 4 groupes de 0 consécutifs → ::
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #2 : Identification de type</div>
+      <div class="comptia-content">
+        "Quel type d'adresse est fe80::1 ?"<br><br>
+        <strong>Réponse : Link-Local</strong><br>
+        fe80::/10 = plage link-local. Communication lien local uniquement.
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #3 : Loopback</div>
+      <div class="comptia-content">
+        "Quelle est l'adresse loopback IPv6 ?"<br><br>
+        <strong>Réponse : ::1</strong> (équivalent 127.0.0.1 en IPv4)
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #4 : Validation notation</div>
+      <div class="comptia-content">
+        "Laquelle est invalide ?<br>
+        A) 2001::85a3::1<br>
+        B) fe80::1<br>
+        C) ::1"<br><br>
+        <strong>Réponse : A</strong> (:: utilisé 2 fois = invalide ❌)
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">Combien de bits dans une adresse IPv6 ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>128 bits</strong> (vs 32 bits pour IPv4)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">Combien de groupes hexadécimaux dans une adresse IPv6 complète ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>8 groupes</strong> de 4 chiffres hexa chacun, séparés par :</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">Abrège : 2001:0db8:0000:0000:0000:0000:0000:0001</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>2001:db8::1</strong></div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">Quelle est l'adresse loopback IPv6 ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>::1</strong></div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">fe80::5 est quel type d'adresse ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Link-Local</strong> (fe80::/10)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">Question type examen : 2001::db8::1 est-elle valide ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Non</strong> ❌ (:: utilisé 2 fois = invalide)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">Quel préfixe pour les adresses IPv6 globales (Internet) ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>2000::/3</strong> (en pratique commence par 2xxx ou 3xxx)</div>
+  </div>
+
+  <!-- 9. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span>IPv6 = 128 bits, format : 8 groupes de 4 chiffres hexa séparés par :</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Notation abrégée : supprimer zéros de tête + :: pour séquence de 0 (UNE SEULE FOIS)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>3 types : Unicast (1 destinataire), Multicast (groupe), Anycast (plus proche)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>::1</strong> = loopback, <strong>fe80::/10</strong> = link-local, <strong>2000::/3</strong> = global</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>fc00::/7</strong> = unique local (privé), <strong>ff00::/8</strong> = multicast</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Pas de broadcast en IPv6 (remplacé par multicast ff02::1)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Standard réseau local : /64 (64 bits préfixe + 64 bits interface)</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 20 : NAT / PAT</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">C21 · Phase 3</span>
+    <a class="nav-btn next" href="#">Cours 22 : ... →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_c21_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>
