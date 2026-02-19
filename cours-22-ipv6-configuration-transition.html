@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 22 — IPv6 : configuration et transition · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .vocab { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; }
+  .vocab-term { font-family: 'IBM Plex Mono', monospace; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .comptia-box { background: rgba(251,191,36,0.05); border: 2px solid var(--amber); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .comptia-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--amber); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .comptia-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Phase 3 — IPv6</span> &nbsp;›&nbsp; Cours 22</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 3 · C22</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-lab">🧪 LAB</span>
+    <span class="pill pill-diff">⚡⚡⚡ Difficile</span>
+  </div>
+
+  <h1>IPv6 — <span>Configuration et transition</span></h1>
+  <span class="tagline">// EUI-64, SLAAC, DHCPv6, dual-stack, tunneling, NAT64 — migrer vers IPv6</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends EUI-64 et SLAAC</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais DHCPv6 stateful vs stateless</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise dual-stack, tunneling et NAT64</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. AUTO-CONFIG -->
+  <div class="section">
+    <div class="section-label">Configuration automatique</div>
+    <h2>EUI-64 et SLAAC — auto-configuration sans DHCP</h2>
+
+    <p>IPv6 peut s'auto-configurer <strong>sans serveur DHCP</strong> grâce à SLAAC (Stateless Address Autoconfiguration).</p>
+
+    <h3>// EUI-64 — créer Interface ID depuis MAC</h3>
+    <p><strong>EUI-64 (Extended Unique Identifier)</strong> = méthode pour générer les 64 bits Interface ID à partir de l'adresse MAC (48 bits).</p>
+
+    <p><strong>Processus en 3 étapes :</strong></p>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Prendre la MAC (48 bits) : <code>00:1A:2B:3C:4D:5E</code></li>
+      <li>Insérer <code>FF:FE</code> au milieu : <code>00:1A:2B:FF:FE:3C:4D:5E</code></li>
+      <li>Inverser le 7e bit (U/L bit) du premier octet : <code>00 → 02</code></li>
+      <li>Résultat : <code>02:1A:2B:FF:FE:3C:4D:5E</code> → <code>021a:2bff:fe3c:4d5e</code></li>
+    </ol>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--green)">Exemple complet :</strong><br>
+      MAC = 00:1A:2B:3C:4D:5E<br>
+      Préfixe réseau = 2001:db8:1234:5678::/64<br><br>
+
+      Étape 1: Insérer FF:FE au milieu<br>
+      00:1A:2B → 00:1A:2B:FF:FE<br>
+      FF:FE:3C:4D:5E → 3C:4D:5E<br>
+      = 00:1A:2B:FF:FE:3C:4D:5E<br><br>
+
+      Étape 2: Inverser 7e bit du 1er octet<br>
+      00 = 00000000 → bit 7 à 1 → 00000010 = 02<br>
+      = 02:1A:2B:FF:FE:3C:4D:5E<br><br>
+
+      Étape 3: Convertir en hexa IPv6<br>
+      Interface ID = 021a:2bff:fe3c:4d5e<br><br>
+
+      <strong style="color:var(--accent)">Adresse IPv6 complète :</strong><br>
+      2001:db8:1234:5678:021a:2bff:fe3c:4d5e
+    </div>
+
+    <h3>// SLAAC — auto-configuration complète</h3>
+    <p><strong>SLAAC (Stateless Address Autoconfiguration)</strong> = processus complet d'auto-configuration IPv6 sans DHCP.</p>
+
+    <p><strong>Étapes SLAAC :</strong></p>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>L'hôte génère une adresse <strong>link-local</strong> : fe80::Interface-ID (EUI-64)</li>
+      <li>Il vérifie unicité via <strong>DAD</strong> (Duplicate Address Detection - Neighbor Solicitation)</li>
+      <li>Il envoie <strong>Router Solicitation (RS)</strong> multicast ff02::2</li>
+      <li>Le routeur répond avec <strong>Router Advertisement (RA)</strong> contenant le préfixe réseau</li>
+      <li>L'hôte combine : Préfixe (RA) + Interface ID (EUI-64) = adresse globale</li>
+      <li>Configuration terminée automatiquement !</li>
+    </ol>
+
+    <div class="callout ok">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Avantage SLAAC</strong>
+        Pas de serveur DHCP nécessaire. Chaque hôte se configure automatiquement dès qu'un routeur annonce le préfixe. Simplicité maximale.
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Limite SLAAC</strong>
+        SLAAC ne fournit PAS : serveurs DNS, domaine, options avancées. Pour cela → DHCPv6 stateless ou stateful.
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. DHCPV6 -->
+  <div class="section">
+    <div class="section-label">Configuration DHCP</div>
+    <h2>DHCPv6 — stateful vs stateless</h2>
+
+    <p>DHCPv6 existe en 2 modes : stateful (comme DHCP IPv4) et stateless (juste les options).</p>
+
+    <h3>// DHCPv6 Stateful</h3>
+    <p><strong>Principe :</strong> Comme DHCP IPv4. Le serveur gère TOUT : adresse IPv6, préfixe, gateway, DNS, domaine...</p>
+
+    <p><strong>Processus (4 messages) :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9;font-family:'IBM Plex Mono',monospace;font-size:0.85rem">
+      <li>Client → Solicit (multicast ff02::1:2)</li>
+      <li>Serveur → Advertise</li>
+      <li>Client → Request</li>
+      <li>Serveur → Reply (contient IP, DNS, etc.)</li>
+    </ul>
+
+    <p><strong>Flag Router Advertisement :</strong> M-flag (Managed) = 1 → utiliser DHCPv6 stateful</p>
+
+    <h3>// DHCPv6 Stateless</h3>
+    <p><strong>Principe :</strong> SLAAC gère l'adresse IP, DHCPv6 fournit uniquement les options (DNS, domaine, NTP...).</p>
+
+    <p><strong>Processus :</strong></p>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Hôte utilise SLAAC pour obtenir l'adresse IPv6</li>
+      <li>Il contacte DHCPv6 uniquement pour récupérer DNS et options</li>
+    </ol>
+
+    <p><strong>Flag Router Advertisement :</strong> O-flag (Other) = 1 → utiliser DHCPv6 stateless pour options</p>
+
+    <h3>// Comparaison</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>SLAAC</th><th>DHCPv6 Stateless</th><th>DHCPv6 Stateful</th></tr>
+        <tr><td>Adresse IPv6</td><td>Auto (EUI-64)</td><td>Auto (EUI-64)</td><td>Serveur DHCP</td></tr>
+        <tr><td>Préfixe</td><td>RA routeur</td><td>RA routeur</td><td>Serveur DHCP</td></tr>
+        <tr><td>DNS</td><td>❌ Non</td><td>✅ DHCPv6</td><td>✅ DHCPv6</td></tr>
+        <tr><td>Options</td><td>❌ Non</td><td>✅ DHCPv6</td><td>✅ DHCPv6</td></tr>
+        <tr><td>Tracking IP</td><td>❌ Non</td><td>❌ Non</td><td>✅ Oui</td></tr>
+        <tr><td>RA Flags</td><td>M=0, O=0</td><td>M=0, O=1</td><td>M=1</td></tr>
+      </table>
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen</strong>
+        M-flag = 1 → DHCPv6 stateful (serveur gère tout)<br>
+        O-flag = 1, M-flag = 0 → DHCPv6 stateless (SLAAC + options DHCP)<br>
+        M=0, O=0 → SLAAC pur (pas de DHCP)
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. DUAL-STACK -->
+  <div class="section">
+    <div class="section-label">Coexistence IPv4/IPv6</div>
+    <h2>Dual-Stack — exécuter IPv4 et IPv6 simultanément</h2>
+
+    <p><strong>Dual-Stack</strong> = configuration où un hôte/routeur exécute <strong>IPv4 ET IPv6 en même temps</strong>.</p>
+
+    <h3>// Fonctionnement</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Chaque interface a 2 adresses : 1 IPv4 + 1 IPv6</li>
+      <li>Pile IP double : couches 3 et 4 gèrent les deux protocoles</li>
+      <li>Application choisit IPv4 ou IPv6 selon disponibilité destination</li>
+      <li><strong>Préférence :</strong> Si les deux disponibles → IPv6 prioritaire (RFC 6724)</li>
+    </ul>
+
+    <p><strong>Exemple :</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;line-height:1.8;">
+      Interface eth0:<br>
+      &nbsp;&nbsp;IPv4: 192.168.1.10/24<br>
+      &nbsp;&nbsp;IPv6: 2001:db8::10/64<br>
+      &nbsp;&nbsp;Link-Local: fe80::a00:27ff:fe4e:66a1<br><br>
+      
+      Connexion google.com:<br>
+      &nbsp;&nbsp;DNS retourne: 142.250.185.46 (IPv4) + 2a00:1450:4007:80f::200e (IPv6)<br>
+      &nbsp;&nbsp;→ IPv6 utilisé en priorité ✅
+    </div>
+
+    <h3>// Avantages et inconvénients</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>✅ Avantages</th><th>❌ Inconvénients</th></tr>
+        <tr><td>Compatibilité totale IPv4 et IPv6</td><td>Double configuration à gérer</td></tr>
+        <tr><td>Transition progressive sans rupture</td><td>Complexité accrue</td></tr>
+        <tr><td>Pas de traduction nécessaire</td><td>Double tables de routage</td></tr>
+        <tr><td>Standard recommandé</td><td>Consommation mémoire x2</td></tr>
+      </table>
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">✅</span>
+      <div class="callout-body">
+        <strong>Dual-Stack = meilleure solution transition</strong>
+        C'est la méthode recommandée pour migrer vers IPv6. Pas de traduction complexe, compatibilité garantie. La plupart des OS modernes sont dual-stack par défaut.
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. TUNNELING -->
+  <div class="section">
+    <div class="section-label">Encapsulation</div>
+    <h2>Tunneling IPv6 — transporter IPv6 dans IPv4</h2>
+
+    <p><strong>Tunneling</strong> = encapsuler des paquets IPv6 dans des paquets IPv4 pour traverser un réseau IPv4-only.</p>
+
+    <h3>// 6to4 Tunneling</h3>
+    <p><strong>Principe :</strong> Encapsulation automatique IPv6 → IPv4. Utilise préfixe spécial <code>2002::/16</code>.</p>
+
+    <p><strong>Fonctionnement :</strong></p>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Réseau IPv6 A veut communiquer avec réseau IPv6 B</li>
+      <li>Entre les deux = réseau IPv4 uniquement</li>
+      <li>Routeur A encapsule paquet IPv6 dans paquet IPv4</li>
+      <li>Paquet IPv4 traverse le réseau IPv4</li>
+      <li>Routeur B décapsule et extrait paquet IPv6</li>
+      <li>Paquet IPv6 délivré à destination</li>
+    </ol>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--green)">Exemple 6to4 :</strong><br>
+      Routeur A : IP publique IPv4 = 192.0.2.1<br>
+      → Convertir en hexa : 192.0.2.1 = C000:0201<br>
+      → Préfixe 6to4 : 2002:C000:0201::/48<br><br>
+
+      Routeur B : IP publique IPv4 = 198.51.100.1<br>
+      → Préfixe 6to4 : 2002:C633:6401::/48<br><br>
+
+      Paquet IPv6 de A vers B :<br>
+      Encapsulé dans : IPv4 src=192.0.2.1, dst=198.51.100.1
+    </div>
+
+    <h3>// Autres méthodes de tunneling</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Méthode</th><th>Type</th><th>Usage</th></tr>
+        <tr><td><strong>6to4</strong></td><td>Automatique</td><td>Préfixe 2002::/16. Déprécié aujourd'hui.</td></tr>
+        <tr><td><strong>6in4</strong></td><td>Manuel</td><td>Tunnel statique configuré manuellement. Fiable.</td></tr>
+        <tr><td><strong>6rd</strong></td><td>ISP</td><td>6to4 amélioré pour fournisseurs d'accès.</td></tr>
+        <tr><td><strong>Teredo</strong></td><td>NAT traversal</td><td>Tunnel IPv6 à travers NAT IPv4. Préfixe 2001:0::/32.</td></tr>
+        <tr><td><strong>ISATAP</strong></td><td>Intranet</td><td>Tunneling pour réseaux d'entreprise.</td></tr>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Tunneling = solution temporaire</strong>
+        Le tunneling est une rustine pendant la transition. L'objectif final = dual-stack puis IPv6 natif partout. Tunneling = overhead et complexité.
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. NAT64 -->
+  <div class="section">
+    <div class="section-label">Traduction IPv6 ↔ IPv4</div>
+    <h2>NAT64 — permettre IPv6-only de parler à IPv4</h2>
+
+    <p><strong>NAT64</strong> = gateway qui traduit paquets IPv6 ↔ IPv4. Permet réseau IPv6-only d'accéder à Internet IPv4.</p>
+
+    <h3>// Fonctionnement</h3>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Client IPv6-only veut accéder à serveur IPv4 (8.8.8.8)</li>
+      <li>DNS64 (compagnon de NAT64) transforme : 8.8.8.8 → 64:ff9b::808:808 (IPv6)</li>
+      <li>Client envoie paquet IPv6 vers 64:ff9b::808:808</li>
+      <li>NAT64 gateway intercepte, traduit en paquet IPv4 vers 8.8.8.8</li>
+      <li>Serveur IPv4 répond → NAT64 traduit réponse en IPv6</li>
+      <li>Client IPv6 reçoit la réponse</li>
+    </ol>
+
+    <p><strong>Préfixe standard NAT64 :</strong> <code>64:ff9b::/96</code></p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--accent)">Exemple traduction :</strong><br>
+      IPv4: 8.8.8.8<br>
+      → Convertir en hexa: 08.08.08.08<br>
+      → IPv6 NAT64: 64:ff9b::808:808<br><br>
+
+      IPv4: 192.0.2.1<br>
+      → Hexa: C0.00.02.01<br>
+      → IPv6 NAT64: 64:ff9b::c000:201
+    </div>
+
+    <h3>// DNS64 — composant essentiel</h3>
+    <p><strong>DNS64</strong> travaille avec NAT64. Il synthétise des adresses IPv6 pour les destinations IPv4.</p>
+
+    <p><strong>Exemple :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9;font-family:'IBM Plex Mono',monospace;font-size:0.85rem">
+      <li>Client demande : AAAA google.com</li>
+      <li>DNS64 vérifie : google.com a un AAAA ? Oui → retourner directement</li>
+      <li>Sinon : regarder A record → 142.250.185.46</li>
+      <li>DNS64 synthétise : 64:ff9b::8efa:b92e</li>
+      <li>Client utilise cette IPv6, NAT64 traduit vers IPv4</li>
+    </ul>
+
+    <div class="callout ok">
+      <span class="callout-icon">🌐</span>
+      <div class="callout-body">
+        <strong>Usage NAT64</strong>
+        Permet déploiement IPv6-only (économie d'adresses, simplicité) tout en gardant accès à Internet IPv4 legacy. Utilisé par certains opérateurs mobiles.
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. CE QUI TROMPE LES CANDIDATS -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : SLAAC fournit tout</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. SLAAC fournit uniquement : adresse IPv6, préfixe, gateway.<br>
+        Il ne fournit PAS : DNS, domaine, NTP, options avancées.<br><br>
+        Pour DNS → DHCPv6 stateless ou stateful nécessaire.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : DHCPv6 stateless = pas de DHCP</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. DHCPv6 stateless utilise BIEN un serveur DHCP, mais uniquement pour les options (DNS, domaine...). L'adresse IP vient de SLAAC.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : Dual-stack = traduction</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Dual-stack = exécuter IPv4 ET IPv6 nativement, sans traduction.<br>
+        Traduction = NAT64 (différent de dual-stack).
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #4 : 6to4 et NAT64 pareils</div>
+      <div class="trap-content">
+        <strong>6to4</strong> = tunneling (encapsulation IPv6 dans IPv4)<br>
+        <strong>NAT64</strong> = traduction (convertir en-têtes IPv6 ↔ IPv4)<br><br>
+        Pas la même chose !
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. CE QUE COMPTIA PEUT TE POSER -->
+  <div class="section">
+    <div class="section-label">🎯 Questions types</div>
+    <h2>Ce que CompTIA peut te poser</h2>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #1 : SLAAC vs DHCPv6</div>
+      <div class="comptia-content">
+        "Un réseau utilise SLAAC. Les hôtes obtiennent des adresses IPv6 mais ne peuvent pas résoudre de noms. Quelle est la solution ?"<br><br>
+        <strong>Réponse :</strong> Activer DHCPv6 stateless (O-flag=1) pour fournir serveurs DNS. SLAAC ne fournit pas DNS.
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #2 : Dual-stack</div>
+      <div class="comptia-content">
+        "Un hôte dual-stack veut accéder à un serveur ayant IPv4 et IPv6. Quel protocole sera utilisé par défaut ?"<br><br>
+        <strong>Réponse : IPv6</strong> (prioritaire selon RFC 6724 si les deux disponibles)
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #3 : NAT64 préfixe</div>
+      <div class="comptia-content">
+        "Quel préfixe standard utilise NAT64 ?"<br><br>
+        <strong>Réponse : 64:ff9b::/96</strong>
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #4 : Router Advertisement flags</div>
+      <div class="comptia-content">
+        "RA avec M=1. Que doit faire le client ?"<br><br>
+        <strong>Réponse :</strong> Utiliser DHCPv6 stateful pour obtenir l'adresse IPv6 complète (pas SLAAC).
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">C'est quoi SLAAC ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Stateless Address Autoconfiguration — auto-configuration IPv6 sans serveur DHCP. Utilise Router Advertisement + EUI-64.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">Quelle est la différence DHCPv6 stateful vs stateless ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Stateful</strong> : serveur gère tout (IP, DNS, options) comme DHCP IPv4<br><strong>Stateless</strong> : SLAAC pour IP, DHCPv6 uniquement pour options (DNS...)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">C'est quoi dual-stack ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Exécuter IPv4 ET IPv6 simultanément sur même interface. Pas de traduction, protocoles natifs coexistent.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">C'est quoi 6to4 ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Tunneling automatique IPv6 dans IPv4. Préfixe 2002::/16. Encapsule paquets IPv6 pour traverser réseau IPv4.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">C'est quoi NAT64 ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Traduction IPv6 ↔ IPv4. Permet réseau IPv6-only d'accéder à serveurs IPv4. Préfixe 64:ff9b::/96. Travaille avec DNS64.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">Question type examen : RA avec M=0, O=1. Que fait le client ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">SLAAC pour obtenir IP + DHCPv6 stateless pour options (DNS). M=0 → pas de stateful.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">SLAAC fournit-il les serveurs DNS ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Non</strong> ❌. SLAAC fournit uniquement : IP, préfixe, gateway. Pour DNS → DHCPv6 stateless ou stateful.</div>
+  </div>
+
+  <!-- 9. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span>EUI-64 : MAC 48 bits + FF:FE au milieu + inversion bit 7 = Interface ID 64 bits</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>SLAAC : auto-config sans DHCP (IP, préfixe, gateway). Pas de DNS.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>DHCPv6 stateful (M=1) : serveur gère tout. Stateless (O=1, M=0) : SLAAC + options DHCP.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Dual-stack : IPv4 ET IPv6 natifs simultanément. IPv6 prioritaire. Meilleure solution transition.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Tunneling (6to4, 6in4) : encapsuler IPv6 dans IPv4 pour traverser réseau legacy</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>NAT64 (64:ff9b::/96) : traduction IPv6 ↔ IPv4. Avec DNS64 pour synthétiser AAAA.</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 21 : IPv6 — bases</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">C22 · Phase 3</span>
+    <a class="nav-btn next" href="#">Cours 23 : ICMP et ICMPv6 →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_c22_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>
