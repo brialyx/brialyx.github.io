@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 24 — TCP · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .vocab { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; }
+  .vocab-term { font-family: 'IBM Plex Mono', monospace; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .comptia-box { background: rgba(251,191,36,0.05); border: 2px solid var(--amber); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .comptia-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--amber); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .comptia-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Phase 4 — Protocoles</span> &nbsp;›&nbsp; Cours 24</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 4 · C24</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡⚡ Difficile</span>
+  </div>
+
+  <h1><span>TCP</span> — Protocole orienté connexion</h1>
+  <span class="tagline">// Transmission Control Protocol — fiable, ordonné, avec contrôle d'erreur</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise le 3-way handshake (SYN/SYN-ACK/ACK)</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends les numéros de séquence</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais le fenêtrage et le contrôle de flux</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. C'EST QUOI -->
+  <div class="section">
+    <div class="section-label">Avant de commencer</div>
+    <h2>C'est quoi TCP — protocole fiable orienté connexion</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">📞</span>
+      <div class="callout-body">
+        <strong>Analogie — conversation téléphonique</strong>
+        TCP = appel téléphonique. Tu dois d'abord établir la connexion ("Allô ?" → "Oui, j'écoute"), puis tu parles, l'autre accuse réception, et à la fin tu raccroches proprement ("Au revoir" → "Au revoir"). UDP = envoyer une lettre : tu envoies sans vérifier si elle arrive.
+      </div>
+    </div>
+
+    <p><strong>TCP (Transmission Control Protocol)</strong> est un protocole de <strong>couche 4 (transport)</strong> qui fournit une communication <strong>fiable, ordonnée et avec contrôle d'erreur</strong> entre applications.</p>
+
+    <h3>// Caractéristiques principales</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>TCP</th><th>UDP (comparaison)</th></tr>
+        <tr><td><strong>Connexion</strong></td><td>✅ Orienté connexion (3-way handshake)</td><td>❌ Sans connexion</td></tr>
+        <tr><td><strong>Fiabilité</strong></td><td>✅ Garantit livraison (retransmission)</td><td>❌ Pas de garantie</td></tr>
+        <tr><td><strong>Ordre</strong></td><td>✅ Paquets ordonnés (séquence)</td><td>❌ Pas d'ordre</td></tr>
+        <tr><td><strong>Contrôle flux</strong></td><td>✅ Fenêtrage</td><td>❌ Non</td></tr>
+        <tr><td><strong>Overhead</strong></td><td>⚠️ Plus lourd (20-60 octets en-tête)</td><td>✅ Léger (8 octets)</td></tr>
+        <tr><td><strong>Vitesse</strong></td><td>⚠️ Plus lent (mécanismes fiabilité)</td><td>✅ Plus rapide</td></tr>
+        <tr><td><strong>Usage</strong></td><td>HTTP, HTTPS, FTP, SMTP, SSH</td><td>DNS, DHCP, streaming, jeux</td></tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen Network+</strong>
+        CompTIA teste MASSIVEMENT : 3-way handshake (SYN/SYN-ACK/ACK), flags TCP (SYN, ACK, FIN, RST), numéros de séquence/acknowledgment, fenêtrage, différence TCP vs UDP. Le handshake est LA question la plus fréquente.
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. EN-TÊTE TCP -->
+  <div class="section">
+    <div class="section-label">Structure</div>
+    <h2>En-tête TCP — les champs essentiels</h2>
+
+    <p><strong>En-tête TCP = 20 octets minimum (jusqu'à 60 avec options)</strong></p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;line-height:1.8;">
+      0                   1                   2                   3<br>
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1<br>
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+<br>
+      |          Source Port          |       Destination Port        |<br>
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+<br>
+      |                        Sequence Number                        |<br>
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+<br>
+      |                    Acknowledgment Number                      |<br>
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+<br>
+      | Offset| Res |     Flags       |            Window             |<br>
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+<br>
+      |           Checksum            |         Urgent Pointer        |<br>
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+<br>
+      |                    Options (variable)                         |<br>
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    </div>
+
+    <h3>// Champs importants</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Source Port / Destination Port (16 bits chacun)</strong> : Ports source et destination (0-65535)</li>
+      <li><strong>Sequence Number (32 bits)</strong> : Numéro de séquence du 1er octet de données. Permet de réordonner les segments.</li>
+      <li><strong>Acknowledgment Number (32 bits)</strong> : Prochain octet attendu (= ACK du dernier reçu + 1)</li>
+      <li><strong>Flags (9 bits)</strong> : SYN, ACK, FIN, RST, PSH, URG... Contrôlent l'état de la connexion</li>
+      <li><strong>Window Size (16 bits)</strong> : Taille de la fenêtre de réception (contrôle de flux)</li>
+      <li><strong>Checksum (16 bits)</strong> : Vérification d'intégrité</li>
+    </ul>
+  </div>
+
+  <!-- 3. FLAGS TCP -->
+  <div class="section">
+    <div class="section-label">Flags de contrôle</div>
+    <h2>Flags TCP — SYN, ACK, FIN, RST...</h2>
+
+    <p>Les <strong>flags TCP</strong> contrôlent l'état et le comportement de la connexion.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Flag</th><th>Nom</th><th>Rôle</th></tr>
+        <tr><td><strong>SYN</strong></td><td>Synchronize</td><td>Demande d'ouverture de connexion (3-way handshake)</td></tr>
+        <tr><td><strong>ACK</strong></td><td>Acknowledgment</td><td>Accuse réception des données</td></tr>
+        <tr><td><strong>FIN</strong></td><td>Finish</td><td>Demande de fermeture propre de la connexion</td></tr>
+        <tr><td><strong>RST</strong></td><td>Reset</td><td>Réinitialisation immédiate (fermeture brutale)</td></tr>
+        <tr><td><strong>PSH</strong></td><td>Push</td><td>Envoyer immédiatement à l'application (pas de buffer)</td></tr>
+        <tr><td><strong>URG</strong></td><td>Urgent</td><td>Données urgentes (rarement utilisé)</td></tr>
+      </table>
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Flags les plus testés à l'examen</strong>
+        <strong>SYN</strong> = Établir connexion<br>
+        <strong>ACK</strong> = Accuser réception<br>
+        <strong>FIN</strong> = Fermeture propre<br>
+        <strong>RST</strong> = Fermeture brutale (erreur, refus connexion)<br><br>
+        Question type : "Un segment TCP avec SYN=1, ACK=0. Que signifie-t-il ?" → Étape 1 du handshake
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. 3-WAY HANDSHAKE -->
+  <div class="section">
+    <div class="section-label">Établissement connexion</div>
+    <h2>3-Way Handshake — SYN / SYN-ACK / ACK</h2>
+
+    <p>Le <strong>3-way handshake</strong> est le processus d'établissement de connexion TCP en 3 étapes.</p>
+
+    <h3>// Les 3 étapes (CRUCIAL pour l'examen)</h3>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;line-height:1.8;">
+      <strong style="color:var(--green)">Client</strong>                                    <strong style="color:var(--accent)">Serveur</strong><br><br>
+
+      <strong style="color:var(--amber)">Étape 1 : SYN</strong><br>
+      Client → Serveur<br>
+      Segment : <strong>SYN=1, ACK=0</strong><br>
+      SEQ = 1000 (numéro séquence initial aléatoire)<br>
+      "Je veux établir une connexion"<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;────────────────→<br><br>
+
+      <strong style="color:var(--amber)">Étape 2 : SYN-ACK</strong><br>
+      Serveur → Client<br>
+      Segment : <strong>SYN=1, ACK=1</strong><br>
+      SEQ = 5000 (son propre numéro initial)<br>
+      ACK = 1001 (reconnaît le 1000 du client, attend 1001)<br>
+      "OK, j'accepte. Voici mon numéro."<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;←────────────────<br><br>
+
+      <strong style="color:var(--amber)">Étape 3 : ACK</strong><br>
+      Client → Serveur<br>
+      Segment : <strong>SYN=0, ACK=1</strong><br>
+      SEQ = 1001<br>
+      ACK = 5001 (reconnaît le 5000 du serveur)<br>
+      "Reçu, connexion établie !"<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;────────────────→<br><br>
+
+      <strong style="color:var(--green)">✅ CONNEXION ÉTABLIE</strong><br>
+      Les deux parties peuvent maintenant échanger des données.
+    </div>
+
+    <h3>// Résumé visuel</h3>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>SYN</strong> : Client demande connexion (SYN=1, ACK=0)</li>
+      <li><strong>SYN-ACK</strong> : Serveur accepte (SYN=1, ACK=1)</li>
+      <li><strong>ACK</strong> : Client confirme (SYN=0, ACK=1) → Connexion établie ✅</li>
+    </ol>
+
+    <div class="callout ok">
+      <span class="callout-icon">🔒</span>
+      <div class="callout-body">
+        <strong>Pourquoi 3 étapes ?</strong>
+        Pour synchroniser les numéros de séquence des DEUX côtés et confirmer que les deux parties sont prêtes. 2 étapes ne suffisent pas (pas de confirmation finale du client).
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. FERMETURE -->
+  <div class="section">
+    <div class="section-label">Terminaison connexion</div>
+    <h2>Fermeture connexion — 4-way handshake (FIN)</h2>
+
+    <p>La fermeture TCP utilise un <strong>4-way handshake</strong> avec des segments FIN.</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;line-height:1.8;">
+      <strong style="color:var(--green)">Client</strong>                                    <strong style="color:var(--accent)">Serveur</strong><br><br>
+
+      <strong style="color:var(--amber)">1. FIN</strong><br>
+      Client veut fermer<br>
+      <strong>FIN=1, ACK=1</strong><br>
+      "J'ai fini d'envoyer"<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;────────────────→<br><br>
+
+      <strong style="color:var(--amber)">2. ACK</strong><br>
+      Serveur accuse réception<br>
+      <strong>FIN=0, ACK=1</strong><br>
+      "J'ai reçu ton FIN"<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;←────────────────<br><br>
+
+      <strong style="color:var(--amber)">3. FIN</strong><br>
+      Serveur aussi a fini<br>
+      <strong>FIN=1, ACK=1</strong><br>
+      "Moi aussi j'ai fini"<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;←────────────────<br><br>
+
+      <strong style="color:var(--amber)">4. ACK</strong><br>
+      Client confirme<br>
+      <strong>FIN=0, ACK=1</strong><br>
+      "OK, au revoir"<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;────────────────→<br><br>
+
+      <strong style="color:var(--red)">✅ CONNEXION FERMÉE</strong>
+    </div>
+
+    <h3>// RST — fermeture brutale</h3>
+    <p><strong>RST (Reset)</strong> = fermeture immédiate sans négociation. Utilisé quand :</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Port fermé (pas de service écoutant)</li>
+      <li>Erreur grave dans la connexion</li>
+      <li>Connexion refusée par pare-feu</li>
+      <li>Timeout dépassé</li>
+    </ul>
+  </div>
+
+  <!-- 6. NUMÉROS DE SÉQUENCE -->
+  <div class="section">
+    <div class="section-label">Numérotation</div>
+    <h2>Numéros de séquence et ACK — ordonner et confirmer</h2>
+
+    <p>Les <strong>numéros de séquence</strong> permettent d'ordonner les segments et de détecter les pertes.</p>
+
+    <h3>// Principe</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Sequence Number</strong> = Position du 1er octet de données dans le flux</li>
+      <li><strong>Acknowledgment Number</strong> = Prochain octet attendu (= dernier reçu + 1)</li>
+      <li>Chaque segment TCP incrémente SEQ de la taille des données envoyées</li>
+    </ul>
+
+    <h3>// Exemple transmission</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--green)">Client → Serveur</strong><br>
+      Segment 1 : SEQ=1000, Données=100 octets<br>
+      "Voici les octets 1000-1099"<br><br>
+
+      <strong style="color:var(--accent)">Serveur → Client</strong><br>
+      Segment 2 : ACK=1100<br>
+      "J'ai reçu jusqu'à 1099. J'attends 1100."<br><br>
+
+      <strong style="color:var(--green)">Client → Serveur</strong><br>
+      Segment 3 : SEQ=1100, Données=200 octets<br>
+      "Voici les octets 1100-1299"<br><br>
+
+      <strong style="color:var(--accent)">Serveur → Client</strong><br>
+      Segment 4 : ACK=1300<br>
+      "J'ai reçu jusqu'à 1299. J'attends 1300."
+    </div>
+
+    <h3>// Retransmission en cas de perte</h3>
+    <p>Si le serveur ne reçoit pas le segment 3 :</p>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Client envoie SEQ=1100 (Segment 3)</li>
+      <li>Segment perdu en transit</li>
+      <li>Client attend ACK=1300 → timeout</li>
+      <li>Client <strong>retransmet</strong> SEQ=1100</li>
+      <li>Serveur reçoit, envoie ACK=1300</li>
+    </ol>
+
+    <div class="callout ok">
+      <span class="callout-icon">✅</span>
+      <div class="callout-body">
+        <strong>TCP garantit la livraison</strong>
+        Grâce aux numéros de séquence et retransmissions, TCP assure que TOUTES les données arrivent, dans le bon ordre, sans duplication.
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. FENÊTRAGE -->
+  <div class="section">
+    <div class="section-label">Contrôle de flux</div>
+    <h2>Fenêtrage (Windowing) — contrôler le débit</h2>
+
+    <p><strong>Fenêtrage</strong> = mécanisme de contrôle de flux qui ajuste dynamiquement le nombre de segments envoyés avant d'attendre un ACK.</p>
+
+    <h3>// Window Size (taille de fenêtre)</h3>
+    <p>Le champ <strong>Window Size</strong> (16 bits) dans l'en-tête TCP indique combien d'octets le récepteur peut recevoir sans envoyer d'ACK.</p>
+
+    <p><strong>Exemple :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9;font-family:'IBM Plex Mono',monospace;font-size:0.85rem">
+      <li>Serveur annonce Window = 4000 octets</li>
+      <li>Client peut envoyer jusqu'à 4000 octets sans attendre d'ACK</li>
+      <li>Si buffer serveur se remplit → Window = 2000 (ralentir)</li>
+      <li>Si buffer vide → Window = 8000 (accélérer)</li>
+    </ul>
+
+    <h3>// Fenêtre glissante (Sliding Window)</h3>
+    <p>TCP utilise une <strong>fenêtre glissante</strong> :</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Données : [1000] [1100] [1200] [1300] [1400] [1500]<br>
+      Fenêtre = 3 segments<br><br>
+
+      <strong style="color:var(--green)">Envoi segments 1000, 1100, 1200</strong> (fenêtre remplie)<br>
+      Attendre ACK...<br><br>
+
+      <strong style="color:var(--accent)">ACK=1100 reçu</strong><br>
+      Fenêtre glisse : peut envoyer 1300<br><br>
+
+      <strong style="color:var(--accent)">ACK=1200 reçu</strong><br>
+      Fenêtre glisse : peut envoyer 1400<br><br>
+
+      etc.
+    </div>
+
+    <h3>// Avantages</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Débit optimisé (pas d'attente après chaque segment)</li>
+      <li>Adaptation à la congestion (fenêtre réduite si surcharge)</li>
+      <li>Évite de saturer le récepteur</li>
+    </ul>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Window = 0</strong>
+        Si Window = 0 → buffer du récepteur plein → l'émetteur DOIT arrêter d'envoyer. Il attend que le récepteur libère de l'espace (Window > 0).
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. CE QUI TROMPE LES CANDIDATS -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : Ordre des flags dans handshake</div>
+      <div class="trap-content">
+        <strong>Étape 1 :</strong> SYN=1, ACK=0 (pas d'ACK !)<br>
+        <strong>Étape 2 :</strong> SYN=1, ACK=1 (les deux)<br>
+        <strong>Étape 3 :</strong> SYN=0, ACK=1 (juste ACK)<br><br>
+        Beaucoup inversent ou oublient les valeurs exactes.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : ACK = SEQ reçu</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. ACK = SEQ reçu <strong>+ taille données</strong>.<br><br>
+        Si je reçois SEQ=1000 avec 100 octets → j'envoie ACK=1100 (pas 1000).<br>
+        ACK indique le <strong>prochain octet attendu</strong>.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : TCP plus rapide qu'UDP</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. TCP est <strong>plus lent</strong> qu'UDP.<br>
+        Overhead : handshake, ACK, retransmissions, fenêtrage...<br>
+        UDP = simple, rapide, mais pas fiable.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #4 : Confondre FIN et RST</div>
+      <div class="trap-content">
+        <strong>FIN</strong> = Fermeture propre, négociée (4-way handshake)<br>
+        <strong>RST</strong> = Fermeture brutale, immédiate (erreur, port fermé)<br><br>
+        FIN = au revoir poli. RST = raccrocher au nez.
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. CE QUE COMPTIA PEUT TE POSER -->
+  <div class="section">
+    <div class="section-label">🎯 Questions types</div>
+    <h2>Ce que CompTIA peut te poser</h2>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #1 : 3-way handshake</div>
+      <div class="comptia-content">
+        "Dans le 3-way handshake TCP, quels flags sont activés dans le 2e segment (serveur → client) ?"<br><br>
+        <strong>Réponse : SYN=1, ACK=1</strong> (SYN-ACK)
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #2 : Identification segment</div>
+      <div class="comptia-content">
+        "Un segment TCP avec SYN=0, ACK=1, FIN=1. Que représente-t-il ?"<br><br>
+        <strong>Réponse :</strong> Demande de fermeture de connexion (1ère ou 3e étape du 4-way handshake)
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #3 : Numéro ACK</div>
+      <div class="comptia-content">
+        "Un hôte reçoit un segment TCP avec SEQ=5000 contenant 200 octets de données. Quel ACK doit-il envoyer ?"<br><br>
+        <strong>Réponse : ACK=5200</strong> (5000 + 200 = prochain octet attendu)
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #4 : Contrôle de flux</div>
+      <div class="comptia-content">
+        "Quel mécanisme TCP empêche l'émetteur de saturer le récepteur ?"<br><br>
+        <strong>Réponse : Fenêtrage (Window Size)</strong>. Le récepteur annonce combien d'octets il peut recevoir.
+      </div>
+    </div>
+  </div>
+
+  <!-- 10. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">C'est quoi TCP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Transmission Control Protocol — protocole couche 4 orienté connexion, fiable, ordonné, avec contrôle d'erreur et de flux.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">Quelles sont les 3 étapes du 3-way handshake ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">1) <strong>SYN</strong> (SYN=1, ACK=0) — client demande<br>2) <strong>SYN-ACK</strong> (SYN=1, ACK=1) — serveur accepte<br>3) <strong>ACK</strong> (SYN=0, ACK=1) — client confirme</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">C'est quoi la différence entre FIN et RST ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>FIN</strong> = fermeture propre négociée (4-way)<br><strong>RST</strong> = fermeture brutale immédiate (erreur, port fermé)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">Je reçois SEQ=3000 avec 500 octets. Quel ACK envoyer ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>ACK=3500</strong> (3000 + 500 = prochain octet attendu)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">C'est quoi le fenêtrage (windowing) ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Contrôle de flux. Window Size indique combien d'octets le récepteur peut recevoir sans ACK. Évite de saturer le récepteur.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">Question type examen : segment avec SYN=1, ACK=0. C'est quoi ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Étape 1 du 3-way handshake</strong> — demande d'ouverture de connexion (client → serveur)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">TCP est-il plus rapide qu'UDP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Non</strong> ❌. TCP plus lent (overhead : handshake, ACK, retransmissions). UDP plus rapide mais pas fiable.</div>
+  </div>
+
+  <!-- 11. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span>TCP = couche 4, orienté connexion, fiable, ordonné, contrôle flux/erreur</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>3-way handshake :</strong> 1) SYN, 2) SYN-ACK, 3) ACK → connexion établie</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Flags : SYN (connexion), ACK (accusé), FIN (fermeture propre), RST (fermeture brutale)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>SEQ = position des données. ACK = prochain octet attendu (SEQ reçu + taille)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Fenêtrage (Window Size) = contrôle flux, évite saturation récepteur</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Retransmission automatique en cas de perte (fiabilité garantie)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>TCP plus lent qu'UDP (overhead) mais fiable. UDP rapide mais pas fiable.</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 23 : ICMP et ICMPv6</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">C24 · Phase 4</span>
+    <a class="nav-btn next" href="#">Cours 25 : ... →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_c24_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>
