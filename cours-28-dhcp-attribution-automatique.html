@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 28 — DHCP · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .vocab { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; }
+  .vocab-term { font-family: 'IBM Plex Mono', monospace; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .comptia-box { background: rgba(251,191,36,0.05); border: 2px solid var(--amber); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .comptia-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--amber); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .comptia-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Phase 5 — Services</span> &nbsp;›&nbsp; Cours 28</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 5 · C28</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-lab">🧪 LAB</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡⚡ Difficile</span>
+  </div>
+
+  <h1><span>DHCP</span> — Attribution automatique IP</h1>
+  <span class="tagline">// Dynamic Host Configuration Protocol — configurer automatiquement les hôtes réseau</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise le processus DORA</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends scope, bail, réservation, exclusion</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais DHCP relay et failover</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. C'EST QUOI -->
+  <div class="section">
+    <div class="section-label">Avant de commencer</div>
+    <h2>C'est quoi DHCP — configuration automatique réseau</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🏨</span>
+      <div class="callout-body">
+        <strong>Analogie — réception d'hôtel</strong>
+        Tu arrives à l'hôtel sans réservation. La réception te donne automatiquement : une clé (adresse IP), le code WiFi (DNS), le numéro de standard (gateway), la durée du séjour (bail). Si tu prolonges, tu re-demandes. Sinon, la chambre est libérée pour un autre client. DHCP fait pareil pour les PCs.
+      </div>
+    </div>
+
+    <p><strong>DHCP (Dynamic Host Configuration Protocol)</strong> = protocole qui <strong>attribue automatiquement</strong> les paramètres réseau aux hôtes (IP, masque, gateway, DNS...).</p>
+
+    <p><strong>Pourquoi DHCP existe :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Éviter la configuration manuelle (erreurs, fastidieux pour 1000 PC)</li>
+      <li>Gestion centralisée des IPs (un seul endroit à modifier)</li>
+      <li>Éviter les conflits d'IP (attribution unique)</li>
+      <li>Réutiliser les IPs (bail temporaire, libéré si inutilisé)</li>
+    </ul>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen Network+</strong>
+        CompTIA teste : processus DORA (Discover/Offer/Request/Acknowledge), ports 67/68 UDP, scope, bail (lease), réservation, exclusion, DHCP relay (ip helper-address), failover. DORA est LA question la plus fréquente !
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. DORA -->
+  <div class="section">
+    <div class="section-label">Processus d'attribution</div>
+    <h2>DORA — Discover / Offer / Request / Acknowledge</h2>
+
+    <p>Le processus DHCP se fait en <strong>4 étapes</strong> appelées <strong>DORA</strong> :</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--green)">Client</strong>                                    <strong style="color:var(--accent)">Serveur DHCP</strong><br><br>
+
+      <strong style="color:var(--amber)">1. DISCOVER (broadcast)</strong><br>
+      Client n'a pas d'IP → envoie broadcast 255.255.255.255<br>
+      SRC: 0.0.0.0:68 → DST: 255.255.255.255:67<br>
+      "Y a-t-il un serveur DHCP ? J'ai besoin d'une IP !"<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;────────────────→<br><br>
+
+      <strong style="color:var(--amber)">2. OFFER (unicast ou broadcast)</strong><br>
+      Serveur propose une IP disponible du scope<br>
+      SRC: 192.168.1.1:67 → DST: 0.0.0.0:68 (ou broadcast)<br>
+      "Voici 192.168.1.100 pour toi (bail 8h)"<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;←────────────────<br><br>
+
+      <strong style="color:var(--amber)">3. REQUEST (broadcast)</strong><br>
+      Client accepte l'offre (broadcast pour informer autres serveurs)<br>
+      SRC: 0.0.0.0:68 → DST: 255.255.255.255:67<br>
+      "J'accepte l'IP 192.168.1.100 du serveur 192.168.1.1"<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;────────────────→<br><br>
+
+      <strong style="color:var(--amber)">4. ACKNOWLEDGE (unicast)</strong><br>
+      Serveur confirme attribution + envoie config complète<br>
+      SRC: 192.168.1.1:67 → DST: 192.168.1.100:68<br>
+      "OK, 192.168.1.100 est à toi pour 8h. Voici gateway, DNS..."<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;←────────────────<br><br>
+
+      <strong style="color:var(--green)">✅ CLIENT CONFIGURÉ</strong><br>
+      IP: 192.168.1.100/24<br>
+      Gateway: 192.168.1.1<br>
+      DNS: 8.8.8.8, 1.1.1.1<br>
+      Bail: 8 heures
+    </div>
+
+    <h3>// Détails importants</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Discover et Request</strong> sont en broadcast (tous reçoivent)</li>
+      <li><strong>Offer et Acknowledge</strong> peuvent être unicast ou broadcast selon config</li>
+      <li>Ports : Serveur écoute sur <strong>67 UDP</strong>, Client sur <strong>68 UDP</strong></li>
+      <li>Si plusieurs serveurs DHCP → Client accepte le premier Offer reçu</li>
+    </ul>
+
+    <div class="callout exam">
+      <span class="callout-icon">🔥</span>
+      <div class="callout-body">
+        <strong>CRITIQUE — À connaître par cœur</strong>
+        <strong>D</strong>iscover (client cherche serveur)<br>
+        <strong>O</strong>ffer (serveur propose IP)<br>
+        <strong>R</strong>equest (client accepte)<br>
+        <strong>A</strong>cknowledge (serveur confirme)<br><br>
+        Question type : "Dans quel ordre DHCP attribue une IP ?" → <strong>DORA</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. SCOPE -->
+  <div class="section">
+    <div class="section-label">Configuration serveur</div>
+    <h2>Scope DHCP — plage d'IPs à distribuer</h2>
+
+    <p><strong>Scope</strong> = plage d'adresses IP qu'un serveur DHCP peut attribuer.</p>
+
+    <p><strong>Exemple de scope :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9;font-family:'IBM Plex Mono',monospace;font-size:0.85rem">
+      <li><strong>Réseau :</strong> 192.168.1.0/24</li>
+      <li><strong>Plage :</strong> 192.168.1.100 - 192.168.1.200 (101 IPs)</li>
+      <li><strong>Gateway :</strong> 192.168.1.1</li>
+      <li><strong>DNS :</strong> 8.8.8.8, 1.1.1.1</li>
+      <li><strong>Bail :</strong> 8 heures</li>
+    </ul>
+
+    <h3>// Options DHCP courantes</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Option</th><th>Description</th></tr>
+        <tr><td><strong>Option 1</strong></td><td>Masque de sous-réseau (255.255.255.0)</td></tr>
+        <tr><td><strong>Option 3</strong></td><td>Gateway / routeur par défaut</td></tr>
+        <tr><td><strong>Option 6</strong></td><td>Serveurs DNS</td></tr>
+        <tr><td><strong>Option 15</strong></td><td>Nom de domaine (exemple.com)</td></tr>
+        <tr><td><strong>Option 51</strong></td><td>Durée du bail (lease time)</td></tr>
+        <tr><td><strong>Option 66</strong></td><td>Serveur TFTP (PXE boot)</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 4. BAIL -->
+  <div class="section">
+    <div class="section-label">Durée d'attribution</div>
+    <h2>Bail (Lease) — durée de validité de l'IP</h2>
+
+    <p><strong>Bail (lease)</strong> = durée pendant laquelle une IP est attribuée à un client.</p>
+
+    <h3>// Processus de renouvellement</h3>
+    <p><strong>Durée bail = 8 heures (exemple) :</strong></p>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>T = 0h</strong> : Client obtient IP, bail 8h</li>
+      <li><strong>T = 4h (50%)</strong> : Client tente renouvellement (unicast au serveur)</li>
+      <li>Si succès → bail renouvelé pour 8h supplémentaires</li>
+      <li><strong>T = 7h (87,5%)</strong> : Si échec à 50%, retry en broadcast</li>
+      <li><strong>T = 8h (100%)</strong> : Bail expire → Client perd l'IP → Recommence DORA</li>
+    </ol>
+
+    <h3>// Libération anticipée</h3>
+    <p>Client peut libérer son IP avant expiration du bail :</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9;font-family:'IBM Plex Mono',monospace;font-size:0.85rem">
+      <li><strong>Windows :</strong> <code>ipconfig /release</code></li>
+      <li><strong>Linux :</strong> <code>sudo dhclient -r</code></li>
+    </ul>
+
+    <p>Libération envoie message DHCPRELEASE au serveur → IP retourne dans le pool disponible.</p>
+
+    <div class="callout ok">
+      <span class="callout-icon">⏱️</span>
+      <div class="callout-body">
+        <strong>Durée de bail typique</strong>
+        <strong>Entreprise :</strong> 8-24 heures (postes fixes)<br>
+        <strong>WiFi public :</strong> 1-4 heures (forte rotation)<br>
+        <strong>Maison :</strong> 7-30 jours (appareils stables)<br><br>
+        Bail court = plus de trafic DHCP. Bail long = moins de flexibilité.
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. RÉSERVATION -->
+  <div class="section">
+    <div class="section-label">IP fixe via DHCP</div>
+    <h2>Réservation — IP fixe basée sur MAC</h2>
+
+    <p><strong>Réservation DHCP</strong> = associer une IP spécifique à une adresse MAC. L'appareil obtient toujours la même IP via DHCP.</p>
+
+    <p><strong>Exemple :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9;font-family:'IBM Plex Mono',monospace;font-size:0.85rem">
+      <li>MAC: 00:1A:2B:3C:4D:5E → Réservation: 192.168.1.10</li>
+      <li>Chaque fois que ce PC démarre → obtient 192.168.1.10</li>
+    </ul>
+
+    <h3>// Usage réservations</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Serveurs</strong> (web, fichiers, imprimantes réseau)</li>
+      <li>Appareils nécessitant IP fixe mais bénéficiant de la config DHCP centralisée</li>
+      <li>Équipements réseau managés (caméras IP, téléphones VoIP)</li>
+    </ul>
+
+    <h3>// Réservation vs IP statique manuelle</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>Réservation DHCP</th><th>IP statique manuelle</th></tr>
+        <tr><td>IP</td><td>✅ Toujours la même</td><td>✅ Toujours la même</td></tr>
+        <tr><td>Config</td><td>✅ Automatique (gateway, DNS...)</td><td>❌ Manuelle</td></tr>
+        <tr><td>Gestion</td><td>✅ Centralisée (serveur DHCP)</td><td>❌ Décentralisée (chaque appareil)</td></tr>
+        <tr><td>Bail</td><td>✅ Oui (renouvelé auto)</td><td>❌ Non (permanent)</td></tr>
+        <tr><td>Basé sur</td><td>Adresse MAC</td><td>Configuration locale</td></tr>
+      </table>
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>Meilleure pratique</strong>
+        Pour serveurs et équipements critiques → <strong>Réservation DHCP</strong> plutôt qu'IP statique manuelle. Centralise la gestion, facilite les changements de config (nouveau DNS, gateway...).
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. EXCLUSION -->
+  <div class="section">
+    <div class="section-label">IPs non distribuables</div>
+    <h2>Exclusion — retirer IPs du scope</h2>
+
+    <p><strong>Exclusion</strong> = IPs à NE PAS distribuer automatiquement, mais qui restent dans la plage du scope.</p>
+
+    <p><strong>Exemple :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9;font-family:'IBM Plex Mono',monospace;font-size:0.85rem">
+      <li><strong>Scope :</strong> 192.168.1.100 - 192.168.1.200</li>
+      <li><strong>Exclusion :</strong> 192.168.1.100 - 192.168.1.110</li>
+      <li><strong>Résultat :</strong> DHCP distribue 192.168.1.111 - 192.168.1.200 uniquement</li>
+    </ul>
+
+    <h3>// Usages des exclusions</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Serveurs avec IP statique manuelle</strong> (pas de réservation DHCP)</li>
+      <li><strong>Équipements réseau</strong> (routeurs, switches, APs)</li>
+      <li><strong>Imprimantes</strong> configurées manuellement</li>
+      <li><strong>Plage réservée</strong> pour usage futur</li>
+    </ul>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Exclusion ≠ Réservation</strong>
+        <strong>Exclusion</strong> : IP non distribuée, libre pour config manuelle<br>
+        <strong>Réservation</strong> : IP distribuée par DHCP, mais toujours à la même MAC<br><br>
+        Ne pas confondre à l'examen !
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. DHCP RELAY -->
+  <div class="section">
+    <div class="section-label">Routage broadcast</div>
+    <h2>DHCP Relay — ip helper-address</h2>
+
+    <p>Par défaut, les routeurs <strong>ne forwardent PAS les broadcasts</strong> → DHCP Discover ne traverse pas les routeurs.</p>
+
+    <p><strong>Problème :</strong> 1 serveur DHCP pour plusieurs VLANs/sous-réseaux séparés par routeurs.</p>
+
+    <p><strong>Solution : DHCP Relay (ip helper-address)</strong></p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--green)">Fonctionnement DHCP Relay :</strong><br><br>
+
+      VLAN 10 (192.168.10.0/24)    [Routeur]    VLAN 20 (192.168.20.0/24)<br>
+      Client VLAN 10                Relay        Serveur DHCP<br><br>
+
+      1. Client VLAN 10 envoie DHCP Discover (broadcast)<br>
+      2. Routeur reçoit sur interface VLAN 10<br>
+      3. Routeur converti en <strong>unicast</strong> vers serveur DHCP (192.168.20.5)<br>
+      4. Serveur DHCP répond à routeur<br>
+      5. Routeur forward réponse au client VLAN 10<br><br>
+
+      <strong style="color:var(--accent)">Configuration Cisco :</strong><br>
+      interface vlan 10<br>
+      &nbsp;&nbsp;ip helper-address 192.168.20.5
+    </div>
+
+    <h3>// Avantages DHCP Relay</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>1 seul serveur DHCP pour tous les VLANs/sites</li>
+      <li>Gestion centralisée</li>
+      <li>Économie (pas de serveur DHCP par VLAN)</li>
+    </ul>
+  </div>
+
+  <!-- 8. FAILOVER -->
+  <div class="section">
+    <div class="section-label">Haute disponibilité</div>
+    <h2>DHCP Failover — redondance serveurs</h2>
+
+    <p><strong>DHCP Failover</strong> = 2+ serveurs DHCP pour assurer continuité de service si panne.</p>
+
+    <h3>// Mode Load Balancing (80/20 typique)</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Serveur 1 :</strong> Gère 80% des requêtes</li>
+      <li><strong>Serveur 2 :</strong> Gère 20% des requêtes</li>
+      <li>Les deux répondent, celui qui répond en premier gagne</li>
+      <li>Si Serveur 1 tombe → Serveur 2 prend 100%</li>
+    </ul>
+
+    <h3>// Mode Hot Standby</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Serveur 1 (actif) :</strong> Gère 100% en temps normal</li>
+      <li><strong>Serveur 2 (standby) :</strong> Ne répond pas, surveille Serveur 1</li>
+      <li>Si Serveur 1 tombe → Serveur 2 prend le relais</li>
+    </ul>
+
+    <h3>// Split Scope (méthode simple)</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Serveur 1 :</strong> Scope 192.168.1.100-150</li>
+      <li><strong>Serveur 2 :</strong> Scope 192.168.1.151-200</li>
+      <li>Pas de synchronisation nécessaire</li>
+      <li>Si un serveur tombe → l'autre continue avec sa moitié</li>
+    </ul>
+
+    <div class="callout ok">
+      <span class="callout-icon">🔄</span>
+      <div class="callout-body">
+        <strong>Recommandation production</strong>
+        Toujours déployer 2 serveurs DHCP minimum en entreprise. Panne DHCP = nouveaux appareils ne peuvent pas se connecter = impact métier majeur.
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. CE QUI TROMPE LES CANDIDATS -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : Ordre DORA inversé</div>
+      <div class="trap-content">
+        L'ordre est TOUJOURS : <strong>D</strong>iscover → <strong>O</strong>ffer → <strong>R</strong>equest → <strong>A</strong>cknowledge<br><br>
+        Pas : Offer-Discover, Request-Offer, etc. Mémorise DORA comme un mot !
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : Ports DHCP inversés</div>
+      <div class="trap-content">
+        <strong>Serveur</strong> écoute sur port <strong>67 UDP</strong><br>
+        <strong>Client</strong> écoute sur port <strong>68 UDP</strong><br><br>
+        Ne pas inverser ! (Pas 68 serveur, 67 client)
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : Réservation = exclusion</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Ce sont deux concepts différents :<br><br>
+        <strong>Réservation</strong> : IP distribuée par DHCP, toujours à la même MAC<br>
+        <strong>Exclusion</strong> : IP NON distribuée par DHCP, pour config manuelle
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #4 : Renouvellement à 100% du bail</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Client tente renouvellement à <strong>50% du bail</strong> (T1).<br>
+        Retry en broadcast à 87,5% (T2).<br>
+        Expiration à 100% seulement si échec des renewals.
+      </div>
+    </div>
+  </div>
+
+  <!-- 10. CE QUE COMPTIA PEUT TE POSER -->
+  <div class="section">
+    <div class="section-label">🎯 Questions types</div>
+    <h2>Ce que CompTIA peut te poser</h2>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #1 : Processus DORA</div>
+      <div class="comptia-content">
+        "Dans quel ordre un client DHCP obtient-il une IP ?"<br><br>
+        <strong>Réponse : DORA</strong><br>
+        Discover → Offer → Request → Acknowledge
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #2 : Ports DHCP</div>
+      <div class="comptia-content">
+        "Quels ports UDP utilise DHCP ?"<br><br>
+        <strong>Réponse : 67 (serveur) et 68 (client)</strong>
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #3 : DHCP Relay</div>
+      <div class="comptia-content">
+        "Un client VLAN 10 doit obtenir une IP d'un serveur DHCP en VLAN 20. Quelle config sur le routeur ?"<br><br>
+        <strong>Réponse : <code>ip helper-address</code></strong> sur l'interface VLAN 10 pointant vers le serveur DHCP
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #4 : Réservation</div>
+      <div class="comptia-content">
+        "Un administrateur veut qu'une imprimante obtienne toujours 192.168.1.50 via DHCP. Que configurer ?"<br><br>
+        <strong>Réponse : Réservation DHCP</strong> basée sur l'adresse MAC de l'imprimante
+      </div>
+    </div>
+  </div>
+
+  <!-- 11. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">C'est quoi DHCP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Dynamic Host Configuration Protocol — attribue automatiquement IP, masque, gateway, DNS... aux hôtes réseau</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">Quelles sont les 4 étapes DORA ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>D</strong>iscover (client cherche), <strong>O</strong>ffer (serveur propose), <strong>R</strong>equest (client accepte), <strong>A</strong>cknowledge (serveur confirme)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">Quels ports pour DHCP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>67 UDP</strong> (serveur), <strong>68 UDP</strong> (client)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">C'est quoi un scope DHCP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Plage d'adresses IP que le serveur DHCP peut distribuer (ex: 192.168.1.100-200)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">C'est quoi le bail (lease) ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Durée pendant laquelle une IP est attribuée à un client. Renouvelé à 50% (T1). Expire si pas renouvelé.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">Différence réservation vs exclusion ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Réservation</strong> : IP distribuée par DHCP, toujours à la même MAC<br><strong>Exclusion</strong> : IP NON distribuée, pour config manuelle</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">C'est quoi DHCP Relay (ip helper-address) ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Routeur forward broadcasts DHCP vers serveur DHCP dans autre VLAN/sous-réseau (unicast). Permet 1 serveur DHCP pour plusieurs VLANs.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">08</span><span class="exq-text">Question type examen : Client tente renouveler bail à quel % ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>50% du bail (T1)</strong>. Retry en broadcast à 87,5% (T2). Expire à 100%.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">09</span><span class="exq-text">Commande Windows pour libérer IP DHCP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><code>ipconfig /release</code></div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">10</span><span class="exq-text">Commande Windows pour renouveler bail ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><code>ipconfig /renew</code></div>
+  </div>
+
+  <!-- 12. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span>DHCP = attribution automatique IP, masque, gateway, DNS. Ports 67 (serveur) et 68 (client) UDP</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>DORA :</strong> Discover → Offer → Request → Acknowledge (ordre sacré !)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Scope = plage IPs distribuables. Bail = durée attribution (renouvellement à 50%)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Réservation = IP fixe via DHCP (basée MAC). Exclusion = IPs non distribuées</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>DHCP Relay (<code>ip helper-address</code>) = forward broadcasts vers serveur autre VLAN</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Failover = redondance (Load Balancing 80/20, Hot Standby, Split Scope)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Commandes : <code>ipconfig /release</code>, <code>/renew</code>, <code>/all</code> (Windows)</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 27 : DNS</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">C28 · Phase 5</span>
+    <a class="nav-btn next" href="#">Cours 29 : ... →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_c28_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>

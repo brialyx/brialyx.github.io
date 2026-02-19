@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 27 — DNS · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .vocab { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; }
+  .vocab-term { font-family: 'IBM Plex Mono', monospace; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .comptia-box { background: rgba(251,191,36,0.05); border: 2px solid var(--amber); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .comptia-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--amber); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .comptia-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Phase 5 — Services</span> &nbsp;›&nbsp; Cours 27</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 5 · C27</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-lab">🧪 LAB</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-proto">PROTO</span>
+    <span class="pill pill-diff">⚡⚡⚡ Difficile</span>
+  </div>
+
+  <h1><span>DNS</span> — Résolution de noms</h1>
+  <span class="tagline">// Domain Name System — traduire noms en IPs (google.com → 142.250.185.46)</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends le processus de résolution DNS</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais récursif vs itératif</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise les 9 types d'enregistrements principaux</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. C'EST QUOI -->
+  <div class="section">
+    <div class="section-label">Avant de commencer</div>
+    <h2>C'est quoi DNS — l'annuaire d'Internet</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">📖</span>
+      <div class="callout-body">
+        <strong>Analogie — annuaire téléphonique</strong>
+        Tu veux appeler "Pizza Toni". Tu cherches dans l'annuaire : Pizza Toni → 01 23 45 67 89. DNS fait pareil : google.com → 142.250.185.46. Les humains retiennent des noms, les machines utilisent des numéros.
+      </div>
+    </div>
+
+    <p><strong>DNS (Domain Name System)</strong> = système hiérarchique distribué qui traduit les <strong>noms de domaine</strong> (google.com) en <strong>adresses IP</strong> (142.250.185.46).</p>
+
+    <p><strong>Pourquoi DNS existe :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Les humains retiennent mieux les noms que les IPs</li>
+      <li>Les IPs peuvent changer (migration serveur) sans changer le nom</li>
+      <li>Un nom peut pointer vers plusieurs IPs (load balancing)</li>
+      <li>Plusieurs noms peuvent pointer vers la même IP (virtualhosting)</li>
+    </ul>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen Network+</strong>
+        CompTIA teste : processus de résolution (récursif/itératif), cache DNS, types d'enregistrements (A, AAAA, CNAME, MX, PTR, NS, SOA, TXT, SRV), port 53 UDP/TCP, troubleshooting DNS. Connais les 9 types d'enregistrements par cœur !
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. HIÉRARCHIE -->
+  <div class="section">
+    <div class="section-label">Structure</div>
+    <h2>Hiérarchie DNS — domaines et sous-domaines</h2>
+
+    <p>DNS est organisé en <strong>arbre hiérarchique inversé</strong> :</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+                                    <strong style="color:var(--green)">. (root)</strong><br>
+                                      │<br>
+            ┌─────────────────────────┼─────────────────────────┐<br>
+            │                         │                         │<br>
+          <strong style="color:var(--accent)">.com</strong>                      <strong style="color:var(--accent)">.net</strong>                      <strong style="color:var(--accent)">.org</strong>   ← TLD<br>
+            │                         │                         │<br>
+      ┌─────┴─────┐             ┌─────┴─────┐           ┌─────┴─────┐<br>
+      │           │             │           │           │           │<br>
+   <strong style="color:var(--purple)">google</strong>    <strong style="color:var(--purple)">amazon</strong>     <strong style="color:var(--purple)">cloudflare</strong> <strong style="color:var(--purple)">akamai</strong>   <strong style="color:var(--purple)">wikipedia</strong> <strong style="color:var(--purple)">mozilla</strong><br>
+      │                         │<br>
+   <strong style="color:var(--amber)">www</strong>  <strong style="color:var(--amber)">mail</strong>              <strong style="color:var(--amber)">www</strong>  <strong style="color:var(--amber)">cdn</strong>   ← Sous-domaines<br>
+    </div>
+
+    <p><strong>Lecture d'un FQDN (Fully Qualified Domain Name) :</strong></p>
+    <p><code>www.google.com.</code> se lit de droite à gauche :</p>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9;font-family:'IBM Plex Mono',monospace;font-size:0.85rem">
+      <li><strong>.</strong> (root) — Racine (souvent implicite)</li>
+      <li><strong>com</strong> — TLD (Top-Level Domain)</li>
+      <li><strong>google</strong> — Domaine de 2e niveau</li>
+      <li><strong>www</strong> — Sous-domaine (hôte)</li>
+    </ol>
+
+    <h3>// Serveurs DNS autoritaires</h3>
+    <p>Chaque niveau a ses <strong>serveurs autoritaires</strong> :</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Root servers (13 clusters)</strong> : Connaissent les serveurs TLD</li>
+      <li><strong>TLD servers</strong> : Gèrent .com, .net, .org, .fr...</li>
+      <li><strong>Authoritative nameservers</strong> : Détiennent les enregistrements finaux (google.com → 142.250.185.46)</li>
+    </ul>
+  </div>
+
+  <!-- 3. RÉSOLUTION -->
+  <div class="section">
+    <div class="section-label">Processus</div>
+    <h2>Résolution DNS — récursif vs itératif</h2>
+
+    <h3>// Résolution récursive (standard)</h3>
+    <p>Le <strong>résolveur DNS</strong> (typiquement ton FAI ou 8.8.8.8) fait tout le travail pour toi.</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;line-height:1.8;">
+      <strong style="color:var(--green)">Étape par étape — Résoudre www.google.com :</strong><br><br>
+
+      <strong style="color:var(--amber)">1. Cache local</strong><br>
+      PC vérifie son cache DNS local<br>
+      → Pas trouvé → Continuer<br><br>
+
+      <strong style="color:var(--amber)">2. Résolveur récursif (ex: 8.8.8.8)</strong><br>
+      PC demande à 8.8.8.8: "Quelle est l'IP de www.google.com ?"<br>
+      Résolveur vérifie son cache<br>
+      → Pas trouvé → Interroger les serveurs<br><br>
+
+      <strong style="color:var(--amber)">3. Root server</strong><br>
+      Résolveur → Root: "Où trouver .com ?"<br>
+      Root → Résolveur: "Demande aux serveurs TLD .com"<br><br>
+
+      <strong style="color:var(--amber)">4. TLD server (.com)</strong><br>
+      Résolveur → TLD .com: "Où trouver google.com ?"<br>
+      TLD → Résolveur: "Demande à ns1.google.com (serveur autoritaire Google)"<br><br>
+
+      <strong style="color:var(--amber)">5. Authoritative nameserver</strong><br>
+      Résolveur → ns1.google.com: "Quelle est l'IP de www.google.com ?"<br>
+      ns1.google.com → Résolveur: "142.250.185.46"<br><br>
+
+      <strong style="color:var(--accent)">6. Réponse au client</strong><br>
+      Résolveur → PC: "www.google.com = 142.250.185.46"<br>
+      PC met en cache (TTL) et se connecte à 142.250.185.46
+    </div>
+
+    <h3>// Résolution itérative</h3>
+    <p>Le client fait tout le travail lui-même, interroge chaque serveur séquentiellement.</p>
+    <p><strong>Usage :</strong> Rarement utilisé par clients finaux. Principalement entre serveurs DNS.</p>
+
+    <div class="callout ok">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>Récursif = standard</strong>
+        99% du temps, ton PC utilise une requête récursive vers un résolveur (8.8.8.8, 1.1.1.1, ou ton FAI). Le résolveur fait le travail itératif de contacter root → TLD → autoritaire.
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. CACHE -->
+  <div class="section">
+    <div class="section-label">Optimisation</div>
+    <h2>Cache DNS — accélérer les résolutions</h2>
+
+    <p>Le <strong>cache DNS</strong> stocke temporairement les résolutions récentes pour éviter de re-interroger les serveurs.</p>
+
+    <h3>// Niveaux de cache</h3>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Cache navigateur</strong> : Chrome, Firefox... (quelques minutes)</li>
+      <li><strong>Cache système (OS)</strong> : Windows, Linux, macOS</li>
+      <li><strong>Cache résolveur</strong> : Serveur DNS récursif (8.8.8.8, FAI)</li>
+    </ol>
+
+    <h3>// TTL (Time To Live)</h3>
+    <p><strong>TTL</strong> = durée (en secondes) pendant laquelle un enregistrement DNS peut être mis en cache.</p>
+
+    <p><strong>Exemple :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9;font-family:'IBM Plex Mono',monospace;font-size:0.85rem">
+      <li>google.com A 142.250.185.46 TTL=300<br>→ Cache valide 300 secondes (5 minutes)</li>
+      <li>Après 5 min → cache expire → nouvelle requête DNS</li>
+    </ul>
+
+    <h3>// Vider le cache</h3>
+    <p><strong>Pourquoi vider :</strong> Site a changé d'IP, mais cache pointe encore vers l'ancienne.</p>
+
+    <ul style="margin:10px 0 16px 24px;line-height:1.9;font-family:'IBM Plex Mono',monospace;font-size:0.85rem">
+      <li><strong>Windows :</strong> <code>ipconfig /flushdns</code></li>
+      <li><strong>macOS :</strong> <code>sudo dscacheutil -flushcache</code></li>
+      <li><strong>Linux :</strong> <code>sudo systemd-resolve --flush-caches</code></li>
+    </ul>
+  </div>
+
+  <!-- 5. ENREGISTREMENTS -->
+  <div class="section">
+    <div class="section-label">Types d'enregistrements</div>
+    <h2>Enregistrements DNS — les 9 types essentiels</h2>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Type</th><th>Nom</th><th>Usage</th><th>Exemple</th></tr>
+        <tr>
+          <td><strong>A</strong></td>
+          <td>Address</td>
+          <td>Nom → IPv4</td>
+          <td><code>google.com → 142.250.185.46</code></td>
+        </tr>
+        <tr>
+          <td><strong>AAAA</strong></td>
+          <td>IPv6 Address</td>
+          <td>Nom → IPv6</td>
+          <td><code>google.com → 2a00:1450:4007:80f::200e</code></td>
+        </tr>
+        <tr>
+          <td><strong>CNAME</strong></td>
+          <td>Canonical Name</td>
+          <td>Alias vers autre nom</td>
+          <td><code>www.exemple.com → exemple.com</code></td>
+        </tr>
+        <tr>
+          <td><strong>MX</strong></td>
+          <td>Mail Exchange</td>
+          <td>Serveurs email + priorité</td>
+          <td><code>exemple.com → mail.exemple.com (priorité 10)</code></td>
+        </tr>
+        <tr>
+          <td><strong>PTR</strong></td>
+          <td>Pointer</td>
+          <td>IP → Nom (résolution inverse)</td>
+          <td><code>142.250.185.46 → google.com</code></td>
+        </tr>
+        <tr>
+          <td><strong>NS</strong></td>
+          <td>Name Server</td>
+          <td>Serveurs DNS autoritaires</td>
+          <td><code>google.com → ns1.google.com</code></td>
+        </tr>
+        <tr>
+          <td><strong>SOA</strong></td>
+          <td>Start of Authority</td>
+          <td>Infos zone (admin, TTL, serial...)</td>
+          <td>Enregistrement initial de zone</td>
+        </tr>
+        <tr>
+          <td><strong>TXT</strong></td>
+          <td>Text</td>
+          <td>Texte arbitraire (SPF, DKIM, vérif...)</td>
+          <td><code>v=spf1 include:_spf.google.com ~all</code></td>
+        </tr>
+        <tr>
+          <td><strong>SRV</strong></td>
+          <td>Service</td>
+          <td>Localiser services (SIP, XMPP, AD...)</td>
+          <td><code>_sip._tcp.exemple.com → srv1:5060</code></td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>// Détails des enregistrements clés</h3>
+
+    <p><strong>A (Address)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Le plus courant — traduit nom en IPv4</li>
+      <li><code>google.com. 300 IN A 142.250.185.46</code></li>
+    </ul>
+
+    <p><strong>AAAA (IPv6 Address)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Comme A mais pour IPv6</li>
+      <li><code>google.com. 300 IN AAAA 2a00:1450:4007:80f::200e</code></li>
+    </ul>
+
+    <p><strong>CNAME (Canonical Name)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Alias — pointe vers un autre nom (pas une IP)</li>
+      <li><code>www.exemple.com. CNAME exemple.com.</code></li>
+      <li>Ne peut PAS coexister avec d'autres enregistrements pour le même nom</li>
+    </ul>
+
+    <p><strong>MX (Mail Exchange)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Serveurs email pour le domaine + priorité (plus petit = prioritaire)</li>
+      <li><code>exemple.com. MX 10 mail1.exemple.com.</code></li>
+      <li><code>exemple.com. MX 20 mail2.exemple.com.</code></li>
+      <li>Priorité 10 essayé en premier, 20 si échec (backup)</li>
+    </ul>
+
+    <p><strong>PTR (Pointer)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Résolution inverse : IP → Nom</li>
+      <li>Utilisé pour vérifier légitimité (serveurs email anti-spam)</li>
+      <li><code>46.185.250.142.in-addr.arpa. PTR google.com.</code></li>
+    </ul>
+
+    <p><strong>TXT (Text)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Texte libre — utilisé pour SPF (anti-spam), DKIM (signature email), vérification domaine...</li>
+      <li><code>exemple.com. TXT "v=spf1 include:_spf.google.com ~all"</code></li>
+    </ul>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>À mémoriser pour l'examen</strong>
+        <strong>A</strong> = IPv4, <strong>AAAA</strong> = IPv6, <strong>CNAME</strong> = alias, <strong>MX</strong> = email, <strong>PTR</strong> = résolution inverse, <strong>NS</strong> = serveurs DNS, <strong>SOA</strong> = infos zone, <strong>TXT</strong> = texte (SPF), <strong>SRV</strong> = services
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. CE QUI TROMPE LES CANDIDATS -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : CNAME peut pointer vers IP</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. CNAME pointe vers un <strong>NOM</strong>, pas une IP.<br><br>
+        <strong>Correct :</strong> <code>www → exemple.com</code> (CNAME)<br>
+        <strong>Incorrect :</strong> <code>www → 93.184.216.34</code> (utiliser A record)
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : DNS uniquement UDP 53</div>
+      <div class="trap-content">
+        DNS utilise UDP 53 ET TCP 53 :<br>
+        <strong>UDP 53</strong> : Requêtes standard (rapide)<br>
+        <strong>TCP 53</strong> : Transfert de zone (AXFR), réponses >512 octets<br><br>
+        Réponse complète à l'examen : "UDP et TCP port 53"
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : MX priorité élevée = prioritaire</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Plus le nombre est <strong>BAS</strong>, plus c'est prioritaire.<br><br>
+        MX 10 mail1.exemple.com → Essayé en PREMIER ✅<br>
+        MX 20 mail2.exemple.com → Backup (si MX 10 échoue)
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #4 : Résolution récursive = client fait tout</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. C'est l'inverse !<br><br>
+        <strong>Récursive</strong> : Résolveur DNS fait tout le travail (standard)<br>
+        <strong>Itérative</strong> : Client interroge chaque serveur lui-même (rare)
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. CE QUE COMPTIA PEUT TE POSER -->
+  <div class="section">
+    <div class="section-label">🎯 Questions types</div>
+    <h2>Ce que CompTIA peut te poser</h2>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #1 : Type d'enregistrement</div>
+      <div class="comptia-content">
+        "Un administrateur veut configurer www.exemple.com comme alias vers exemple.com. Quel enregistrement utiliser ?"<br><br>
+        <strong>Réponse : CNAME</strong>
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #2 : Résolution inverse</div>
+      <div class="comptia-content">
+        "Quel enregistrement DNS permet de résoudre une IP en nom de domaine ?"<br><br>
+        <strong>Réponse : PTR (Pointer)</strong>
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #3 : Serveurs email</div>
+      <div class="comptia-content">
+        "Quel enregistrement DNS indique les serveurs email d'un domaine ?"<br><br>
+        <strong>Réponse : MX (Mail Exchange)</strong>
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #4 : Cache problématique</div>
+      <div class="comptia-content">
+        "Un site web a changé d'IP mais le PC accède encore à l'ancienne. Quelle commande Windows utiliser ?"<br><br>
+        <strong>Réponse : <code>ipconfig /flushdns</code></strong> (vider cache DNS)
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">C'est quoi DNS ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Domain Name System — système qui traduit noms de domaine (google.com) en adresses IP (142.250.185.46)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">Quel enregistrement pour traduire nom en IPv4 ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>A (Address)</strong></div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">Quel enregistrement pour traduire nom en IPv6 ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>AAAA</strong></div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">Quel enregistrement pour créer un alias ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>CNAME (Canonical Name)</strong> — pointe vers un autre nom</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">Quel enregistrement pour les serveurs email ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>MX (Mail Exchange)</strong> — avec priorité (plus bas = prioritaire)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">Quel enregistrement pour résolution inverse (IP → nom) ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>PTR (Pointer)</strong></div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">Question type examen : DNS utilise quel(s) port(s) ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>UDP 53</strong> (requêtes standard) ET <strong>TCP 53</strong> (transfert zone, >512 octets)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">08</span><span class="exq-text">C'est quoi le TTL en DNS ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Time To Live — durée (secondes) pendant laquelle un enregistrement peut être mis en cache</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">09</span><span class="exq-text">Commande Windows pour vider cache DNS ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><code>ipconfig /flushdns</code></div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">10</span><span class="exq-text">MX 10 ou MX 20 est prioritaire ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>MX 10</strong> (plus bas = plus prioritaire)</div>
+  </div>
+
+  <!-- 9. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span>DNS = traduit noms (google.com) en IPs (142.250.185.46). Hiérarchique : root → TLD → autoritaire</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Résolution récursive = résolveur fait tout. Itérative = client fait tout (rare)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Cache DNS (navigateur, OS, résolveur) + TTL pour accélérer. Vider : <code>ipconfig /flushdns</code></span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>9 enregistrements clés :</strong> A (IPv4), AAAA (IPv6), CNAME (alias), MX (email), PTR (inverse), NS (serveurs DNS), SOA (infos zone), TXT (texte/SPF), SRV (services)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>CNAME pointe vers NOM (pas IP). MX priorité basse = prioritaire. PTR = résolution inverse</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Port 53 : UDP (standard rapide) ET TCP (transfert zone, >512 octets)</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 26 : Ports</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">C27 · Phase 5</span>
+    <a class="nav-btn next" href="#">Cours 28 : DHCP →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_c27_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>

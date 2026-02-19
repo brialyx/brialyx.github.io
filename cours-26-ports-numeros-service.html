@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 26 — Ports et numéros de service · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .vocab { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; }
+  .vocab-term { font-family: 'IBM Plex Mono', monospace; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .comptia-box { background: rgba(251,191,36,0.05); border: 2px solid var(--amber); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .comptia-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--amber); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .comptia-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .port-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 16px; }
+  .port-num { font-family: 'IBM Plex Mono', monospace; font-size: 1.1rem; font-weight: 800; color: var(--accent); min-width: 60px; }
+  .port-proto { font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--muted); min-width: 80px; }
+  .port-service { font-size: 0.9rem; font-weight: 600; flex: 1; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Phase 4 — Protocoles</span> &nbsp;›&nbsp; Cours 26</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 4 · C26</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-proto">PROTO</span>
+    <span class="pill pill-diff">⚡⚡☆ Moyen</span>
+  </div>
+
+  <h1>Ports et <span>numéros de service</span></h1>
+  <span class="tagline">// 0-65535 — mémoriser les 25+ ports essentiels pour CompTIA Network+</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends le rôle des ports</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais les 3 plages de ports</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai mémorisé les 25+ ports clés</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. C'EST QUOI -->
+  <div class="section">
+    <div class="section-label">Avant de commencer</div>
+    <h2>C'est quoi un port — identifier les applications</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🏢</span>
+      <div class="callout-body">
+        <strong>Analogie — immeuble de bureaux</strong>
+        L'adresse IP = adresse de l'immeuble (123 Rue du Réseau).<br>
+        Le port = numéro de bureau dans l'immeuble (Bureau 80 = Web, Bureau 25 = Email).<br><br>
+        Sans port, le paquet arrive à l'immeuble mais ne sait pas à quel service le remettre !
+      </div>
+    </div>
+
+    <p><strong>Port</strong> = numéro 16 bits (0-65535) qui identifie un <strong>service ou application</strong> spécifique sur un hôte.</p>
+
+    <p><strong>Rôle :</strong> Permettre à plusieurs applications d'utiliser le réseau simultanément sur le même hôte.</p>
+
+    <p><strong>Exemple :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9;font-family:'IBM Plex Mono',monospace;font-size:0.85rem">
+      <li>192.168.1.10:80 → Serveur Web (HTTP)</li>
+      <li>192.168.1.10:25 → Serveur Email (SMTP)</li>
+      <li>192.168.1.10:22 → Serveur SSH</li>
+    </ul>
+
+    <p>Même IP, 3 services différents grâce aux ports !</p>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen Network+</strong>
+        CompTIA teste MASSIVEMENT les ports. Tu DOIS connaître par cœur : 20/21 (FTP), 22 (SSH), 23 (Telnet), 25 (SMTP), 53 (DNS), 67/68 (DHCP), 80 (HTTP), 110 (POP3), 143 (IMAP), 443 (HTTPS), 3389 (RDP)... et 15+ autres. C'est non négociable !
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. PLAGES -->
+  <div class="section">
+    <div class="section-label">Classification</div>
+    <h2>Les 3 plages de ports — 0-65535</h2>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Plage</th><th>Nom</th><th>Usage</th><th>Exemples</th></tr>
+        <tr>
+          <td><strong>0-1023</strong></td>
+          <td>Ports bien connus<br>(Well-Known)</td>
+          <td>Services standards, nécessitent privilèges root/admin</td>
+          <td>HTTP (80), HTTPS (443), SSH (22)</td>
+        </tr>
+        <tr>
+          <td><strong>1024-49151</strong></td>
+          <td>Ports enregistrés<br>(Registered)</td>
+          <td>Applications enregistrées auprès IANA</td>
+          <td>MySQL (3306), RDP (3389)</td>
+        </tr>
+        <tr>
+          <td><strong>49152-65535</strong></td>
+          <td>Ports dynamiques/privés<br>(Dynamic/Private)</td>
+          <td>Ports source éphémères, usage temporaire</td>
+          <td>Client web utilise 52341 comme port source</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>// Ports source vs destination</h3>
+    <p><strong>Port destination</strong> = service auquel on veut accéder (ex: 80 pour HTTP)</p>
+    <p><strong>Port source</strong> = port aléatoire temporaire du client (ex: 52341)</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--green)">Exemple connexion HTTP :</strong><br><br>
+      Client: 192.168.1.10:<strong style="color:var(--amber)">52341</strong> → Serveur: 93.184.216.34:<strong style="color:var(--accent)">80</strong><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(port source éphémère)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(HTTP standard)<br><br>
+
+      Le serveur répond :<br>
+      Serveur: 93.184.216.34:80 → Client: 192.168.1.10:52341<br><br>
+
+      Le port 52341 sera libéré après la connexion.
+    </div>
+  </div>
+
+  <!-- 3. PORTS CLÉS -->
+  <div class="section">
+    <div class="section-label">🔥 À mémoriser absolument</div>
+    <h2>Les 25+ ports essentiels CompTIA</h2>
+
+    <p style="color:var(--amber);font-weight:600;margin-bottom:20px;">⚠️ CRITIQUE — Ces ports tombent RÉGULIÈREMENT à l'examen. Apprends-les par cœur !</p>
+
+    <h3>// Ports TCP bien connus</h3>
+
+    <div class="port-card">
+      <div class="port-num">20/21</div>
+      <div class="port-proto">TCP</div>
+      <div class="port-service">FTP (File Transfer Protocol) — 20=données, 21=contrôle</div>
+    </div>
+
+    <div class="port-card">
+      <div class="port-num">22</div>
+      <div class="port-proto">TCP</div>
+      <div class="port-service">SSH (Secure Shell) — accès distant sécurisé, remplace Telnet</div>
+    </div>
+
+    <div class="port-card">
+      <div class="port-num">23</div>
+      <div class="port-proto">TCP</div>
+      <div class="port-service">Telnet — accès distant NON sécurisé (obsolète)</div>
+    </div>
+
+    <div class="port-card">
+      <div class="port-num">25</div>
+      <div class="port-proto">TCP</div>
+      <div class="port-service">SMTP (Simple Mail Transfer Protocol) — envoi d'email</div>
+    </div>
+
+    <div class="port-card">
+      <div class="port-num">80</div>
+      <div class="port-proto">TCP</div>
+      <div class="port-service">HTTP (HyperText Transfer Protocol) — Web non sécurisé</div>
+    </div>
+
+    <div class="port-card">
+      <div class="port-num">110</div>
+      <div class="port-proto">TCP</div>
+      <div class="port-service">POP3 (Post Office Protocol v3) — réception email (télécharge)</div>
+    </div>
+
+    <div class="port-card">
+      <div class="port-num">143</div>
+      <div class="port-proto">TCP</div>
+      <div class="port-service">IMAP (Internet Message Access Protocol) — réception email (sync)</div>
+    </div>
+
+    <div class="port-card">
+      <div class="port-num">443</div>
+      <div class="port-proto">TCP</div>
+      <div class="port-service">HTTPS (HTTP Secure) — Web sécurisé (SSL/TLS)</div>
+    </div>
+
+    <div class="port-card">
+      <div class="port-num">445</div>
+      <div class="port-proto">TCP</div>
+      <div class="port-service">SMB (Server Message Block) — partage fichiers Windows</div>
+    </div>
+
+    <div class="port-card">
+      <div class="port-num">3389</div>
+      <div class="port-proto">TCP</div>
+      <div class="port-service">RDP (Remote Desktop Protocol) — bureau à distance Windows</div>
+    </div>
+
+    <h3>// Ports UDP bien connus</h3>
+
+    <div class="port-card">
+      <div class="port-num">53</div>
+      <div class="port-proto">UDP/TCP</div>
+      <div class="port-service">DNS (Domain Name System) — résolution noms (UDP standard, TCP transfert zone)</div>
+    </div>
+
+    <div class="port-card">
+      <div class="port-num">67/68</div>
+      <div class="port-proto">UDP</div>
+      <div class="port-service">DHCP — 67=serveur, 68=client — attribution automatique IP</div>
+    </div>
+
+    <div class="port-card">
+      <div class="port-num">69</div>
+      <div class="port-proto">UDP</div>
+      <div class="port-service">TFTP (Trivial FTP) — transfert fichiers simple (firmware, config)</div>
+    </div>
+
+    <div class="port-card">
+      <div class="port-num">123</div>
+      <div class="port-proto">UDP</div>
+      <div class="port-service">NTP (Network Time Protocol) — synchronisation horaire</div>
+    </div>
+
+    <div class="port-card">
+      <div class="port-num">161/162</div>
+      <div class="port-proto">UDP</div>
+      <div class="port-service">SNMP (Simple Network Management Protocol) — 161=requêtes, 162=traps</div>
+    </div>
+
+    <h3>// Ports sécurisés (alternatives chiffrées)</h3>
+
+    <div class="port-card">
+      <div class="port-num">989/990</div>
+      <div class="port-proto">TCP</div>
+      <div class="port-service">FTPS (FTP over SSL/TLS) — FTP sécurisé</div>
+    </div>
+
+    <div class="port-card">
+      <div class="port-num">993</div>
+      <div class="port-proto">TCP</div>
+      <div class="port-service">IMAPS (IMAP Secure) — IMAP sur SSL/TLS</div>
+    </div>
+
+    <div class="port-card">
+      <div class="port-num">995</div>
+      <div class="port-proto">TCP</div>
+      <div class="port-service">POP3S (POP3 Secure) — POP3 sur SSL/TLS</div>
+    </div>
+
+    <h3>// Autres ports importants</h3>
+
+    <div class="port-card">
+      <div class="port-num">389</div>
+      <div class="port-proto">TCP</div>
+      <div class="port-service">LDAP (Lightweight Directory Access Protocol) — annuaire</div>
+    </div>
+
+    <div class="port-card">
+      <div class="port-num">636</div>
+      <div class="port-proto">TCP</div>
+      <div class="port-service">LDAPS (LDAP Secure) — LDAP sur SSL/TLS</div>
+    </div>
+
+    <div class="port-card">
+      <div class="port-num">3306</div>
+      <div class="port-proto">TCP</div>
+      <div class="port-service">MySQL — base de données</div>
+    </div>
+
+    <div class="port-card">
+      <div class="port-num">5432</div>
+      <div class="port-proto">TCP</div>
+      <div class="port-service">PostgreSQL — base de données</div>
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🔥</span>
+      <div class="callout-body">
+        <strong>TOP 10 à connaître ABSOLUMENT</strong>
+        Si tu ne retiens que 10 ports, ce sont ceux-ci :<br>
+        <strong>22 (SSH), 23 (Telnet), 25 (SMTP), 53 (DNS), 80 (HTTP), 110 (POP3), 143 (IMAP), 443 (HTTPS), 3389 (RDP), 67/68 (DHCP)</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. CE QUI TROMPE LES CANDIDATS -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : Confondre FTP 20 et 21</div>
+      <div class="trap-content">
+        <strong>Port 21</strong> = Contrôle (commandes)<br>
+        <strong>Port 20</strong> = Données (transfert fichiers)<br><br>
+        FTP utilise DEUX ports. Ne pas inverser !
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : Confondre POP3 (110) et IMAP (143)</div>
+      <div class="trap-content">
+        <strong>POP3 (110)</strong> = Télécharge emails, supprime du serveur<br>
+        <strong>IMAP (143)</strong> = Synchronise emails, reste sur serveur<br><br>
+        Les deux reçoivent des emails, mais différemment !
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : DNS uniquement UDP</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. DNS utilise principalement UDP 53, MAIS aussi TCP 53 pour :<br>
+        - Transfert de zone (AXFR)<br>
+        - Réponses >512 octets<br>
+        - DNS over TLS<br><br>
+        Réponse correcte : "DNS utilise UDP 53 et TCP 53"
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #4 : DHCP 67 et 68 identiques</div>
+      <div class="trap-content">
+        <strong>Non</strong> ! DHCP utilise 2 ports :<br>
+        <strong>67</strong> = Serveur DHCP écoute ici<br>
+        <strong>68</strong> = Client DHCP écoute ici<br><br>
+        Client envoie sur 67, serveur répond sur 68.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #5 : Confondre SMB 445 et LDAP 389</div>
+      <div class="trap-content">
+        <strong>SMB (445)</strong> = Partage fichiers/imprimantes Windows<br>
+        <strong>LDAP (389)</strong> = Annuaire/authentification (Active Directory)<br><br>
+        Les deux sont Windows, mais usages différents !
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. CE QUE COMPTIA PEUT TE POSER -->
+  <div class="section">
+    <div class="section-label">🎯 Questions types</div>
+    <h2>Ce que CompTIA peut te poser</h2>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #1 : Identification port</div>
+      <div class="comptia-content">
+        "Un administrateur veut configurer un serveur web sécurisé. Quel port doit-il ouvrir ?"<br><br>
+        <strong>Réponse : 443 (HTTPS)</strong>
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #2 : Port email</div>
+      <div class="comptia-content">
+        "Quel port utilise SMTP pour envoyer des emails ?"<br><br>
+        <strong>Réponse : 25</strong>
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #3 : Accès distant sécurisé</div>
+      <div class="comptia-content">
+        "Un technicien doit accéder à distance à un serveur Linux de manière sécurisée. Quel port utiliser ?"<br><br>
+        <strong>Réponse : 22 (SSH)</strong><br>
+        Pas 23 (Telnet) qui est non sécurisé !
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #4 : Pare-feu DNS</div>
+      <div class="comptia-content">
+        "Un pare-feu doit autoriser les requêtes DNS. Quels ports ouvrir ?"<br><br>
+        <strong>Réponse : UDP 53 et TCP 53</strong><br>
+        (UDP pour requêtes standard, TCP pour transfert zone)
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">Quel port pour HTTP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>80</strong> (TCP)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">Quel port pour HTTPS ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>443</strong> (TCP)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">Quel port pour SSH ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>22</strong> (TCP)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">Quels ports pour FTP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>20</strong> (données) et <strong>21</strong> (contrôle) — TCP</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">Quels ports pour DHCP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>67</strong> (serveur) et <strong>68</strong> (client) — UDP</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">Quel port pour DNS ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>53</strong> (UDP standard, TCP transfert zone)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">Quel port pour RDP (Remote Desktop) ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>3389</strong> (TCP)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">08</span><span class="exq-text">Quel port pour SMTP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>25</strong> (TCP)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">09</span><span class="exq-text">Quelle différence entre port 110 et 143 ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>110 = POP3</strong> (télécharge emails)<br><strong>143 = IMAP</strong> (synchronise emails)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">10</span><span class="exq-text">Quel port pour Telnet ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>23</strong> (TCP) — non sécurisé, obsolète</div>
+  </div>
+
+  <!-- 7. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span>Ports = 0-65535 (16 bits). Identifient services/applications sur un hôte.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>3 plages : 0-1023 (bien connus), 1024-49151 (enregistrés), 49152-65535 (dynamiques)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>TOP 10 :</strong> 22 (SSH), 23 (Telnet), 25 (SMTP), 53 (DNS), 80 (HTTP), 110 (POP3), 143 (IMAP), 443 (HTTPS), 3389 (RDP), 67/68 (DHCP)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>FTP = 20 (données) + 21 (contrôle). DHCP = 67 (serveur) + 68 (client)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>DNS = UDP 53 (standard) ET TCP 53 (transfert zone, >512 octets)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Versions sécurisées : 443 (HTTPS), 22 (SSH), 993 (IMAPS), 995 (POP3S), 636 (LDAPS)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Port source = éphémère (client), port destination = service (serveur)</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 25 : UDP</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">C26 · Phase 4</span>
+    <a class="nav-btn next" href="#">Cours 27 : DNS →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_c26_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>

@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 30 — Protocoles messagerie et admin · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-proto { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .proto-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 18px 22px; margin-bottom: 12px; }
+  .proto-header { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
+  .proto-name { font-family: 'IBM Plex Mono', monospace; font-size: 1.1rem; font-weight: 800; color: var(--accent); }
+  .proto-port { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--green); background: rgba(34,211,160,0.1); padding: 4px 10px; border-radius: 6px; }
+  .proto-body { font-size: 0.88rem; line-height: 1.7; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .comptia-box { background: rgba(251,191,36,0.05); border: 2px solid var(--amber); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .comptia-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--amber); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .comptia-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Phase 6 — Protocoles</span> &nbsp;›&nbsp; Cours 30</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 6 · C30</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-proto">PROTO</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡☆ Moyen</span>
+  </div>
+
+  <h1>Protocoles <span>messagerie et admin</span></h1>
+  <span class="tagline">// SMTP, IMAP, POP3, SSH, Telnet, RDP, SNMP, NTP — email et administration système</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise SMTP, IMAP, POP3</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais SSH, Telnet, RDP</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends SNMP et NTP</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. TABLEAU RÉCAP -->
+  <div class="section">
+    <div class="section-label">Vue d'ensemble</div>
+    <h2>Tableau récapitulatif — tous les protocoles</h2>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Protocole</th><th>Port(s)</th><th>Transport</th><th>Sécurisé</th><th>Usage</th></tr>
+        <tr><td><strong>SMTP</strong></td><td>25, 587</td><td>TCP</td><td>⚠️ 25 non, 587 TLS</td><td>Envoi email</td></tr>
+        <tr><td><strong>IMAP</strong></td><td>143</td><td>TCP</td><td>❌ Non</td><td>Réception email (sync)</td></tr>
+        <tr><td><strong>IMAPS</strong></td><td>993</td><td>TCP</td><td>✅ Oui (SSL/TLS)</td><td>IMAP sécurisé</td></tr>
+        <tr><td><strong>POP3</strong></td><td>110</td><td>TCP</td><td>❌ Non</td><td>Réception email (télécharge)</td></tr>
+        <tr><td><strong>POP3S</strong></td><td>995</td><td>TCP</td><td>✅ Oui (SSL/TLS)</td><td>POP3 sécurisé</td></tr>
+        <tr><td><strong>SSH</strong></td><td>22</td><td>TCP</td><td>✅ Oui (chiffré)</td><td>Accès distant sécurisé</td></tr>
+        <tr><td><strong>Telnet</strong></td><td>23</td><td>TCP</td><td>❌ Non</td><td>Accès distant (obsolète)</td></tr>
+        <tr><td><strong>RDP</strong></td><td>3389</td><td>TCP</td><td>✅ Oui (TLS)</td><td>Bureau à distance Windows</td></tr>
+        <tr><td><strong>SNMP</strong></td><td>161, 162</td><td>UDP</td><td>⚠️ v3 oui</td><td>Monitoring équipements</td></tr>
+        <tr><td><strong>NTP</strong></td><td>123</td><td>UDP</td><td>⚠️ Non (v4 oui)</td><td>Synchronisation horaire</td></tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen Network+</strong>
+        CompTIA teste : différence IMAP vs POP3, SMTP ports 25 vs 587, SSH vs Telnet, ports (22, 23, 25, 110, 143, 587, 993, 995, 3389, 161/162, 123). Connais les versions sécurisées !
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. SMTP -->
+  <div class="section">
+    <div class="section-label">Protocoles email — Envoi</div>
+    <h2>SMTP — Simple Mail Transfer Protocol</h2>
+
+    <div class="proto-card">
+      <div class="proto-header">
+        <div class="proto-name">SMTP</div>
+        <div class="proto-port">Ports 25, 587 TCP</div>
+      </div>
+      <div class="proto-body">
+        <strong>Rôle :</strong> Envoyer emails entre serveurs et depuis clients vers serveurs.<br><br>
+        <strong>Ports :</strong>
+        <ul style="margin:10px 0 0 20px;line-height:1.8">
+          <li><strong>Port 25</strong> : Serveur à serveur (relay). Non chiffré par défaut.</li>
+          <li><strong>Port 587</strong> : Soumission client (submission). Recommandé avec STARTTLS.</li>
+          <li><strong>Port 465</strong> : SMTPS (obsolète, parfois encore utilisé)</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>// Fonctionnement</h3>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Client email compose message (Outlook, Gmail...)</li>
+      <li>Client se connecte au serveur SMTP (port 587)</li>
+      <li>Authentification (login + mot de passe)</li>
+      <li>Client envoie email via commandes SMTP (MAIL FROM, RCPT TO, DATA)</li>
+      <li>Serveur SMTP transmet à serveur destinataire (port 25)</li>
+      <li>Serveur destinataire stocke email (boîte réception)</li>
+    </ol>
+
+    <div class="callout ok">
+      <span class="callout-icon">📧</span>
+      <div class="callout-body">
+        <strong>Port 587 = standard moderne</strong>
+        Toujours configurer clients email sur port 587 avec STARTTLS. Port 25 réservé aux serveurs. Port 465 obsolète.
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. IMAP -->
+  <div class="section">
+    <div class="section-label">Protocoles email — Réception</div>
+    <h2>IMAP — Internet Message Access Protocol</h2>
+
+    <div class="proto-card">
+      <div class="proto-header">
+        <div class="proto-name">IMAP / IMAPS</div>
+        <div class="proto-port">Ports 143 (clair), 993 (TLS) TCP</div>
+      </div>
+      <div class="proto-body">
+        <strong>Rôle :</strong> Recevoir et gérer emails. Les emails restent sur le serveur.<br><br>
+        <strong>Caractéristiques :</strong>
+        <ul style="margin:10px 0 0 20px;line-height:1.8">
+          <li>Synchronisation multi-appareils (PC, téléphone, tablette)</li>
+          <li>Emails restent sur serveur (pas de téléchargement local)</li>
+          <li>Gestion dossiers serveur (INBOX, Sent, Drafts...)</li>
+          <li>Consultation partielle (en-têtes sans télécharger corps)</li>
+          <li>Standard moderne pour accès email</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>// Avantages IMAP</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Synchronisation</strong> : Lire email sur PC → marqué lu sur téléphone</li>
+      <li><strong>Accès multiple</strong> : Plusieurs appareils voient mêmes emails</li>
+      <li><strong>Sauvegarde centralisée</strong> : Emails sur serveur (pas perdus si appareil cassé)</li>
+      <li><strong>Économie bande passante</strong> : Télécharge uniquement ce qui est consulté</li>
+    </ul>
+
+    <div class="callout ok">
+      <span class="callout-icon">✅</span>
+      <div class="callout-body">
+        <strong>IMAP = recommandé</strong>
+        Standard actuel pour email. Synchronisation, multi-appareils, backup serveur. Utiliser IMAPS (port 993) pour sécurité.
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. POP3 -->
+  <div class="section">
+    <div class="section-label">Protocoles email — Réception legacy</div>
+    <h2>POP3 — Post Office Protocol v3</h2>
+
+    <div class="proto-card">
+      <div class="proto-header">
+        <div class="proto-name">POP3 / POP3S</div>
+        <div class="proto-port">Ports 110 (clair), 995 (TLS) TCP</div>
+      </div>
+      <div class="proto-body">
+        <strong>Rôle :</strong> Recevoir emails en les téléchargeant localement.<br><br>
+        <strong>Caractéristiques :</strong>
+        <ul style="margin:10px 0 0 20px;line-height:1.8">
+          <li>Télécharge emails sur appareil</li>
+          <li>Supprime du serveur par défaut (configurable)</li>
+          <li>Pas de synchronisation multi-appareils</li>
+          <li>Simple, rapide, peu de ressources serveur</li>
+          <li>Usage déclinant (remplacé par IMAP)</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>// IMAP vs POP3</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>IMAP</th><th>POP3</th></tr>
+        <tr><td>Emails</td><td>Sur serveur</td><td>Téléchargés localement</td></tr>
+        <tr><td>Synchronisation</td><td>✅ Oui (multi-appareils)</td><td>❌ Non</td></tr>
+        <tr><td>Dossiers</td><td>✅ Gestion serveur</td><td>❌ Locaux uniquement</td></tr>
+        <tr><td>Bande passante</td><td>⚠️ Consulte à la demande</td><td>✅ Télécharge tout</td></tr>
+        <tr><td>Espace serveur</td><td>⚠️ Utilisé</td><td>✅ Libéré</td></tr>
+        <tr><td>Usage moderne</td><td>✅ Standard</td><td>❌ Déclin</td></tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>Quand utiliser POP3 ?</strong>
+        Connexion Internet limitée/coûteuse, 1 seul appareil, besoin de libérer espace serveur. Sinon → IMAP recommandé.
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. SSH -->
+  <div class="section">
+    <div class="section-label">Accès distant sécurisé</div>
+    <h2>SSH — Secure Shell</h2>
+
+    <div class="proto-card">
+      <div class="proto-header">
+        <div class="proto-name">SSH</div>
+        <div class="proto-port">Port 22 TCP</div>
+      </div>
+      <div class="proto-body">
+        <strong>Rôle :</strong> Accès distant sécurisé en ligne de commande. Standard pour administration Linux/Unix.<br><br>
+        <strong>Caractéristiques :</strong>
+        <ul style="margin:10px 0 0 20px;line-height:1.8">
+          <li>Chiffrement bout-en-bout (authentification, commandes, données)</li>
+          <li>Authentification par mot de passe ou clé publique/privée</li>
+          <li>Tunneling (forward ports, VPN)</li>
+          <li>Transfert fichiers (SCP, SFTP via SSH)</li>
+          <li>Remplace Telnet (non sécurisé)</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>// Usages SSH</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Administration serveurs</strong> : Ligne de commande distante</li>
+      <li><strong>SFTP</strong> : Transfert fichiers sécurisé (vu cours 29)</li>
+      <li><strong>Tunneling</strong> : Sécuriser trafic non chiffré via tunnel SSH</li>
+      <li><strong>Git</strong> : Cloner/push dépôts via SSH</li>
+      <li><strong>Automatisation</strong> : Scripts, déploiements</li>
+    </ul>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--green)">Connexion SSH :</strong><br>
+      ssh utilisateur@192.168.1.10<br>
+      Password: ********<br><br>
+
+      <strong style="color:var(--accent)">Ou avec clé SSH :</strong><br>
+      ssh -i ~/.ssh/id_rsa utilisateur@192.168.1.10<br>
+      (pas de mot de passe, authentification par clé)
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">🔒</span>
+      <div class="callout-body">
+        <strong>SSH = standard administration</strong>
+        Chiffrement robuste, authentification forte, multi-usages. Ne JAMAIS utiliser Telnet en remplacement (non sécurisé).
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. TELNET -->
+  <div class="section">
+    <div class="section-label">Accès distant obsolète</div>
+    <h2>Telnet — Telecommunication Network</h2>
+
+    <div class="proto-card">
+      <div class="proto-header">
+        <div class="proto-name">Telnet</div>
+        <div class="proto-port">Port 23 TCP</div>
+      </div>
+      <div class="proto-body">
+        <strong>Rôle :</strong> Accès distant ligne de commande. <strong>Protocole obsolète, non sécurisé.</strong><br><br>
+        <strong>Caractéristiques :</strong>
+        <ul style="margin:10px 0 0 20px;line-height:1.8">
+          <li>❌ Aucun chiffrement (tout en clair)</li>
+          <li>❌ Login/mot de passe interceptables</li>
+          <li>❌ Commandes visibles (Wireshark)</li>
+          <li>✅ Simple, léger (usage diagnostic uniquement)</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>// Usage légitime restant</h3>
+    <p><strong>Test de connectivité port :</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      telnet smtp.exemple.com 25<br>
+      (teste si port 25 accessible)<br><br>
+      
+      telnet www.exemple.com 80<br>
+      (teste si serveur web répond)
+    </div>
+
+    <p>Telnet comme outil de diagnostic réseau → acceptable (pas d'authentification).</p>
+
+    <div class="callout warn">
+      <span class="callout-icon">🔓</span>
+      <div class="callout-body">
+        <strong>Telnet = OBSOLÈTE pour administration</strong>
+        Ne JAMAIS utiliser Telnet pour accès distant authentifié. Tout en clair = login/mot de passe volables. Utiliser SSH (port 22) !
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. RDP -->
+  <div class="section">
+    <div class="section-label">Bureau à distance</div>
+    <h2>RDP — Remote Desktop Protocol</h2>
+
+    <div class="proto-card">
+      <div class="proto-header">
+        <div class="proto-name">RDP</div>
+        <div class="proto-port">Port 3389 TCP</div>
+      </div>
+      <div class="proto-body">
+        <strong>Rôle :</strong> Accès graphique distant à un bureau Windows (interface complète).<br><br>
+        <strong>Caractéristiques :</strong>
+        <ul style="margin:10px 0 0 20px;line-height:1.8">
+          <li>Contrôle bureau complet (souris, clavier, affichage)</li>
+          <li>Chiffrement TLS (RDP 6.0+)</li>
+          <li>Authentification NLA (Network Level Authentication)</li>
+          <li>Redirection ressources (imprimantes, disques locaux, clipboard)</li>
+          <li>Multi-sessions (Windows Server)</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>// Usages RDP</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Administration serveurs Windows</strong> : Interface graphique distante</li>
+      <li><strong>Support technique</strong> : Dépannage PC utilisateurs</li>
+      <li><strong>Télétravail</strong> : Accès bureau entreprise depuis domicile</li>
+      <li><strong>VDI (Virtual Desktop Infrastructure)</strong> : Bureaux virtuels</li>
+    </ul>
+
+    <h3>// Sécurité RDP</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Changer port 3389</strong> (réduire scans automatiques)</li>
+      <li><strong>Activer NLA</strong> (authentification avant session)</li>
+      <li><strong>VPN obligatoire</strong> pour accès externe (pas RDP direct Internet)</li>
+      <li><strong>Mots de passe forts</strong> (attaques brute-force fréquentes)</li>
+      <li><strong>Limiter utilisateurs autorisés</strong></li>
+    </ul>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>RDP exposé = risque majeur</strong>
+        Port 3389 ouvert sur Internet = cible privilégiée ransomwares. TOUJOURS protéger RDP par VPN ou firewall strict.
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. SNMP -->
+  <div class="section">
+    <div class="section-label">Monitoring réseau</div>
+    <h2>SNMP — Simple Network Management Protocol</h2>
+
+    <div class="proto-card">
+      <div class="proto-header">
+        <div class="proto-name">SNMP</div>
+        <div class="proto-port">Ports 161, 162 UDP</div>
+      </div>
+      <div class="proto-body">
+        <strong>Rôle :</strong> Monitoring et gestion équipements réseau (routeurs, switches, serveurs...).<br><br>
+        <strong>Ports :</strong>
+        <ul style="margin:10px 0 0 20px;line-height:1.8">
+          <li><strong>Port 161</strong> : Requêtes/réponses (manager → agent)</li>
+          <li><strong>Port 162</strong> : Traps (alertes agent → manager)</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>// Versions SNMP</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Version</th><th>Sécurité</th><th>Notes</th></tr>
+        <tr><td><strong>SNMPv1</strong></td><td>❌ Community string en clair</td><td>Obsolète, vulnérable</td></tr>
+        <tr><td><strong>SNMPv2c</strong></td><td>❌ Community string en clair</td><td>Plus performant mais toujours non sécurisé</td></tr>
+        <tr><td><strong>SNMPv3</strong></td><td>✅ Authentification + chiffrement</td><td>Standard moderne recommandé</td></tr>
+      </table>
+    </div>
+
+    <h3>// Concepts SNMP</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Manager</strong> : Station de monitoring (collecte données)</li>
+      <li><strong>Agent</strong> : Démon sur équipement à surveiller</li>
+      <li><strong>MIB (Management Information Base)</strong> : Base de données variables surveillables</li>
+      <li><strong>OID (Object Identifier)</strong> : Identifiant unique variable (ex: 1.3.6.1.2.1.1.5.0 = hostname)</li>
+      <li><strong>Traps</strong> : Alertes envoyées par agent vers manager (événement critique)</li>
+    </ul>
+
+    <div class="callout ok">
+      <span class="callout-icon">📊</span>
+      <div class="callout-body">
+        <strong>SNMP = monitoring standard</strong>
+        Surveiller CPU, RAM, interfaces, température... Collecter métriques, alertes, graphiques. Utiliser SNMPv3 pour sécurité.
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. NTP -->
+  <div class="section">
+    <div class="section-label">Synchronisation horaire</div>
+    <h2>NTP — Network Time Protocol</h2>
+
+    <div class="proto-card">
+      <div class="proto-header">
+        <div class="proto-name">NTP</div>
+        <div class="proto-port">Port 123 UDP</div>
+      </div>
+      <div class="proto-body">
+        <strong>Rôle :</strong> Synchroniser horloges système via réseau. Précision millisecondes.<br><br>
+        <strong>Caractéristiques :</strong>
+        <ul style="margin:10px 0 0 20px;line-height:1.8">
+          <li>Hiérarchie en strates (stratum 0 = horloge atomique, stratum 1 = serveurs primaires...)</li>
+          <li>Correction dérive horloge</li>
+          <li>Précision millisecondes (voire microsecondes)</li>
+          <li>Essentiel sécurité, logs, transactions</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>// Importance synchronisation horaire</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Logs centralisés</strong> : Corréler événements multi-serveurs (impossible si horloges désynchronisées)</li>
+      <li><strong>Kerberos</strong> : Authentification échoue si décalage >5 minutes</li>
+      <li><strong>Certificats SSL/TLS</strong> : Vérification validité basée sur horloge</li>
+      <li><strong>Transactions bancaires</strong> : Horodatage précis critique</li>
+      <li><strong>Forensics</strong> : Timeline événements sécurité</li>
+    </ul>
+
+    <h3>// Serveurs NTP publics</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9;font-family:'IBM Plex Mono',monospace;font-size:0.85rem">
+      <li>pool.ntp.org (pool global)</li>
+      <li>time.google.com (Google)</li>
+      <li>time.cloudflare.com (Cloudflare)</li>
+      <li>time.windows.com (Microsoft)</li>
+    </ul>
+
+    <div class="callout ok">
+      <span class="callout-icon">⏰</span>
+      <div class="callout-body">
+        <strong>NTP = critique infrastructure</strong>
+        Tous serveurs/équipements doivent synchroniser avec NTP. Désynchronisation = bugs authentification, logs inutilisables, certificats invalides.
+      </div>
+    </div>
+  </div>
+
+  <!-- 10. CE QUI TROMPE LES CANDIDATS -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : IMAP et POP3 identiques</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Différence majeure :<br>
+        <strong>IMAP</strong> : Emails restent sur serveur, synchronisation multi-appareils<br>
+        <strong>POP3</strong> : Télécharge et supprime du serveur, 1 appareil<br><br>
+        IMAP = standard moderne
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : SMTP port 25 pour clients</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>.<br>
+        <strong>Port 25</strong> : Serveur à serveur (relay)<br>
+        <strong>Port 587</strong> : Soumission client (avec STARTTLS)<br><br>
+        Clients doivent utiliser port 587
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : SSH et Telnet équivalents</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>.<br>
+        <strong>SSH (22)</strong> : Chiffré, sécurisé, standard<br>
+        <strong>Telnet (23)</strong> : En clair, obsolète, dangereux<br><br>
+        Ne JAMAIS utiliser Telnet pour authentification !
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #4 : SNMP ports inversés</div>
+      <div class="trap-content">
+        <strong>Port 161</strong> : Requêtes/réponses (manager → agent)<br>
+        <strong>Port 162</strong> : Traps (alertes agent → manager)<br><br>
+        Ne pas inverser !
+      </div>
+    </div>
+  </div>
+
+  <!-- 11. CE QUE COMPTIA PEUT TE POSER -->
+  <div class="section">
+    <div class="section-label">🎯 Questions types</div>
+    <h2>Ce que CompTIA peut te poser</h2>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #1 : Réception email</div>
+      <div class="comptia-content">
+        "Un utilisateur veut accéder à ses emails depuis PC, téléphone et tablette avec synchronisation. Quel protocole configurer ?"<br><br>
+        <strong>Réponse : IMAP</strong> (port 143 ou 993 IMAPS)
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #2 : Accès distant sécurisé</div>
+      <div class="comptia-content">
+        "Un administrateur doit accéder à un serveur Linux distant de manière sécurisée. Quel protocole utiliser ?"<br><br>
+        <strong>Réponse : SSH</strong> (port 22)
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #3 : Bureau distant Windows</div>
+      <div class="comptia-content">
+        "Quel protocole permet d'accéder graphiquement à un bureau Windows distant ?"<br><br>
+        <strong>Réponse : RDP</strong> (port 3389)
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #4 : Monitoring équipements</div>
+      <div class="comptia-content">
+        "Un administrateur veut monitorer CPU et RAM de tous les switches. Quel protocole utiliser ?"<br><br>
+        <strong>Réponse : SNMP</strong> (ports 161/162). Recommandé SNMPv3 pour sécurité.
+      </div>
+    </div>
+  </div>
+
+  <!-- 12. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">Quels ports pour SMTP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>25</strong> (serveur à serveur), <strong>587</strong> (soumission client avec STARTTLS)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">Différence IMAP vs POP3 ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>IMAP (143/993)</strong> : Emails sur serveur, synchronisation multi-appareils<br><strong>POP3 (110/995)</strong> : Télécharge localement, supprime serveur</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">Quel port pour SSH ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>22 TCP</strong> (accès distant sécurisé)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">Quel port pour Telnet ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>23 TCP</strong> (obsolète, non sécurisé, utiliser SSH !)
+
+</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">Quel port pour RDP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>3389 TCP</strong> (Remote Desktop Protocol Windows)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">Quels ports pour SNMP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>161 UDP</strong> (requêtes), <strong>162 UDP</strong> (traps/alertes)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">Quel port pour NTP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>123 UDP</strong> (synchronisation horaire)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">08</span><span class="exq-text">Question type examen : Protocole email avec synchronisation multi-appareils ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>IMAP</strong> (port 143 ou 993 sécurisé)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">09</span><span class="exq-text">Pourquoi ne jamais utiliser Telnet pour administration ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Aucun chiffrement — login/mot de passe en clair, interceptable. Utiliser <strong>SSH (port 22)</strong> !</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">10</span><span class="exq-text">Pourquoi NTP est critique ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Synchronisation horaire essentielle pour : logs, Kerberos (échoue si décalage >5min), certificats SSL/TLS, forensics</div>
+  </div>
+
+  <!-- 13. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>SMTP (25/587)</strong> : Envoi email. Port 587 pour clients avec STARTTLS.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>IMAP (143/993)</strong> : Réception email, sync multi-appareils. Standard moderne.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>POP3 (110/995)</strong> : Télécharge emails, 1 appareil. Obsolète.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>SSH (22)</strong> : Accès distant sécurisé. Remplace Telnet.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Telnet (23)</strong> : Accès distant non sécurisé. OBSOLÈTE pour authentification.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>RDP (3389)</strong> : Bureau distant Windows. Protéger par VPN si Internet.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>SNMP (161/162)</strong> : Monitoring équipements. Utiliser SNMPv3.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>NTP (123)</strong> : Synchronisation horaire. Critique pour logs, Kerberos, certificats.</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 29 : Protocoles web</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">C30 · Phase 6</span>
+    <a class="nav-btn next" href="#">Cours 31 : ... →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_c30_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>
