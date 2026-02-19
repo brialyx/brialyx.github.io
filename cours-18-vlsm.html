@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 18 — VLSM · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .vocab { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; }
+  .vocab-term { font-family: 'IBM Plex Mono', monospace; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .scenario-box { background: var(--bg2); border: 2px solid var(--purple); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .scenario-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--purple); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .scenario-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .comptia-box { background: rgba(251,191,36,0.05); border: 2px solid var(--amber); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .comptia-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--amber); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .comptia-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Phase 2 — IPv4</span> &nbsp;›&nbsp; Cours 18</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 2 · C18</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡⚡ Difficile</span>
+  </div>
+
+  <h1><span>VLSM</span> — Sous-réseaux à longueur variable</h1>
+  <span class="tagline">// Optimiser l'espace d'adressage — différents masques pour différents besoins</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends le principe du VLSM</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je sais résoudre un scénario de conception réseau</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise l'allocation optimale des adresses</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. C'EST QUOI -->
+  <div class="section">
+    <div class="section-label">Avant de commencer</div>
+    <h2>C'est quoi le VLSM — masques à longueur variable</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🏘️</span>
+      <div class="callout-body">
+        <strong>Analogie — immeubles de tailles différentes</strong>
+        Sans VLSM : Tu construis 4 immeubles identiques de 62 appartements chacun. Problème : tu as besoin d'un immeuble de 100 apparts pour le siège, deux petits de 25 pour les agences, et un minuscule de 2 pour relier deux bâtiments.<br><br>
+        Avec VLSM : Tu construis des immeubles de tailles adaptées aux besoins réels. Pas de gaspillage, utilisation optimale de l'espace.
+      </div>
+    </div>
+
+    <p><strong>VLSM (Variable Length Subnet Mask)</strong> = technique de subnetting qui permet d'utiliser <strong>différents masques de sous-réseau</strong> dans le même réseau pour optimiser l'utilisation des adresses IP.</p>
+
+    <p><strong>Problème résolu par VLSM :</strong></p>
+    <p>Sans VLSM, si tu divises 192.168.1.0/24 en 4 sous-réseaux égaux → tu obtiens 4 × /26 = 4 × 62 hôtes.</p>
+    <p>Mais que faire si tu as besoin de :</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>1 réseau de 100 hôtes (siège)</li>
+      <li>2 réseaux de 25 hôtes (agences)</li>
+      <li>3 liaisons point-à-point de 2 hôtes (routeurs)</li>
+    </ul>
+
+    <p>Avec VLSM, tu peux créer des sous-réseaux de tailles différentes adaptées à chaque besoin !</p>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen Network+</strong>
+        CompTIA teste des scénarios réels : "Concevoir un plan d'adressage pour X départements avec Y hôtes chacun". Tu DOIS savoir allouer des masques optimaux sans gaspiller d'adresses. Question fréquente et difficile.
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. VOCABULAIRE -->
+  <div class="section">
+    <div class="section-label">Vocabulaire essentiel</div>
+    <h2>Les mots clés de ce cours</h2>
+
+    <div class="vocab">
+      <div class="vocab-term">VLSM (Variable Length Subnet Mask)</div>
+      <div>Technique permettant d'utiliser plusieurs masques différents dans le même espace d'adressage pour optimiser l'allocation des IPs.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Classful Subnetting</div>
+      <div>Ancien système : tous les sous-réseaux ont le même masque. Exemple : découper un /24 en 4 × /26 identiques. Gaspillage si besoins variés.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Classless Subnetting (VLSM)</div>
+      <div>Système moderne : masques variables selon les besoins. Optimise l'espace d'adressage.</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-term">Supernetting / Route Summarization</div>
+      <div>Technique inverse : combiner plusieurs petits réseaux en un seul grand pour simplifier les tables de routage.</div>
+    </div>
+  </div>
+
+  <!-- 3. PRINCIPE -->
+  <div class="section">
+    <div class="section-label">Fonctionnement</div>
+    <h2>Principe du VLSM — allouer selon les besoins réels</h2>
+
+    <h3>// Règle d'or du VLSM</h3>
+    <p><strong>Allouer du plus grand au plus petit</strong></p>
+
+    <p>Quand tu conçois un plan d'adressage VLSM :</p>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Lister les besoins</strong> (nombre d'hôtes par réseau)</li>
+      <li><strong>Trier du plus grand au plus petit</strong></li>
+      <li><strong>Choisir le masque approprié</strong> pour chaque besoin (juste assez, pas trop)</li>
+      <li><strong>Allouer séquentiellement</strong> en commençant par le réseau de base</li>
+      <li><strong>Vérifier qu'il n'y a pas de chevauchement</strong></li>
+    </ol>
+
+    <h3>// Pourquoi du plus grand au plus petit ?</h3>
+    <p>Si tu commences par les petits réseaux, tu risques de fragmenter l'espace et de ne plus avoir de bloc contigu assez grand pour les gros besoins.</p>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Erreur courante</strong>
+        Allouer dans le désordre → fragmentation → impossible de créer le gros réseau à la fin. TOUJOURS trier par taille décroissante avant d'allouer.
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. EXEMPLE COMPLET -->
+  <div class="section">
+    <div class="section-label">Scénario réel</div>
+    <h2>Exemple complet — conception réseau avec VLSM</h2>
+
+    <div class="scenario-box">
+      <div class="scenario-title">📋 Énoncé du problème</div>
+      <div class="scenario-content">
+        Tu as le réseau <strong>192.168.10.0/24</strong> (256 adresses) à subdiviser pour :<br><br>
+        <strong>Réseau A :</strong> 100 hôtes (siège social)<br>
+        <strong>Réseau B :</strong> 50 hôtes (agence principale)<br>
+        <strong>Réseau C :</strong> 25 hôtes (agence secondaire)<br>
+        <strong>Réseau D :</strong> 10 hôtes (département IT)<br>
+        <strong>Liaison 1 :</strong> 2 hôtes (routeur siège ↔ agence principale)<br>
+        <strong>Liaison 2 :</strong> 2 hôtes (routeur siège ↔ agence secondaire)
+      </div>
+    </div>
+
+    <h3>// Étape 1 : Trier par taille décroissante</h3>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Réseau A : 100 hôtes</li>
+      <li>Réseau B : 50 hôtes</li>
+      <li>Réseau C : 25 hôtes</li>
+      <li>Réseau D : 10 hôtes</li>
+      <li>Liaison 1 : 2 hôtes</li>
+      <li>Liaison 2 : 2 hôtes</li>
+    </ol>
+
+    <h3>// Étape 2 : Choisir les masques appropriés</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Réseau</th><th>Hôtes requis</th><th>Masque choisi</th><th>Hôtes dispo</th><th>Justification</th></tr>
+        <tr><td>A</td><td>100</td><td>/25</td><td>126</td><td>126 ≥ 100 ✅ (/26 = 62 insuffisant)</td></tr>
+        <tr><td>B</td><td>50</td><td>/26</td><td>62</td><td>62 ≥ 50 ✅</td></tr>
+        <tr><td>C</td><td>25</td><td>/27</td><td>30</td><td>30 ≥ 25 ✅</td></tr>
+        <tr><td>D</td><td>10</td><td>/28</td><td>14</td><td>14 ≥ 10 ✅</td></tr>
+        <tr><td>Liaison 1</td><td>2</td><td>/30</td><td>2</td><td>2 = 2 ✅ (optimal)</td></tr>
+        <tr><td>Liaison 2</td><td>2</td><td>/30</td><td>2</td><td>2 = 2 ✅ (optimal)</td></tr>
+      </table>
+    </div>
+
+    <h3>// Étape 3 : Allocation séquentielle</h3>
+
+    <p><strong>Réseau de base : 192.168.10.0/24</strong></p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;line-height:1.8;">
+      <strong style="color:var(--green)">Réseau A : 192.168.10.0/25</strong><br>
+      &nbsp;&nbsp;Plage : 192.168.10.0 - 192.168.10.127<br>
+      &nbsp;&nbsp;Hôtes : 192.168.10.1 - 192.168.10.126 (126 IPs)<br>
+      &nbsp;&nbsp;Broadcast : 192.168.10.127<br>
+      &nbsp;&nbsp;Taille : 128 adresses<br><br>
+
+      <strong style="color:var(--accent)">Réseau B : 192.168.10.128/26</strong><br>
+      &nbsp;&nbsp;Plage : 192.168.10.128 - 192.168.10.191<br>
+      &nbsp;&nbsp;Hôtes : 192.168.10.129 - 192.168.10.190 (62 IPs)<br>
+      &nbsp;&nbsp;Broadcast : 192.168.10.191<br>
+      &nbsp;&nbsp;Taille : 64 adresses<br><br>
+
+      <strong style="color:var(--purple)">Réseau C : 192.168.10.192/27</strong><br>
+      &nbsp;&nbsp;Plage : 192.168.10.192 - 192.168.10.223<br>
+      &nbsp;&nbsp;Hôtes : 192.168.10.193 - 192.168.10.222 (30 IPs)<br>
+      &nbsp;&nbsp;Broadcast : 192.168.10.223<br>
+      &nbsp;&nbsp;Taille : 32 adresses<br><br>
+
+      <strong style="color:var(--amber)">Réseau D : 192.168.10.224/28</strong><br>
+      &nbsp;&nbsp;Plage : 192.168.10.224 - 192.168.10.239<br>
+      &nbsp;&nbsp;Hôtes : 192.168.10.225 - 192.168.10.238 (14 IPs)<br>
+      &nbsp;&nbsp;Broadcast : 192.168.10.239<br>
+      &nbsp;&nbsp;Taille : 16 adresses<br><br>
+
+      <strong style="color:var(--red)">Liaison 1 : 192.168.10.240/30</strong><br>
+      &nbsp;&nbsp;Plage : 192.168.10.240 - 192.168.10.243<br>
+      &nbsp;&nbsp;Hôtes : 192.168.10.241 - 192.168.10.242 (2 IPs)<br>
+      &nbsp;&nbsp;Broadcast : 192.168.10.243<br>
+      &nbsp;&nbsp;Taille : 4 adresses<br><br>
+
+      <strong style="color:var(--red)">Liaison 2 : 192.168.10.244/30</strong><br>
+      &nbsp;&nbsp;Plage : 192.168.10.244 - 192.168.10.247<br>
+      &nbsp;&nbsp;Hôtes : 192.168.10.245 - 192.168.10.246 (2 IPs)<br>
+      &nbsp;&nbsp;Broadcast : 192.168.10.247<br>
+      &nbsp;&nbsp;Taille : 4 adresses
+    </div>
+
+    <h3>// Étape 4 : Vérification</h3>
+    <p><strong>Total utilisé :</strong> 128 + 64 + 32 + 16 + 4 + 4 = <strong>248 adresses</strong></p>
+    <p><strong>Reste disponible :</strong> 192.168.10.248 - 192.168.10.255 = <strong>8 adresses</strong> (pour croissance future)</p>
+
+    <div class="callout ok">
+      <span class="callout-icon">✅</span>
+      <div class="callout-body">
+        <strong>Plan d'adressage validé</strong>
+        Aucun chevauchement, tous les besoins couverts, espace restant pour expansion. Plan optimal ! 🎯
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. CE QUI TROMPE LES CANDIDATS -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : Oublier les -2 pour réseau et broadcast</div>
+      <div class="trap-content">
+        Besoin : 30 hôtes → beaucoup choisissent /27 (32 adresses totales).<br>
+        <strong>FAUX</strong> ! /27 = 32 - 2 = <strong>30 hôtes utilisables</strong>. C'est pile-poil mais ça passe.<br><br>
+        Mais attention : si besoin de 30 hôtes et 1 gateway → total 31 → /27 insuffisant ! Il faut /26 (62 hôtes).
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : Allouer dans le désordre</div>
+      <div class="trap-content">
+        Allouer d'abord les petits réseaux → fragmentation → impossible de créer le gros réseau à la fin.<br><br>
+        <strong>TOUJOURS</strong> trier par taille décroissante et allouer séquentiellement du plus grand au plus petit.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : Choisir un masque trop juste</div>
+      <div class="trap-content">
+        Besoin : 62 hôtes → certains choisissent /26 (62 hôtes).<br>
+        Problème : si on ajoute 1 hôte plus tard → plus de place !<br><br>
+        <strong>Bonne pratique :</strong> toujours prévoir 20-30% de marge pour croissance future.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #4 : Chevauchement de sous-réseaux</div>
+      <div class="trap-content">
+        Erreur : allouer 192.168.10.0/25 puis 192.168.10.64/26.<br>
+        <strong>CHEVAUCHEMENT</strong> ! Le /25 couvre 192.168.10.0 - 192.168.10.127, donc inclut déjà .64.<br><br>
+        Vérification : le début du nouveau réseau doit être ≥ (fin du réseau précédent + 1).
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. CE QUE COMPTIA PEUT TE POSER -->
+  <div class="section">
+    <div class="section-label">🎯 Questions types</div>
+    <h2>Ce que CompTIA peut te poser</h2>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #1 : Choix de masque optimal</div>
+      <div class="comptia-content">
+        "Un département a besoin de 45 hôtes. Quel masque VLSM utiliser ?"<br><br>
+        <strong>Réponse : /26</strong><br>
+        /26 = 62 hôtes utilisables (suffisant pour 45)<br>
+        /27 = 30 hôtes (insuffisant ❌)
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #2 : Scénario de conception</div>
+      <div class="comptia-content">
+        "À partir de 172.16.0.0/24, créer 3 sous-réseaux : 120 hôtes, 60 hôtes, 30 hôtes. Quelle est l'allocation correcte ?"<br><br>
+        <strong>Réponse :</strong><br>
+        120 hôtes → /25 (126) → 172.16.0.0/25<br>
+        60 hôtes → /26 (62) → 172.16.0.128/26<br>
+        30 hôtes → /27 (30) → 172.16.0.192/27
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #3 : Détection de chevauchement</div>
+      <div class="comptia-content">
+        "Est-ce que 192.168.1.0/25 et 192.168.1.100/26 se chevauchent ?"<br><br>
+        <strong>Réponse : Oui</strong><br>
+        /25 couvre .0 - .127 (inclut .100)<br>
+        /26 commence à .100<br>
+        → Chevauchement ! ❌
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #4 : Optimisation d'espace</div>
+      <div class="comptia-content">
+        "Quel est l'avantage principal du VLSM par rapport au subnetting classful ?"<br><br>
+        <strong>Réponse :</strong> Optimisation de l'espace d'adressage. Permet d'utiliser des masques adaptés aux besoins réels, évite le gaspillage d'adresses.
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">C'est quoi le VLSM ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Variable Length Subnet Mask — technique permettant d'utiliser différents masques dans le même espace d'adressage pour optimiser l'allocation des IPs.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">Dans quel ordre allouer les sous-réseaux en VLSM ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Du plus grand au plus petit</strong>. Trier les besoins par taille décroissante avant d'allouer.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">Besoin de 50 hôtes — quel masque minimum ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>/26</strong> (62 hôtes utilisables). /27 = 30 hôtes (insuffisant).</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">Besoin de 120 hôtes — quel masque minimum ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>/25</strong> (126 hôtes utilisables). /26 = 62 hôtes (insuffisant).</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">Question type examen : 10.0.0.0/24 à subdiviser pour 100, 50, 20 hôtes. Quelles allocations ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">100 hôtes → /25 → 10.0.0.0/25 (.0-.127)<br>50 hôtes → /26 → 10.0.0.128/26 (.128-.191)<br>20 hôtes → /27 → 10.0.0.192/27 (.192-.223)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">192.168.5.0/26 et 192.168.5.50/27 se chevauchent-ils ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Oui</strong> ! /26 couvre .0 - .63 (inclut .50). Chevauchement ❌</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">Pourquoi toujours allouer du plus grand au plus petit ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Éviter la fragmentation. Si on alloue les petits d'abord, on risque de fragmenter l'espace et de ne plus avoir de bloc contigu assez grand pour les gros réseaux.</div>
+  </div>
+
+  <!-- 8. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span>VLSM = masques à longueur variable, optimise l'espace d'adressage</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Méthode : 1) Lister besoins 2) Trier décroissant 3) Choisir masques 4) Allouer séquentiellement</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>TOUJOURS</strong> allouer du plus grand au plus petit (éviter fragmentation)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Choisir masque : trouver le plus petit qui contient le nombre d'hôtes requis (+marge)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Vérifier absence de chevauchement : début nouveau réseau ≥ fin précédent + 1</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Toujours faire -2 pour réseau et broadcast (hôtes utilisables = total - 2)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Prévoir marge de croissance 20-30% (ne pas choisir masque trop juste)</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 17 : Default Gateway</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">C18 · Phase 2</span>
+    <a class="nav-btn next" href="#">Cours 19 : Adresses spéciales IPv4 →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_c18_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>
