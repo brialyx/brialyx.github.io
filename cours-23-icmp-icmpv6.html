@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 23 — ICMP et ICMPv6 · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .vocab { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; }
+  .vocab-term { font-family: 'IBM Plex Mono', monospace; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .comptia-box { background: rgba(251,191,36,0.05); border: 2px solid var(--amber); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .comptia-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--amber); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .comptia-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Phase 4 — Protocoles</span> &nbsp;›&nbsp; Cours 23</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 4 · C23</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-proto">PROTO</span>
+    <span class="pill pill-diff">⚡⚡☆ Moyen</span>
+  </div>
+
+  <h1><span>ICMP</span> et ICMPv6</h1>
+  <span class="tagline">// Internet Control Message Protocol — messages d'erreur et diagnostics réseau</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends le rôle d'ICMP</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais ping (Echo Request/Reply)</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise traceroute et TTL</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. C'EST QUOI -->
+  <div class="section">
+    <div class="section-label">Avant de commencer</div>
+    <h2>C'est quoi ICMP — messages d'erreur et diagnostics</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">📬</span>
+      <div class="callout-body">
+        <strong>Analogie — service des réclamations de La Poste</strong>
+        Tu envoies un colis (paquet IP). Si problème : adresse erronée, destinataire absent, délai dépassé → La Poste te renvoie un avis (message ICMP) pour t'expliquer pourquoi le colis n'est pas arrivé.
+      </div>
+    </div>
+
+    <p><strong>ICMP (Internet Control Message Protocol)</strong> est un protocole de <strong>couche 3</strong> qui envoie des messages d'erreur et de diagnostic concernant la livraison des paquets IP.</p>
+
+    <p><strong>Rôle principal :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Signaler les erreurs (destination injoignable, TTL expiré...)</li>
+      <li>Tester la connectivité (ping)</li>
+      <li>Découvrir le chemin réseau (traceroute)</li>
+      <li>Redirection de routes</li>
+    </ul>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen Network+</strong>
+        CompTIA teste : types/codes ICMP (Type 0/8 pour ping, Type 3 Destination Unreachable...), TTL et expiration, traceroute, différences ICMPv6. Connais les types courants par cœur.
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>ICMP n'est PAS fiable</strong>
+        ICMP utilise IP (non fiable). Les messages ICMP peuvent être perdus, bloqués par des pare-feu, ou ignorés. Ne jamais s'y fier à 100% pour le diagnostic.
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. STRUCTURE -->
+  <div class="section">
+    <div class="section-label">Format du message</div>
+    <h2>Structure message ICMP — Type, Code, Checksum</h2>
+
+    <p><strong>En-tête ICMP (8 octets minimum) :</strong></p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      0                   1                   2                   3<br>
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1<br>
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+<br>
+      |     Type      |     Code      |          Checksum             |<br>
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+<br>
+      |                    Rest of Header (variable)                  |<br>
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+<br>
+      |                         Data (variable)                       |<br>
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    </div>
+
+    <p><strong>Champs :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Type (8 bits)</strong> : Catégorie du message (0 = Echo Reply, 3 = Destination Unreachable...)</li>
+      <li><strong>Code (8 bits)</strong> : Sous-catégorie précise (ex: Type 3 Code 1 = Host Unreachable)</li>
+      <li><strong>Checksum (16 bits)</strong> : Vérification d'intégrité du message ICMP</li>
+      <li><strong>Rest of Header</strong> : Varie selon Type/Code</li>
+      <li><strong>Data</strong> : Souvent une copie de l'en-tête IP + 8 premiers octets du paquet original (pour identifier le paquet en erreur)</li>
+    </ul>
+  </div>
+
+  <!-- 3. TYPES COURANTS -->
+  <div class="section">
+    <div class="section-label">Messages principaux</div>
+    <h2>Types ICMP courants — à connaître pour l'examen</h2>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Type</th><th>Code</th><th>Nom</th><th>Usage</th></tr>
+        <tr><td><strong>0</strong></td><td>0</td><td>Echo Reply</td><td>Réponse à ping</td></tr>
+        <tr><td><strong>3</strong></td><td>0</td><td>Destination Network Unreachable</td><td>Réseau de destination injoignable</td></tr>
+        <tr><td><strong>3</strong></td><td>1</td><td>Destination Host Unreachable</td><td>Hôte injoignable</td></tr>
+        <tr><td><strong>3</strong></td><td>2</td><td>Destination Protocol Unreachable</td><td>Protocole non supporté</td></tr>
+        <tr><td><strong>3</strong></td><td>3</td><td>Destination Port Unreachable</td><td>Port fermé/non écouté</td></tr>
+        <tr><td><strong>3</strong></td><td>4</td><td>Fragmentation Needed, DF Set</td><td>Paquet trop gros, fragmentation interdite</td></tr>
+        <tr><td><strong>5</strong></td><td>0</td><td>Redirect (network)</td><td>Redirection vers meilleur routeur</td></tr>
+        <tr><td><strong>8</strong></td><td>0</td><td>Echo Request</td><td>Ping (demande)</td></tr>
+        <tr><td><strong>11</strong></td><td>0</td><td>Time Exceeded (TTL=0)</td><td>TTL expiré en transit</td></tr>
+        <tr><td><strong>11</strong></td><td>1</td><td>Fragment Reassembly Time Exceeded</td><td>Timeout réassemblage fragments</td></tr>
+      </table>
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>À mémoriser absolument</strong>
+        <strong>Type 0</strong> = Echo Reply (réponse ping)<br>
+        <strong>Type 8</strong> = Echo Request (demande ping)<br>
+        <strong>Type 3</strong> = Destination Unreachable (+ Code pour précision)<br>
+        <strong>Type 11</strong> = Time Exceeded (TTL expiré = traceroute)
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. PING -->
+  <div class="section">
+    <div class="section-label">Test de connectivité</div>
+    <h2>Ping — Echo Request (Type 8) / Echo Reply (Type 0)</h2>
+
+    <p><strong>Ping</strong> = outil de diagnostic qui envoie des messages ICMP Echo Request et attend des Echo Reply.</p>
+
+    <h3>// Fonctionnement</h3>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Source envoie <strong>ICMP Echo Request (Type 8, Code 0)</strong> à destination</li>
+      <li>Destination reçoit, répond avec <strong>ICMP Echo Reply (Type 0, Code 0)</strong></li>
+      <li>Source mesure le <strong>RTT (Round-Trip Time)</strong> = temps aller-retour</li>
+      <li>Répète 4 fois par défaut (Windows/Linux)</li>
+    </ol>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--green)">C:\> ping 8.8.8.8</strong><br><br>
+      Envoi d'une requête 'Ping' sur 8.8.8.8 avec 32 octets de données :<br>
+      Réponse de 8.8.8.8 : octets=32 temps=12 ms TTL=117<br>
+      Réponse de 8.8.8.8 : octets=32 temps=11 ms TTL=117<br>
+      Réponse de 8.8.8.8 : octets=32 temps=13 ms TTL=117<br>
+      Réponse de 8.8.8.8 : octets=32 temps=12 ms TTL=117<br><br>
+      
+      Statistiques Ping pour 8.8.8.8:<br>
+      &nbsp;&nbsp;Paquets : envoyés = 4, reçus = 4, perdus = 0 (perte 0%),<br>
+      Durée approximative des boucles en millisecondes :<br>
+      &nbsp;&nbsp;Minimum = 11ms, Maximum = 13ms, Moyenne = 12ms
+    </div>
+
+    <h3>// Que teste ping ?</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Connectivité couche 3</strong> : La destination est-elle joignable via IP ?</li>
+      <li><strong>Latence</strong> : Temps de réponse (RTT)</li>
+      <li><strong>Perte de paquets</strong> : % de paquets perdus</li>
+      <li><strong>Résolution DNS</strong> : Si on ping un nom (google.com), teste aussi DNS</li>
+    </ul>
+
+    <h3>// Messages d'erreur ping</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Message</th><th>Signification</th></tr>
+        <tr><td>"Reply from..."</td><td>✅ Succès, hôte joignable</td></tr>
+        <tr><td>"Request timed out"</td><td>Pas de réponse (pare-feu, hôte down, routage cassé)</td></tr>
+        <tr><td>"Destination host unreachable"</td><td>Routeur local ne sait pas router (pas de route)</td></tr>
+        <tr><td>"TTL expired in transit"</td><td>Paquet mort avant d'arriver (boucle routing, TTL trop faible)</td></tr>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">🔥</span>
+      <div class="callout-body">
+        <strong>Pare-feu et ping</strong>
+        Beaucoup de pare-feu bloquent ICMP Echo Request par défaut (sécurité). <strong>Pas de réponse ping ≠ hôte down</strong>. Toujours vérifier si ICMP est autorisé avant de conclure.
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. TTL -->
+  <div class="section">
+    <div class="section-label">Time To Live</div>
+    <h2>TTL — empêcher les boucles infinies</h2>
+
+    <p><strong>TTL (Time To Live)</strong> = compteur dans l'en-tête IP qui décrémente de 1 à chaque routeur traversé. Quand TTL = 0 → paquet détruit.</p>
+
+    <h3>// Fonctionnement</h3>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Source crée paquet avec <strong>TTL initial</strong> (64, 128, ou 255 selon OS)</li>
+      <li>Chaque routeur reçoit le paquet, <strong>décrémente TTL de 1</strong></li>
+      <li>Si TTL > 0 → routeur forward le paquet</li>
+      <li>Si TTL = 0 → routeur <strong>détruit le paquet</strong> et envoie <strong>ICMP Type 11 (Time Exceeded)</strong> à la source</li>
+    </ol>
+
+    <h3>// Valeurs TTL par défaut selon OS</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Système</th><th>TTL initial</th></tr>
+        <tr><td>Windows</td><td>128</td></tr>
+        <tr><td>Linux / Android</td><td>64</td></tr>
+        <tr><td>macOS / iOS</td><td>64</td></tr>
+        <tr><td>Cisco IOS</td><td>255</td></tr>
+      </table>
+    </div>
+
+    <p><strong>Exemple :</strong> Tu ping Google depuis Windows (TTL=128). La réponse ping montre TTL=117 → le paquet a traversé <strong>128 - 117 = 11 routeurs</strong>.</p>
+
+    <div class="callout ok">
+      <span class="callout-icon">🛡️</span>
+      <div class="callout-body">
+        <strong>Pourquoi TTL existe</strong>
+        Empêcher les boucles de routage infinies. Si 2 routeurs mal configurés se renvoient un paquet en boucle → TTL finit par atteindre 0 → paquet détruit → pas de saturation réseau.
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. TRACEROUTE -->
+  <div class="section">
+    <div class="section-label">Découverte de chemin</div>
+    <h2>Traceroute — cartographier le chemin réseau</h2>
+
+    <p><strong>Traceroute</strong> (tracert sur Windows) = outil qui découvre le chemin pris par les paquets pour atteindre une destination.</p>
+
+    <h3>// Fonctionnement</h3>
+    <p><strong>Traceroute exploite le TTL et ICMP Type 11 (Time Exceeded) :</strong></p>
+
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Envoyer paquet avec <strong>TTL = 1</strong> → 1er routeur reçoit, décrémente (TTL=0), détruit, envoie <strong>ICMP Time Exceeded</strong> → on découvre 1er routeur</li>
+      <li>Envoyer paquet avec <strong>TTL = 2</strong> → traverse 1er routeur, 2e routeur décrémente (TTL=0), détruit, envoie Time Exceeded → on découvre 2e routeur</li>
+      <li>Envoyer paquet avec <strong>TTL = 3</strong> → découvrir 3e routeur</li>
+      <li>Continuer jusqu'à atteindre la destination (qui répond avec Echo Reply ou Port Unreachable)</li>
+    </ol>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--green)">C:\> tracert google.com</strong><br><br>
+      Détermination de l'itinéraire vers google.com [142.250.185.46]<br>
+      avec un maximum de 30 sauts :<br><br>
+
+      &nbsp;&nbsp;1    <1 ms    <1 ms    <1 ms  192.168.1.1      ← Gateway local<br>
+      &nbsp;&nbsp;2     2 ms     2 ms     2 ms  10.0.0.1         ← Routeur ISP<br>
+      &nbsp;&nbsp;3     8 ms     9 ms     8 ms  172.16.50.1      ← Routeur régional<br>
+      &nbsp;&nbsp;4    12 ms    11 ms    12 ms  142.250.185.46   ← Google (destination)<br><br>
+
+      Itinéraire déterminé.
+    </div>
+
+    <h3>// Traceroute Linux vs Windows</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>traceroute (Linux)</th><th>tracert (Windows)</th></tr>
+        <tr><td>Protocole</td><td>UDP vers port aléatoire élevé (33434+)</td><td>ICMP Echo Request</td></tr>
+        <tr><td>Détection destination</td><td>ICMP Port Unreachable</td><td>ICMP Echo Reply</td></tr>
+        <tr><td>Commande</td><td><code>traceroute google.com</code></td><td><code>tracert google.com</code></td></tr>
+      </table>
+    </div>
+
+    <h3>// Interpréter les résultats</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>* * *</strong> = Timeout. Routeur ne répond pas (ICMP bloqué ou routeur silencieux)</li>
+      <li><strong>Augmentation soudaine latence</strong> = Congestion ou lien lent à ce hop</li>
+      <li><strong>Perte de paquets intermittente</strong> = Problème de stabilité sur ce segment</li>
+    </ul>
+  </div>
+
+  <!-- 7. ICMPV6 -->
+  <div class="section">
+    <div class="section-label">Version IPv6</div>
+    <h2>ICMPv6 — différences avec ICMP IPv4</h2>
+
+    <p>ICMPv6 fonctionne comme ICMP mais avec des fonctionnalités supplémentaires pour IPv6.</p>
+
+    <h3>// Différences majeures</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Fonctionnalité</th><th>ICMP (IPv4)</th><th>ICMPv6</th></tr>
+        <tr><td>Echo Request/Reply</td><td>Type 8/0</td><td>Type 128/129</td></tr>
+        <tr><td>Destination Unreachable</td><td>Type 3</td><td>Type 1</td></tr>
+        <tr><td>Time Exceeded</td><td>Type 11</td><td>Type 3</td></tr>
+        <tr><td>Neighbor Discovery</td><td>❌ ARP (protocole séparé)</td><td>✅ Intégré ICMPv6 (Type 135/136)</td></tr>
+        <tr><td>Router Discovery</td><td>Protocole séparé</td><td>✅ Intégré ICMPv6 (Type 133/134)</td></tr>
+        <tr><td>Importance</td><td>Optionnel (souvent bloqué)</td><td>CRITIQUE (ne pas bloquer !)</td></tr>
+      </table>
+    </div>
+
+    <h3>// Messages ICMPv6 essentiels</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Type</th><th>Nom</th><th>Usage</th></tr>
+        <tr><td><strong>128</strong></td><td>Echo Request</td><td>Ping IPv6</td></tr>
+        <tr><td><strong>129</strong></td><td>Echo Reply</td><td>Réponse ping IPv6</td></tr>
+        <tr><td><strong>133</strong></td><td>Router Solicitation</td><td>Demande de Router Advertisement (SLAAC)</td></tr>
+        <tr><td><strong>134</strong></td><td>Router Advertisement</td><td>Annonce préfixe réseau (SLAAC)</td></tr>
+        <tr><td><strong>135</strong></td><td>Neighbor Solicitation</td><td>Équivalent ARP Request</td></tr>
+        <tr><td><strong>136</strong></td><td>Neighbor Advertisement</td><td>Équivalent ARP Reply</td></tr>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>CRITIQUE — Ne jamais bloquer ICMPv6</strong>
+        Contrairement à ICMP IPv4 (souvent bloqué), ICMPv6 est ESSENTIEL au fonctionnement d'IPv6 (Neighbor Discovery, Router Discovery, SLAAC...). Bloquer ICMPv6 = casser IPv6 !
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. CE QUI TROMPE LES CANDIDATS -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : Pas de ping = hôte down</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Pas de réponse ping peut signifier :<br>
+        - Pare-feu bloque ICMP<br>
+        - Routeur intermédiaire bloque ICMP<br>
+        - Hôte configuré pour ignorer ping<br>
+        - Hôte réellement down<br><br>
+        Toujours tester avec d'autres outils (telnet port 80, connexion HTTP...).
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : ICMP = protocole transport</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. ICMP est un protocole de <strong>couche 3</strong> (réseau), pas couche 4 (transport).<br>
+        ICMP utilise IP directement (IP protocol number = 1).
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : Confondre Type Echo Request/Reply</div>
+      <div class="trap-content">
+        <strong>ICMP IPv4 :</strong><br>
+        Type 8 = Echo Request (demande)<br>
+        Type 0 = Echo Reply (réponse)<br><br>
+        <strong>ICMPv6 :</strong><br>
+        Type 128 = Echo Request<br>
+        Type 129 = Echo Reply<br><br>
+        Ne pas inverser !
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #4 : TTL = durée de vie en secondes</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. TTL = nombre de <strong>sauts (hops)</strong>, pas de secondes.<br>
+        Décrémente de 1 à chaque routeur, pas en fonction du temps.
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. CE QUE COMPTIA PEUT TE POSER -->
+  <div class="section">
+    <div class="section-label">🎯 Questions types</div>
+    <h2>Ce que CompTIA peut te poser</h2>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #1 : Identification type ICMP</div>
+      <div class="comptia-content">
+        "Un administrateur exécute ping. Quel type ICMP est envoyé initialement ?"<br><br>
+        <strong>Réponse : Type 8 (Echo Request)</strong>
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #2 : Traceroute</div>
+      <div class="comptia-content">
+        "Comment traceroute découvre-t-il les routeurs intermédiaires ?"<br><br>
+        <strong>Réponse :</strong> En incrémentant le TTL (1, 2, 3...). Chaque routeur renvoie ICMP Type 11 (Time Exceeded) quand TTL=0, révélant son adresse IP.
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #3 : Destination Unreachable</div>
+      <div class="comptia-content">
+        "Un paquet ne peut pas atteindre l'hôte de destination. Quel message ICMP est retourné ?"<br><br>
+        <strong>Réponse : Type 3, Code 1 (Destination Host Unreachable)</strong>
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #4 : ICMPv6 vs ICMP</div>
+      <div class="comptia-content">
+        "Quelle est une différence majeure entre ICMP et ICMPv6 ?"<br><br>
+        <strong>Réponse :</strong> ICMPv6 intègre Neighbor Discovery (remplace ARP) et Router Discovery. ICMPv6 est essentiel au fonctionnement d'IPv6 (ne jamais bloquer).
+      </div>
+    </div>
+  </div>
+
+  <!-- 10. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">C'est quoi ICMP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Internet Control Message Protocol — protocole couche 3 pour messages d'erreur et diagnostics (ping, traceroute...)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">Quels sont les types ICMP pour ping ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Type <strong>8</strong> = Echo Request (demande)<br>Type <strong>0</strong> = Echo Reply (réponse)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">C'est quoi le TTL ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Time To Live — compteur décrémenté de 1 à chaque routeur. Quand TTL=0 → paquet détruit, ICMP Type 11 (Time Exceeded) renvoyé.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">Comment traceroute découvre les routeurs ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Envoie paquets avec TTL croissant (1, 2, 3...). Chaque routeur renvoie ICMP Time Exceeded (Type 11) quand TTL=0, révélant son IP.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">Question type examen : ICMP Type 3 Code 3 signifie quoi ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Destination Port Unreachable</strong> — le port de destination est fermé ou aucun service n'écoute sur ce port.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">Ping fonctionne mais pas de réponse. Causes possibles ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">1) Pare-feu bloque ICMP<br>2) Hôte configuré pour ignorer ping<br>3) Routeur intermédiaire bloque ICMP<br>→ Tester autre protocole (HTTP, telnet...)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">Quelle différence majeure entre ICMP et ICMPv6 ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">ICMPv6 intègre Neighbor Discovery (remplace ARP) et Router Discovery. ICMPv6 = ESSENTIEL pour IPv6 (ne jamais bloquer).</div>
+  </div>
+
+  <!-- 11. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span>ICMP = protocole couche 3 pour messages d'erreur et diagnostics (ping, traceroute)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Ping : Type 8 (Echo Request) → Type 0 (Echo Reply). Teste connectivité IP.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>TTL = compteur de sauts (pas de secondes). Décrémente de 1 par routeur. TTL=0 → paquet détruit.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Traceroute : incrémente TTL (1, 2, 3...), chaque routeur renvoie ICMP Type 11 (Time Exceeded)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Type 3 = Destination Unreachable (+ Code pour précision : 1=Host, 3=Port, 4=Frag needed)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>ICMPv6 : Type 128/129 pour ping, intègre Neighbor/Router Discovery. NE JAMAIS BLOQUER.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Pas de ping ≠ hôte down (pare-feu ICMP fréquent)</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 22 : IPv6 configuration</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">C23 · Phase 4</span>
+    <a class="nav-btn next" href="#">Cours 24 : TCP →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_c23_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>
