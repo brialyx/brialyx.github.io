@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 25 — UDP · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .vocab { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; }
+  .vocab-term { font-family: 'IBM Plex Mono', monospace; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .comptia-box { background: rgba(251,191,36,0.05); border: 2px solid var(--amber); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .comptia-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--amber); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .comptia-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Phase 4 — Protocoles</span> &nbsp;›&nbsp; Cours 25</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 4 · C25</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡☆ Moyen</span>
+  </div>
+
+  <h1><span>UDP</span> — Protocole sans connexion</h1>
+  <span class="tagline">// User Datagram Protocol — rapide, simple, sans garantie de livraison</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends les caractéristiques d'UDP</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais les cas d'usage d'UDP</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise TCP vs UDP</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. C'EST QUOI -->
+  <div class="section">
+    <div class="section-label">Avant de commencer</div>
+    <h2>C'est quoi UDP — protocole sans connexion</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">📮</span>
+      <div class="callout-body">
+        <strong>Analogie — envoyer une carte postale</strong>
+        UDP = envoyer une carte postale. Tu écris, tu envoies, tu ne sais pas si elle arrive, dans quel ordre, ni si elle est perdue. Rapide mais sans garantie.<br><br>
+        TCP = appel téléphonique. Tu confirmes la connexion, tu sais que chaque mot arrive, dans l'ordre. Lent mais fiable.
+      </div>
+    </div>
+
+    <p><strong>UDP (User Datagram Protocol)</strong> est un protocole de <strong>couche 4 (transport)</strong> qui envoie des données <strong>sans établir de connexion</strong> et <strong>sans garantie de livraison</strong>.</p>
+
+    <h3>// Philosophie UDP</h3>
+    <p><strong>"Tire et oublie"</strong> (fire and forget) :</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Pas de handshake (envoie directement)</li>
+      <li>Pas d'accusé de réception (ACK)</li>
+      <li>Pas de retransmission si perte</li>
+      <li>Pas de garantie d'ordre</li>
+      <li>Overhead minimal → rapide et efficace</li>
+    </ul>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen Network+</strong>
+        CompTIA teste : différence TCP vs UDP (tableau comparatif), cas d'usage UDP (streaming, VoIP, DNS, DHCP), en-tête UDP (8 octets), pourquoi choisir UDP plutôt que TCP. Question très fréquente : "Quel protocole pour streaming vidéo ?" → UDP
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. CARACTÉRISTIQUES -->
+  <div class="section">
+    <div class="section-label">Propriétés</div>
+    <h2>Caractéristiques d'UDP — simple et rapide</h2>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Caractéristique</th><th>UDP</th><th>Impact</th></tr>
+        <tr><td><strong>Sans connexion</strong></td><td>Pas de handshake</td><td>✅ Latence minimale</td></tr>
+        <tr><td><strong>Non fiable</strong></td><td>Pas de retransmission</td><td>⚠️ Paquets peuvent être perdus</td></tr>
+        <tr><td><strong>Pas d'ordre garanti</strong></td><td>Paquets arrivent dans n'importe quel ordre</td><td>⚠️ Application doit gérer</td></tr>
+        <tr><td><strong>En-tête léger</strong></td><td>8 octets seulement</td><td>✅ Overhead minimal</td></tr>
+        <tr><td><strong>Rapide</strong></td><td>Pas de mécanismes lourds</td><td>✅ Faible latence</td></tr>
+        <tr><td><strong>Broadcast/Multicast</strong></td><td>Supporté nativement</td><td>✅ Diffusion efficace</td></tr>
+      </table>
+    </div>
+
+    <h3>// En-tête UDP (8 octets seulement)</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      0                   1                   2                   3<br>
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1<br>
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+<br>
+      |          Source Port          |       Destination Port        |<br>
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+<br>
+      |            Length             |           Checksum            |<br>
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+<br>
+      |                         Data (variable)                       |<br>
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    </div>
+
+    <p><strong>4 champs seulement :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Source Port (16 bits)</strong> : Port source (0-65535)</li>
+      <li><strong>Destination Port (16 bits)</strong> : Port destination</li>
+      <li><strong>Length (16 bits)</strong> : Taille totale du datagramme UDP (en-tête + données)</li>
+      <li><strong>Checksum (16 bits)</strong> : Vérification d'intégrité (optionnel en IPv4, obligatoire en IPv6)</li>
+    </ul>
+
+    <div class="callout ok">
+      <span class="callout-icon">⚡</span>
+      <div class="callout-body">
+        <strong>Comparaison overhead</strong>
+        <strong>UDP :</strong> 8 octets d'en-tête → minimal<br>
+        <strong>TCP :</strong> 20-60 octets d'en-tête → lourd (SEQ, ACK, flags, window...)<br><br>
+        UDP = 2,5× à 7,5× moins d'overhead que TCP !
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. CAS D'USAGE -->
+  <div class="section">
+    <div class="section-label">Applications</div>
+    <h2>Quand utiliser UDP — cas d'usage typiques</h2>
+
+    <p>UDP est idéal quand <strong>vitesse > fiabilité</strong> ou quand l'application gère elle-même la fiabilité.</p>
+
+    <h3>// 1. Streaming vidéo / audio</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Exemples :</strong> Netflix, YouTube, Twitch, appels vidéo</li>
+      <li><strong>Pourquoi UDP :</strong> Perdre 1-2% de paquets = acceptable (micro-coupure imperceptible). Retransmettre prendrait trop de temps → décalage/lag.</li>
+      <li><strong>Principe :</strong> Mieux vaut avancer que d'attendre les paquets perdus. Le cerveau humain "comble" les petites pertes.</li>
+    </ul>
+
+    <h3>// 2. VoIP (Voice over IP)</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Exemples :</strong> Skype, Zoom audio, téléphonie IP</li>
+      <li><strong>Pourquoi UDP :</strong> Latence critique (<150ms). Retransmettre un paquet vocal perdu = inutile (déjà trop tard).</li>
+      <li><strong>Protocoles :</strong> RTP (Real-time Transport Protocol) sur UDP</li>
+    </ul>
+
+    <h3>// 3. DNS (Domain Name System)</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Port :</strong> UDP 53</li>
+      <li><strong>Pourquoi UDP :</strong> Requêtes courtes (1 paquet). Handshake TCP = overhead inutile. Si pas de réponse → re-envoyer la requête (application gère).</li>
+      <li><strong>Exception :</strong> Transfert de zone DNS (AXFR) utilise TCP pour fiabilité</li>
+    </ul>
+
+    <h3>// 4. DHCP (Dynamic Host Configuration Protocol)</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Ports :</strong> UDP 67 (serveur), UDP 68 (client)</li>
+      <li><strong>Pourquoi UDP :</strong> Client n'a pas encore d'IP → impossible d'établir connexion TCP ! Broadcast UDP sur réseau local.</li>
+    </ul>
+
+    <h3>// 5. Jeux en ligne (FPS, MOBA)</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Exemples :</strong> CS:GO, Valorant, League of Legends</li>
+      <li><strong>Pourquoi UDP :</strong> Latence ultra-critique (<50ms). Position d'un joueur il y a 200ms = inutile. Mieux vaut perdre 1 paquet que d'attendre retransmission.</li>
+    </ul>
+
+    <h3>// 6. TFTP (Trivial File Transfer Protocol)</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Port :</strong> UDP 69</li>
+      <li><strong>Pourquoi UDP :</strong> Transfert de fichiers simples (firmware, config réseau). TFTP implémente sa propre fiabilité au-dessus d'UDP.</li>
+    </ul>
+
+    <h3>// 7. SNMP (Simple Network Management Protocol)</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Port :</strong> UDP 161</li>
+      <li><strong>Pourquoi UDP :</strong> Requêtes de monitoring fréquentes. TCP overhead trop lourd pour milliers de requêtes/sec.</li>
+    </ul>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>À retenir pour l'examen</strong>
+        UDP = streaming, VoIP, DNS, DHCP, jeux, TFTP, SNMP<br>
+        TCP = HTTP, HTTPS, FTP, SMTP, SSH<br><br>
+        Question type : "Quel protocole transport pour streaming vidéo ?" → <strong>UDP</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. TCP VS UDP -->
+  <div class="section">
+    <div class="section-label">Comparaison</div>
+    <h2>TCP vs UDP — tableau comparatif complet</h2>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>TCP</th><th>UDP</th></tr>
+        <tr><td><strong>Connexion</strong></td><td>✅ Orienté connexion (3-way handshake)</td><td>❌ Sans connexion</td></tr>
+        <tr><td><strong>Fiabilité</strong></td><td>✅ Garanti (retransmission)</td><td>❌ Non garanti</td></tr>
+        <tr><td><strong>Ordre</strong></td><td>✅ Paquets ordonnés</td><td>❌ Pas d'ordre</td></tr>
+        <tr><td><strong>Contrôle flux</strong></td><td>✅ Fenêtrage</td><td>❌ Non</td></tr>
+        <tr><td><strong>Contrôle congestion</strong></td><td>✅ Oui</td><td>❌ Non</td></tr>
+        <tr><td><strong>En-tête</strong></td><td>20-60 octets</td><td>8 octets</td></tr>
+        <tr><td><strong>Vitesse</strong></td><td>⚠️ Plus lent</td><td>✅ Plus rapide</td></tr>
+        <tr><td><strong>Overhead</strong></td><td>⚠️ Élevé</td><td>✅ Minimal</td></tr>
+        <tr><td><strong>Broadcast/Multicast</strong></td><td>❌ Non supporté</td><td>✅ Supporté</td></tr>
+        <tr><td><strong>Usage</strong></td><td>HTTP, FTP, SMTP, SSH</td><td>DNS, DHCP, streaming, VoIP</td></tr>
+        <tr><td><strong>Quand utiliser</strong></td><td>Fiabilité critique</td><td>Vitesse critique</td></tr>
+      </table>
+    </div>
+
+    <h3>// Choisir TCP ou UDP ?</h3>
+
+    <p><strong>Utiliser TCP quand :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Données doivent arriver complètes et dans l'ordre</li>
+      <li>Perte de données = inacceptable (transfert fichier, email, page web)</li>
+      <li>Latence pas critique</li>
+    </ul>
+
+    <p><strong>Utiliser UDP quand :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Vitesse > fiabilité</li>
+      <li>Petite perte acceptable (streaming, VoIP)</li>
+      <li>Requête/réponse simple (DNS)</li>
+      <li>Broadcast/multicast nécessaire</li>
+      <li>Application gère elle-même la fiabilité (TFTP, QUIC)</li>
+    </ul>
+  </div>
+
+  <!-- 5. CE QUI TROMPE LES CANDIDATS -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : UDP = non fiable = mauvais</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. UDP n'est pas "mauvais", il est adapté à certains usages.<br><br>
+        Pour streaming/VoIP → UDP = meilleur choix. TCP serait pire (latence, retransmissions inutiles).<br><br>
+        Non fiable ≠ mauvais. C'est un choix de design adapté.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : UDP n'a pas de checksum</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. UDP a un champ Checksum (16 bits) pour vérifier l'intégrité.<br><br>
+        <strong>IPv4 :</strong> Checksum optionnel (peut être 0)<br>
+        <strong>IPv6 :</strong> Checksum obligatoire<br><br>
+        Si checksum invalide → paquet silencieusement détruit (pas de notification).
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : DNS utilise toujours UDP</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. DNS utilise majoritairement UDP 53, MAIS :<br><br>
+        <strong>UDP 53 :</strong> Requêtes standard (plus rapide)<br>
+        <strong>TCP 53 :</strong> Transfert de zone (AXFR), réponses >512 octets, DNS over TLS<br><br>
+        Si réponse DNS >512 octets (trop grande pour UDP) → client refait la requête en TCP.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #4 : UDP plus rapide car pas de checksum</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. UDP rapide car :<br>
+        - Pas de handshake<br>
+        - Pas d'ACK<br>
+        - Pas de retransmission<br>
+        - Pas de fenêtrage<br>
+        - En-tête léger (8 vs 20+ octets)<br><br>
+        Le checksum (présent) n'est pas la raison de la vitesse.
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. CE QUE COMPTIA PEUT TE POSER -->
+  <div class="section">
+    <div class="section-label">🎯 Questions types</div>
+    <h2>Ce que CompTIA peut te poser</h2>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #1 : Choix protocole</div>
+      <div class="comptia-content">
+        "Une entreprise veut déployer une solution de visioconférence. Quel protocole transport utiliser ?"<br><br>
+        <strong>Réponse : UDP</strong><br>
+        VoIP/vidéo = latence critique, petite perte acceptable. UDP optimal.
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #2 : Différence TCP vs UDP</div>
+      <div class="comptia-content">
+        "Quelle est la principale différence entre TCP et UDP ?"<br><br>
+        <strong>Réponse :</strong> TCP est orienté connexion et fiable (garantit livraison). UDP est sans connexion et non fiable (pas de garantie).
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #3 : Taille en-tête</div>
+      <div class="comptia-content">
+        "Quelle est la taille de l'en-tête UDP ?"<br><br>
+        <strong>Réponse : 8 octets</strong> (vs 20-60 octets pour TCP)
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #4 : Cas d'usage DNS</div>
+      <div class="comptia-content">
+        "Pourquoi DNS utilise-t-il principalement UDP plutôt que TCP ?"<br><br>
+        <strong>Réponse :</strong> Requêtes DNS courtes (1 paquet). Handshake TCP = overhead inutile. UDP plus rapide pour requête/réponse simple.
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">C'est quoi UDP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">User Datagram Protocol — protocole couche 4 sans connexion, non fiable, rapide. Pas de handshake, pas d'ACK, pas de retransmission.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">Quelle est la taille de l'en-tête UDP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>8 octets</strong> (Source Port, Dest Port, Length, Checksum)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">UDP est-il plus rapide ou plus lent que TCP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Plus rapide</strong>. Pas de handshake, pas d'ACK, pas de retransmission, overhead minimal.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">Cite 3 applications qui utilisent UDP</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">1) DNS (port 53)<br>2) DHCP (ports 67/68)<br>3) Streaming vidéo / VoIP<br>(Aussi : jeux, TFTP, SNMP)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">Question type examen : Quel protocole pour streaming vidéo en direct ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>UDP</strong>. Latence critique, petite perte acceptable. TCP trop lent (retransmissions inutiles).</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">UDP garantit-il la livraison des paquets ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Non</strong> ❌. UDP = non fiable. Pas de retransmission si perte. C'est à l'application de gérer si nécessaire.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">DNS utilise-t-il toujours UDP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Non</strong>. Principalement UDP 53, mais utilise TCP 53 pour : transfert de zone (AXFR), réponses >512 octets, DNS over TLS.</div>
+  </div>
+
+  <!-- 8. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span>UDP = couche 4, sans connexion, non fiable, rapide, overhead minimal (8 octets en-tête)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Pas de handshake, pas d'ACK, pas de retransmission, pas de garantie d'ordre</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>UDP plus rapide que TCP mais pas fiable. Choix = vitesse > fiabilité</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Cas d'usage : streaming, VoIP, DNS, DHCP, jeux, TFTP, SNMP</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Supporte broadcast/multicast (TCP non)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Checksum présent (obligatoire IPv6, optionnel IPv4)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>DNS majoritairement UDP, mais TCP pour transfert zone et réponses >512 octets</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 24 : TCP</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">C25 · Phase 4</span>
+    <a class="nav-btn next" href="#">Cours 26 : Ports et numéros →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_c25_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>
