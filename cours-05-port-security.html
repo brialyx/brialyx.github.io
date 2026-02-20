@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I05 — Port Security · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .comptia-box { background: rgba(251,191,36,0.05); border: 2px solid var(--amber); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .comptia-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--amber); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .comptia-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 2.0 — Implémentation</span> &nbsp;›&nbsp; Cours 5</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Module 2.0 · I05</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-lab">🧪 LAB</span>
+    <span class="pill pill-diff">⚡⚡⚡ Difficile</span>
+  </div>
+
+  <h1><span>Port Security</span></h1>
+  <span class="tagline">// Sticky MAC, violation modes (shutdown/restrict/protect), max MAC addresses</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends le problème des MAC attacks</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise Sticky MAC</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais les 3 violation modes</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je sais récupérer un port err-disabled</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. PROBLÈME -->
+  <div class="section">
+    <div class="section-label">Avant de commencer</div>
+    <h2>Le problème — MAC flooding et accès non autorisé</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🚪</span>
+      <div class="callout-body">
+        <strong>Analogie — badge d'accès bureau</strong>
+        Dans une entreprise, chaque porte accepte SEULEMENT les badges autorisés. Si quelqu'un branche son propre PC (badge non autorisé), la porte devrait le bloquer. Port Security = système de badge pour les ports switch.
+      </div>
+    </div>
+
+    <p><strong>Par défaut</strong>, un port switch accepte <strong>TOUTES les adresses MAC</strong>. Problèmes :</p>
+
+    <h3>// Attaque 1 : MAC Flooding</h3>
+    <p>Attaquant envoie milliers de trames avec MACs sources différentes → sature la table MAC du switch (CAM table) → switch bascule en mode hub (flooding) → attaquant peut sniffer tout le trafic.</p>
+
+    <h3>// Attaque 2 : Accès non autorisé</h3>
+    <p>Utilisateur branche son propre PC/laptop sur port prévu pour imprimante/téléphone IP → obtient accès réseau non autorisé.</p>
+
+    <h3>// Attaque 3 : MAC spoofing</h3>
+    <p>Attaquant change sa MAC pour usurper identité d'un appareil légitime.</p>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Switch non protégé = vulnérable</strong>
+        Sans Port Security, n'importe qui peut brancher n'importe quoi sur n'importe quel port. Sécurité physique = première ligne de défense, mais pas suffisante (employés malveillants, visiteurs, nettoyage...).
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. C'EST QUOI PORT SECURITY -->
+  <div class="section">
+    <div class="section-label">Concept</div>
+    <h2>Port Security — limiter les MACs autorisées</h2>
+
+    <p><strong>Port Security</strong> = fonctionnalité switch qui limite quelles adresses MAC peuvent communiquer sur un port.</p>
+
+    <h3>// Principe</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Définir <strong>nombre maximum de MACs</strong> autorisées sur port</li>
+      <li>Définir <strong>quelles MACs spécifiques</strong> sont autorisées (statique ou apprentissage)</li>
+      <li>Définir <strong>action</strong> si violation (shutdown/restrict/protect)</li>
+      <li>Si MAC non autorisée détectée → <strong>violation</strong> déclenchée</li>
+    </ul>
+
+    <h3>// Cas d'usage</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Ports utilisateurs</strong> : Limiter à 1-2 MACs (PC + téléphone IP)</li>
+      <li><strong>Ports salles de réunion</strong> : Bloquer tout changement (MAC statique)</li>
+      <li><strong>Ports serveurs</strong> : Autoriser uniquement MAC serveur légitime</li>
+      <li><strong>Ports imprimantes</strong> : Bloquer connexion autres équipements</li>
+    </ul>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen Network+</strong>
+        CompTIA teste : différence sticky/static/dynamic, 3 violation modes (shutdown/restrict/protect), commandes show, récupération err-disabled, max MAC addresses. Question TRÈS fréquente : "Port désactivé après branchement nouveau PC, pourquoi ?"
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. CONFIGURATION DE BASE -->
+  <div class="section">
+    <div class="section-label">Configuration</div>
+    <h2>Activer Port Security — étape par étape</h2>
+
+    <p><strong>Prérequis :</strong> Port Security fonctionne UNIQUEMENT sur ports <strong>access</strong> (pas trunk).</p>
+
+    <h3>// Configuration minimale Cisco</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--green)"># 1. Configurer port en mode access</strong><br>
+      Switch(config)# interface GigabitEthernet0/1<br>
+      Switch(config-if)# switchport mode access<br><br>
+
+      <strong style="color:var(--accent)"># 2. Activer Port Security</strong><br>
+      Switch(config-if)# switchport port-security<br><br>
+
+      <strong style="color:var(--amber)"># 3. (Optionnel) Configurer paramètres</strong><br>
+      Switch(config-if)# switchport port-security maximum 2<br>
+      Switch(config-if)# switchport port-security violation shutdown<br>
+      Switch(config-if)# switchport port-security mac-address sticky<br>
+      Switch(config-if)# exit
+    </div>
+
+    <h3>// Valeurs par défaut</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Paramètre</th><th>Valeur par défaut</th></tr>
+        <tr><td><strong>Maximum MACs</strong></td><td>1</td></tr>
+        <tr><td><strong>Violation mode</strong></td><td>shutdown</td></tr>
+        <tr><td><strong>Apprentissage MAC</strong></td><td>dynamic (pas sauvegardé)</td></tr>
+        <tr><td><strong>Aging</strong></td><td>Désactivé</td></tr>
+      </table>
+    </div>
+
+    <h3>// Vérification</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Switch# show port-security interface GigabitEthernet0/1<br>
+      Port Security              : Enabled<br>
+      Port Status                : Secure-up<br>
+      Violation Mode             : Shutdown<br>
+      Maximum MAC Addresses      : 2<br>
+      Total MAC Addresses        : 1<br>
+      Configured MAC Addresses   : 0<br>
+      Sticky MAC Addresses       : 1<br>
+      Security Violation Count   : 0
+    </div>
+  </div>
+
+  <!-- 4. STICKY MAC -->
+  <div class="section">
+    <div class="section-label">Apprentissage automatique</div>
+    <h2>Sticky MAC — apprendre et sauvegarder</h2>
+
+    <p><strong>Sticky MAC</strong> = switch apprend automatiquement les MACs et les <strong>sauvegarde dans running-config</strong>.</p>
+
+    <h3>// 3 modes d'apprentissage MAC</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Mode</th><th>Apprentissage</th><th>Sauvegarde</th><th>Usage</th></tr>
+        <tr>
+          <td><strong>Static</strong></td>
+          <td>❌ Manuel (admin config)</td>
+          <td>✅ Dans config</td>
+          <td>Haute sécurité (serveurs critiques)</td>
+        </tr>
+        <tr>
+          <td><strong>Dynamic</strong></td>
+          <td>✅ Auto (première MAC vue)</td>
+          <td>❌ Perdu au reboot</td>
+          <td>Par défaut (temporaire)</td>
+        </tr>
+        <tr>
+          <td><strong>Sticky</strong></td>
+          <td>✅ Auto (comme dynamic)</td>
+          <td>✅ Dans running-config</td>
+          <td>Recommandé (auto + persistant)</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>// Configuration Sticky MAC</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Switch(config)# interface GigabitEthernet0/1<br>
+      Switch(config-if)# switchport mode access<br>
+      Switch(config-if)# switchport port-security<br>
+      Switch(config-if)# switchport port-security mac-address sticky<br>
+      Switch(config-if)# switchport port-security maximum 2<br>
+      Switch(config-if)# exit
+    </div>
+
+    <h3>// Fonctionnement</h3>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>PC branché envoie première trame</li>
+      <li>Switch apprend MAC source automatiquement</li>
+      <li>Switch ajoute MAC dans <strong>running-config</strong> (commande automatique)</li>
+      <li>Faire <code>copy run start</code> pour sauvegarder définitivement</li>
+    </ol>
+
+    <h3>// Vérification running-config</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Switch# show running-config interface GigabitEthernet0/1<br>
+      interface GigabitEthernet0/1<br>
+       switchport mode access<br>
+       switchport port-security<br>
+       switchport port-security maximum 2<br>
+       switchport port-security mac-address sticky<br>
+       switchport port-security mac-address sticky 0011.2233.4455<br>
+       ← MAC apprise automatiquement ajoutée !
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">✅</span>
+      <div class="callout-body">
+        <strong>Sticky MAC = recommandé</strong>
+        Combine avantages : apprentissage automatique (pas de config manuelle) + persistance (survit reboot). Best practice pour la plupart des ports utilisateurs.
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. MAX MAC ADDRESSES -->
+  <div class="section">
+    <div class="section-label">Limitation</div>
+    <h2>Maximum MAC addresses — combien autoriser ?</h2>
+
+    <p><strong>Maximum MAC addresses</strong> = nombre maximum de MACs différentes autorisées sur le port.</p>
+
+    <h3>// Configuration</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Switch(config-if)# switchport port-security maximum 3<br>
+      (Autorise jusqu'à 3 MACs différentes)
+    </div>
+
+    <h3>// Scénarios typiques</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Cas d'usage</th><th>Max recommandé</th><th>Explication</th></tr>
+        <tr><td><strong>PC seul</strong></td><td>1</td><td>Utilisateur avec 1 PC fixe</td></tr>
+        <tr><td><strong>PC + téléphone IP</strong></td><td>2</td><td>Poste de travail typique</td></tr>
+        <tr><td><strong>PC + tél. + imprimante</strong></td><td>3</td><td>Petit bureau partagé</td></tr>
+        <tr><td><strong>Salle réunion</strong></td><td>5-10</td><td>Plusieurs laptops visiteurs</td></tr>
+        <tr><td><strong>Serveur NIC teaming</strong></td><td>2-4</td><td>Plusieurs MACs virtuelles</td></tr>
+      </table>
+    </div>
+
+    <h3>// Que se passe-t-il si dépassement ?</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Port configuré : maximum 2<br>
+      MACs apprises : 00:11:22:33:44:55, AA:BB:CC:DD:EE:FF<br><br>
+
+      <strong style="color:var(--red)">3ème MAC détectée : 99:88:77:66:55:44</strong><br>
+      → <strong style="color:var(--red)">VIOLATION !</strong> Action selon violation mode.
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Attention à la valeur</strong>
+        Maximum trop bas (1) = problème si téléphone IP + PC. Maximum trop haut (50) = pas de protection contre MAC flooding. Analyser besoins réels par port.
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. VIOLATION MODES -->
+  <div class="section">
+    <div class="section-label">Actions de violation</div>
+    <h2>Violation modes — 3 réactions possibles</h2>
+
+    <p><strong>Violation</strong> = détection MAC non autorisée ou dépassement maximum. Switch réagit selon <strong>violation mode</strong> configuré.</p>
+
+    <h3>// 1. Shutdown (par défaut)</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Switch(config-if)# switchport port-security violation shutdown
+    </div>
+
+    <p><strong>Comportement :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Port passe en état <strong>err-disabled</strong> (désactivé administrativement)</li>
+      <li>LED port éteinte ou orange</li>
+      <li>Trafic complètement bloqué</li>
+      <li>Log SNMP trap + syslog message envoyé</li>
+      <li>Violation count incrémenté</li>
+      <li><strong>Intervention admin obligatoire</strong> pour réactiver port</li>
+    </ul>
+
+    <p><strong>Usage :</strong> Haute sécurité. Alerter immédiatement admin d'une anomalie.</p>
+
+    <h3>// 2. Restrict</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Switch(config-if)# switchport port-security violation restrict
+    </div>
+
+    <p><strong>Comportement :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Port reste <strong>actif</strong> (pas err-disabled)</li>
+      <li>Trames avec MACs non autorisées sont <strong>droppées</strong></li>
+      <li>Trames avec MACs autorisées passent normalement</li>
+      <li>Log SNMP trap + syslog message envoyé</li>
+      <li>Violation count incrémenté</li>
+      <li>Pas d'intervention admin nécessaire</li>
+    </ul>
+
+    <p><strong>Usage :</strong> Sécurité moyenne. Logger violations mais maintenir connectivité équipements légitimes.</p>
+
+    <h3>// 3. Protect</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Switch(config-if)# switchport port-security violation protect
+    </div>
+
+    <p><strong>Comportement :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Port reste <strong>actif</strong></li>
+      <li>Trames avec MACs non autorisées sont <strong>droppées silencieusement</strong></li>
+      <li>Trames avec MACs autorisées passent normalement</li>
+      <li>❌ <strong>Aucun log</strong></li>
+      <li>❌ <strong>Aucune alerte</strong></li>
+      <li>Violation count <strong>PAS</strong> incrémenté</li>
+    </ul>
+
+    <p><strong>Usage :</strong> Sécurité de base. Bloquer silencieusement sans alerter attaquant ou surcharger logs.</p>
+
+    <h3>// Comparaison violation modes</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Mode</th><th>Port</th><th>Drop MACs</th><th>Logs</th><th>Counter</th><th>Admin</th></tr>
+        <tr>
+          <td><strong>Shutdown</strong></td>
+          <td>❌ Err-disabled</td>
+          <td>✅ Toutes</td>
+          <td>✅ Oui</td>
+          <td>✅ Oui</td>
+          <td>⚠️ Requise</td>
+        </tr>
+        <tr>
+          <td><strong>Restrict</strong></td>
+          <td>✅ Actif</td>
+          <td>⚠️ Non autorisées</td>
+          <td>✅ Oui</td>
+          <td>✅ Oui</td>
+          <td>✅ Pas requise</td>
+        </tr>
+        <tr>
+          <td><strong>Protect</strong></td>
+          <td>✅ Actif</td>
+          <td>⚠️ Non autorisées</td>
+          <td>❌ Non</td>
+          <td>❌ Non</td>
+          <td>✅ Pas requise</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Question type examen</strong>
+        "Admin veut bloquer MACs non autorisées MAIS maintenir service pour équipements légitimes ET logger violations. Quel mode ?"<br><br>
+        <strong>Réponse : Restrict</strong><br><br>
+        Shutdown = trop sévère (coupe tout)<br>
+        Protect = pas de logs
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. ERR-DISABLED RECOVERY -->
+  <div class="section">
+    <div class="section-label">Récupération</div>
+    <h2>Err-disabled recovery — réactiver un port</h2>
+
+    <p>Quand violation mode = <strong>shutdown</strong>, port passe en <strong>err-disabled</strong>. Il faut intervention manuelle.</p>
+
+    <h3>// Méthode 1 : Manuelle (recommandée)</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--green)"># 1. Vérifier la cause</strong><br>
+      Switch# show port-security interface Gi0/1<br>
+      Security Violation Count : 1<br><br>
+
+      <strong style="color:var(--accent)"># 2. Débrancher équipement non autorisé</strong><br>
+      (Action physique)<br><br>
+
+      <strong style="color:var(--amber)"># 3. Réactiver le port</strong><br>
+      Switch(config)# interface GigabitEthernet0/1<br>
+      Switch(config-if)# shutdown<br>
+      Switch(config-if)# no shutdown<br>
+      Switch(config-if)# exit
+    </div>
+
+    <h3>// Méthode 2 : Automatique (errdisable recovery)</h3>
+    <p>Switch réactive automatiquement port après délai configurable.</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--green)"># Activer recovery automatique pour psecure-violation</strong><br>
+      Switch(config)# errdisable recovery cause psecure-violation<br><br>
+
+      <strong style="color:var(--accent)"># Configurer délai (défaut 300 secondes = 5 min)</strong><br>
+      Switch(config)# errdisable recovery interval 180<br>
+      (180 secondes = 3 minutes)<br><br>
+
+      <strong style="color:var(--amber)"># Vérifier</strong><br>
+      Switch# show errdisable recovery<br>
+      psecure-violation    Yes      180 seconds
+    </div>
+
+    <h3>// Vérifier état port</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Switch# show interfaces status<br>
+      Port      Status       Vlan       Duplex  Speed<br>
+      Gi0/1     err-disabled 10         auto    auto<br>
+      ← Port désactivé par violation
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Attention auto-recovery</strong>
+        Auto-recovery pratique MAIS risque : si équipement malveillant toujours branché, port se réactive automatiquement → nouvelle violation immédiate. Méthode manuelle = plus sûre (force investigation).
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. AGING -->
+  <div class="section">
+    <div class="section-label">Vieillissement MAC</div>
+    <h2>Aging — expiration automatique des MACs</h2>
+
+    <p><strong>Aging</strong> = suppression automatique des MACs apprises après durée d'inactivité.</p>
+
+    <h3>// Pourquoi activer aging ?</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Salle de réunion : laptops visiteurs changent souvent</li>
+      <li>Ports partagés : remplacer équipement sans intervention admin</li>
+      <li>Libérer slots MAC si maximum atteint</li>
+    </ul>
+
+    <h3>// Configuration</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--green)"># Activer aging + durée (en minutes)</strong><br>
+      Switch(config-if)# switchport port-security aging time 10<br>
+      (10 minutes d'inactivité = suppression MAC)<br><br>
+
+      <strong style="color:var(--accent)"># Type d'aging</strong><br>
+      Switch(config-if)# switchport port-security aging type inactivity<br>
+      (absolute = temps écoulé depuis apprentissage)<br>
+      (inactivity = temps sans trafic de cette MAC)
+    </div>
+
+    <h3>// Types d'aging</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Type</th><th>Déclencheur</th><th>Usage</th></tr>
+        <tr>
+          <td><strong>Absolute</strong></td>
+          <td>Temps depuis apprentissage</td>
+          <td>Sessions limitées dans le temps</td>
+        </tr>
+        <tr>
+          <td><strong>Inactivity</strong></td>
+          <td>Temps sans trafic de cette MAC</td>
+          <td>Libérer slot si équipement débranché</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>Aging = flexibilité</strong>
+        Ports fixes (serveurs, imprimantes) → pas d'aging<br>
+        Ports temporaires (salles réunion, visiteurs) → aging avec inactivity type
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. CE QUI TROMPE LES CANDIDATS -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : Sticky = statique</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Sticky ≠ Static.<br><br>
+        <strong>Static</strong> : Admin configure MAC manuellement<br>
+        <strong>Sticky</strong> : Switch apprend MAC auto ET sauvegarde dans config<br>
+        <strong>Dynamic</strong> : Switch apprend auto MAIS ne sauvegarde pas
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : Restrict = aucun log</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>.<br>
+        <strong>Restrict</strong> : Logs + counter incrémenté<br>
+        <strong>Protect</strong> : AUCUN log ni counter<br><br>
+        Ne pas confondre !
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : Port Security fonctionne sur trunk</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Port Security = <strong>ports access UNIQUEMENT</strong>.<br><br>
+        Si port = trunk → commande refusée.<br>
+        Configurer <code>switchport mode access</code> d'abord !
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #4 : Err-disabled auto-récupère sans config</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Par défaut, err-disabled = <strong>intervention manuelle obligatoire</strong>.<br><br>
+        Auto-recovery nécessite : <code>errdisable recovery cause psecure-violation</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10. CE QUE COMPTIA PEUT TE POSER -->
+  <div class="section">
+    <div class="section-label">🎯 Questions types</div>
+    <h2>Ce que CompTIA peut te poser</h2>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #1 : Port err-disabled</div>
+      <div class="comptia-content">
+        "Un port devient err-disabled après branchement nouveau PC. Quelle est la cause probable ?"<br><br>
+        <strong>Réponse : Violation Port Security</strong> (mode shutdown)<br>
+        Port configuré avec Port Security, maximum MACs atteint ou MAC non autorisée détectée.
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #2 : Apprentissage MAC persistant</div>
+      <div class="comptia-content">
+        "Admin veut que switch apprenne MACs automatiquement ET les sauvegarde dans config. Quelle commande ?"<br><br>
+        <strong>Réponse : <code>switchport port-security mac-address sticky</code></strong>
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #3 : Violation avec logs mais pas shutdown</div>
+      <div class="comptia-content">
+        "Admin veut bloquer MACs non autorisées, maintenir service équipements légitimes, ET logger violations. Quel violation mode ?"<br><br>
+        <strong>Réponse : Restrict</strong><br>
+        Shutdown = trop sévère (coupe tout), Protect = pas de logs
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #4 : Maximum MACs PC + téléphone</div>
+      <div class="comptia-content">
+        "Port utilisateur avec PC + téléphone IP. Quelle valeur maximum configurer ?"<br><br>
+        <strong>Réponse : 2</strong> (1 MAC par équipement)
+      </div>
+    </div>
+  </div>
+
+  <!-- 11. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">C'est quoi Port Security ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Fonctionnalité switch qui limite quelles adresses MAC peuvent communiquer sur un port. Protège contre MAC flooding, accès non autorisé, MAC spoofing.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">Différence Sticky vs Static vs Dynamic ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Static</strong> : Admin config MAC manuellement, sauvegardé<br><strong>Dynamic</strong> : Switch apprend auto, PAS sauvegardé (perdu reboot)<br><strong>Sticky</strong> : Switch apprend auto ET sauvegarde dans config</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">3 violation modes ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Shutdown</strong> : Port err-disabled, logs, intervention admin<br><strong>Restrict</strong> : Port actif, drop MACs non autorisées, logs<br><strong>Protect</strong> : Port actif, drop silencieux, AUCUN log</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">C'est quoi err-disabled ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">État port désactivé administrativement par violation Port Security (mode shutdown). Nécessite intervention manuelle : <code>shutdown</code> puis <code>no shutdown</code></div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">Commande activer Port Security ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><code>switchport mode access</code> (prérequis) puis <code>switchport port-security</code></div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">Commande sticky MAC ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><code>switchport port-security mac-address sticky</code></div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">Question type examen : Port err-disabled après branchement nouveau PC ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Violation Port Security</strong> (mode shutdown). Maximum MACs atteint ou MAC non autorisée.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">08</span><span class="exq-text">Violation mode pour logger SANS couper port ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Restrict</strong> (drop + logs + port actif)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">09</span><span class="exq-text">Maximum MACs pour PC + téléphone IP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>2</strong> (1 MAC par équipement)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">10</span><span class="exq-text">Port Security fonctionne sur trunk ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>NON</strong> ❌. Port Security = ports <strong>access</strong> uniquement.</div>
+  </div>
+
+  <!-- 12. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span>Port Security = limite MACs autorisées sur port. Protection contre MAC flooding, accès non autorisé.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Sticky MAC</strong> : Switch apprend auto ET sauvegarde dans config. Recommandé.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Shutdown</strong> : Err-disabled + logs + intervention. <strong>Restrict</strong> : Drop + logs + actif. <strong>Protect</strong> : Drop silencieux.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Maximum MACs : 1 (PC seul), 2 (PC+téléphone), 3+ (bureaux partagés).</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Err-disabled recovery : <code>shutdown</code> + <code>no shutdown</code> OU <code>errdisable recovery cause psecure-violation</code></span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Port Security = ports <strong>access UNIQUEMENT</strong> (pas trunk).</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Config : <code>switchport mode access</code> puis <code>switchport port-security</code></span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 4 : DHCP Snooping & DAI</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">I05 - Phase 2</span>
+    <a class="nav-btn next" href="#">Cours 6 : ... →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m2_i05_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>

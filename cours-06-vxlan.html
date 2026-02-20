@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I06 — VxLAN · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .comptia-box { background: rgba(251,191,36,0.05); border: 2px solid var(--amber); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .comptia-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--amber); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .comptia-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 2.0 — Implémentation</span> &nbsp;›&nbsp; Cours 6</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 2 · I06</span>
+    <span class="pill pill-new">🆕 NEW</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-diff">⚡⚡⚡ Difficile</span>
+  </div>
+
+  <h1><span>VxLAN</span></h1>
+  <span class="tagline">// Virtual Extensible LAN — overlay réseau pour datacenters, VTEP, encapsulation UDP 4789</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends les limites des VLANs traditionnels</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise le concept d'overlay network</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais VTEP et VNI</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends l'encapsulation VxLAN</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. PROBLÈME -->
+  <div class="section">
+    <div class="section-label">Avant de commencer</div>
+    <h2>Le problème — limites des VLANs traditionnels</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🏙️</span>
+      <div class="callout-body">
+        <strong>Analogie — réseau postal</strong>
+        VLAN traditionnel = codes postaux limités à 4096 valeurs (12 bits). VxLAN = nouveau système avec 16 millions de codes (24 bits). Tu peux maintenant isoler des millions de clients dans le même datacenter au lieu de seulement 4000.
+      </div>
+    </div>
+
+    <p><strong>VLANs traditionnels (802.1Q)</strong> ont des limitations critiques pour les datacenters modernes :</p>
+
+    <h3>// Limitation 1 : Seulement 4096 VLANs</h3>
+    <p>Le tag VLAN = <strong>12 bits</strong> → 2^12 = 4096 VLANs maximum (0-4095).</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Datacenter cloud avec 10,000 clients → impossible d'isoler chacun</li>
+      <li>Multi-tenancy (SaaS, IaaS) → besoin millions de segments isolés</li>
+      <li>4096 VLANs épuisés rapidement dans grands réseaux</li>
+    </ul>
+
+    <h3>// Limitation 2 : Pas de mobilité entre sites</h3>
+    <p>VLANs limités au même domaine Layer 2 (même switch ou switches interconnectés directement).</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>VM migre d'un datacenter à l'autre → perd son VLAN</li>
+      <li>Stretching Layer 2 entre datacenters = complexe et fragile</li>
+      <li>Pas de multi-site transparent</li>
+    </ul>
+
+    <h3>// Limitation 3 : Dépendance au réseau physique</h3>
+    <p>VLANs = configuration switch par switch, pas flexible, pas programmable.</p>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Datacenters modernes = impossible avec VLANs</strong>
+        Cloud providers (AWS, Azure, GCP), VMware NSX, OpenStack, conteneurs Kubernetes → tous nécessitent plus de 4096 segments isolés. VLANs traditionnels = inadaptés.
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. C'EST QUOI VXLAN -->
+  <div class="section">
+    <div class="section-label">Concept</div>
+    <h2>VxLAN — réseau overlay Layer 2 sur Layer 3</h2>
+
+    <p><strong>VxLAN (Virtual Extensible LAN)</strong> = technologie d'encapsulation qui créé des réseaux virtuels Layer 2 (overlay) par-dessus infrastructure IP Layer 3 (underlay).</p>
+
+    <h3>// Principes clés</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>24 bits VNI</strong> (VXLAN Network Identifier) → 16 millions de segments (2^24)</li>
+      <li><strong>Encapsulation MAC-in-UDP</strong> → trame Ethernet encapsulée dans paquet UDP</li>
+      <li><strong>Port UDP 4789</strong> (standard IANA)</li>
+      <li><strong>VTEP</strong> (VXLAN Tunnel Endpoint) → équipement qui encapsule/désencapsule</li>
+      <li><strong>Overlay network</strong> → réseau virtuel indépendant du réseau physique</li>
+    </ul>
+
+    <h3>// VxLAN vs VLAN</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>VLAN (802.1Q)</th><th>VxLAN</th></tr>
+        <tr><td><strong>Identifiant</strong></td><td>12 bits (4096 max)</td><td>24 bits (16 millions)</td></tr>
+        <tr><td><strong>Couche</strong></td><td>Layer 2 uniquement</td><td>Layer 2 over Layer 3</td></tr>
+        <tr><td><strong>Portée</strong></td><td>Domaine Layer 2 (même site)</td><td>Multi-site, WAN, Internet</td></tr>
+        <tr><td><strong>Mobilité VM</strong></td><td>❌ Limitée (même L2 domain)</td><td>✅ Entre datacenters</td></tr>
+        <tr><td><strong>Scalabilité</strong></td><td>⚠️ Faible (4096)</td><td>✅ Très élevée (16M)</td></tr>
+        <tr><td><strong>Multi-tenancy</strong></td><td>❌ Impossible (>4096 clients)</td><td>✅ Millions de clients</td></tr>
+        <tr><td><strong>Encapsulation</strong></td><td>Tag 802.1Q (4 bytes)</td><td>MAC-in-UDP (50 bytes overhead)</td></tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen Network+</strong>
+        CompTIA teste : différence VLAN vs VxLAN, concept overlay/underlay, VTEP, VNI (24 bits = 16 millions), port UDP 4789, cas d'usage datacenters/cloud. Nouveau en N10-009 !
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. ARCHITECTURE -->
+  <div class="section">
+    <div class="section-label">Architecture</div>
+    <h2>Overlay vs Underlay — deux réseaux superposés</h2>
+
+    <h3>// Underlay network (réseau physique)</h3>
+    <p>Infrastructure IP Layer 3 physique qui transporte le trafic encapsulé.</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Routeurs, switches Layer 3</li>
+      <li>Routage IP classique (OSPF, BGP...)</li>
+      <li>Ne connaît PAS les VxLAN, voit juste paquets UDP</li>
+      <li>Fourni connectivité entre VTEPs</li>
+    </ul>
+
+    <h3>// Overlay network (réseau virtuel)</h3>
+    <p>Réseau Layer 2 virtuel créé par encapsulation VxLAN par-dessus underlay.</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>VMs, conteneurs communiquent comme si même VLAN</li>
+      <li>Totalement indépendant du réseau physique</li>
+      <li>Programmable, flexible, mobile</li>
+      <li>Géré par SDN controller (VMware NSX, Cisco ACI...)</li>
+    </ul>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;line-height:1.8;">
+      <strong style="color:var(--green)">Architecture VxLAN :</strong><br><br>
+
+      [VM A] ←→ [VTEP 1] ←→ [ Réseau IP Underlay ] ←→ [VTEP 2] ←→ [VM B]<br>
+         ↑           ↑              (routeurs)              ↑           ↑<br>
+      Overlay    Encap                                  Décap      Overlay<br>
+      Layer 2    VxLAN                                  VxLAN      Layer 2<br><br>
+
+      VM A et VM B pensent être sur même VLAN<br>
+      → En réalité séparées par réseau IP routé
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>Overlay = abstraction</strong>
+        Underlay = réseau physique (comment paquets sont routés physiquement)<br>
+        Overlay = réseau virtuel (comment VMs/conteneurs communiquent logiquement)<br>
+        VxLAN découple les deux → flexibilité maximale
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. VTEP -->
+  <div class="section">
+    <div class="section-label">Composants</div>
+    <h2>VTEP — VXLAN Tunnel Endpoint</h2>
+
+    <p><strong>VTEP (VXLAN Tunnel Endpoint)</strong> = équipement qui encapsule/désencapsule trames VxLAN. C'est le pont entre overlay et underlay.</p>
+
+    <h3>// Rôle VTEP</h3>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Encapsulation (envoi)</strong> : Trame Ethernet originale → ajoute en-tête VxLAN → encapsule dans UDP/IP → envoie sur underlay</li>
+      <li><strong>Désencapsulation (réception)</strong> : Paquet UDP reçu → extrait trame Ethernet originale → forward vers VM/conteneur</li>
+      <li><strong>Apprentissage MAC</strong> : Associe MACs VMs avec VTEPs distants (comme switch apprend MACs)</li>
+      <li><strong>Tunneling</strong> : Maintient tunnels VxLAN vers autres VTEPs</li>
+    </ol>
+
+    <h3>// Types de VTEP</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Type</th><th>Localisation</th><th>Exemples</th></tr>
+        <tr>
+          <td><strong>Hardware VTEP</strong></td>
+          <td>Switch Top-of-Rack (ToR)</td>
+          <td>Cisco Nexus, Arista, Juniper QFX</td>
+        </tr>
+        <tr>
+          <td><strong>Software VTEP</strong></td>
+          <td>Hyperviseur (serveur)</td>
+          <td>VMware ESXi, Linux VXLAN kernel, OVS</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>// Exemple : Envoi trame VM A → VM B</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--green)">1. VM A envoie trame Ethernet classique</strong><br>
+      Trame : [MAC dest: VM B] [MAC src: VM A] [Data]<br><br>
+
+      <strong style="color:var(--accent)">2. VTEP 1 reçoit trame, encapsule</strong><br>
+      → Ajoute en-tête VxLAN (VNI = 5000)<br>
+      → Encapsule dans UDP (port 4789)<br>
+      → Encapsule dans IP (dest = VTEP 2)<br>
+      Paquet : [IP: VTEP1→VTEP2] [UDP: 4789] [VxLAN: VNI 5000] [Trame originale]<br><br>
+
+      <strong style="color:var(--amber)">3. Réseau underlay route paquet IP vers VTEP 2</strong><br>
+      (Routage classique, ne voit que paquet UDP)<br><br>
+
+      <strong style="color:var(--purple)">4. VTEP 2 reçoit, désencapsule</strong><br>
+      → Extrait trame Ethernet originale<br>
+      → Forward vers VM B<br><br>
+
+      <strong style="color:var(--green)">5. VM B reçoit trame comme si même switch</strong>
+    </div>
+  </div>
+
+  <!-- 5. VNI -->
+  <div class="section">
+    <div class="section-label">Identifiant</div>
+    <h2>VNI — VXLAN Network Identifier</h2>
+
+    <p><strong>VNI (VXLAN Network Identifier)</strong> = identifiant 24 bits qui identifie le segment VxLAN (équivalent VLAN ID mais plus grand).</p>
+
+    <h3>// Caractéristiques VNI</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>24 bits</strong> → 2^24 = <strong>16,777,216</strong> VNIs possibles (0 à 16,777,215)</li>
+      <li>Équivalent VLAN ID mais beaucoup plus scalable</li>
+      <li>Chaque VNI = segment Layer 2 isolé</li>
+      <li>VMs dans même VNI communiquent, VMs dans VNIs différents = isolées</li>
+    </ul>
+
+    <h3>// Mapping VNI ↔ VLAN</h3>
+    <p>Souvent, VNI mappé sur VLAN traditionnel au niveau VTEP :</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      VLAN 10 (local switch) ←→ VNI 5000 (VxLAN overlay)<br>
+      VLAN 20 (local switch) ←→ VNI 5001 (VxLAN overlay)<br><br>
+
+      VM dans VLAN 10 → VTEP encapsule avec VNI 5000<br>
+      → Tunnel VxLAN → VTEP distant désencapsule → VLAN 10 local
+    </div>
+
+    <h3>// Comparaison VLAN ID vs VNI</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>VLAN ID</th><th>VNI</th></tr>
+        <tr><td><strong>Taille</strong></td><td>12 bits</td><td>24 bits</td></tr>
+        <tr><td><strong>Valeurs max</strong></td><td>4096</td><td>16,777,216</td></tr>
+        <tr><td><strong>Plage</strong></td><td>0-4095</td><td>0-16,777,215</td></tr>
+        <tr><td><strong>Usage</strong></td><td>Segmentation locale</td><td>Segmentation datacenter/cloud</td></tr>
+      </table>
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Question type examen</strong>
+        "Combien de segments VxLAN maximum ?"<br><br>
+        <strong>Réponse : 16,777,216</strong> (2^24, VNI = 24 bits)<br><br>
+        Pas 4096 (c'est VLAN) !
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. ENCAPSULATION -->
+  <div class="section">
+    <div class="section-label">Protocole</div>
+    <h2>Encapsulation VxLAN — MAC-in-UDP</h2>
+
+    <p><strong>Encapsulation VxLAN</strong> = trame Ethernet originale encapsulée dans UDP/IP avec en-tête VxLAN.</p>
+
+    <h3>// Structure paquet VxLAN</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;line-height:1.8;">
+      ┌─────────────────────────────────────────────┐<br>
+      │ Outer Ethernet (14B)                        │<br>
+      │ MAC src = VTEP 1, MAC dest = next hop       │<br>
+      ├─────────────────────────────────────────────┤<br>
+      │ Outer IP (20B)                              │<br>
+      │ IP src = VTEP 1, IP dest = VTEP 2           │<br>
+      ├─────────────────────────────────────────────┤<br>
+      │ Outer UDP (8B)                              │<br>
+      │ Source port = random, Dest port = 4789      │<br>
+      ├─────────────────────────────────────────────┤<br>
+      │ VxLAN Header (8B)                           │<br>
+      │ Flags, VNI (24 bits), Reserved              │<br>
+      ├─────────────────────────────────────────────┤<br>
+      │ Inner Ethernet Frame (original)             │<br>
+      │ Trame Ethernet complète de la VM            │<br>
+      └─────────────────────────────────────────────┘<br><br>
+
+      Overhead total : ~50 bytes
+    </div>
+
+    <h3>// En-tête VxLAN (8 bytes)</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Champ</th><th>Taille</th><th>Description</th></tr>
+        <tr><td><strong>Flags</strong></td><td>8 bits</td><td>Bit I = 1 (VNI valide)</td></tr>
+        <tr><td><strong>Reserved</strong></td><td>24 bits</td><td>Réservé (0)</td></tr>
+        <tr><td><strong>VNI</strong></td><td>24 bits</td><td>VXLAN Network Identifier</td></tr>
+        <tr><td><strong>Reserved</strong></td><td>8 bits</td><td>Réservé (0)</td></tr>
+      </table>
+    </div>
+
+    <h3>// Port UDP 4789</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Port destination</strong> : 4789 (standard IANA)</li>
+      <li><strong>Port source</strong> : Aléatoire (éphémère), basé sur hash inner frame</li>
+      <li>Hash inner frame → load balancing ECMP sur underlay</li>
+    </ul>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>MTU et fragmentation</strong>
+        Overhead VxLAN (~50 bytes) → MTU effectif réduit.<br>
+        MTU underlay 1500 → MTU overlay ~1450<br>
+        Solution : Jumbo frames sur underlay (MTU 9000) ou ajuster MTU VMs
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. CAS D'USAGE -->
+  <div class="section">
+    <div class="section-label">Applications</div>
+    <h2>Cas d'usage VxLAN — quand l'utiliser ?</h2>
+
+    <h3>// 1. Datacenters multi-tenants (cloud providers)</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>AWS, Azure, GCP : millions de clients isolés</li>
+      <li>Chaque client = VNI unique</li>
+      <li>Isolation totale entre tenants</li>
+    </ul>
+
+    <h3>// 2. Virtualisation / SDN</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>VMware NSX, Cisco ACI, OpenStack Neutron</li>
+      <li>Mobilité VM entre hosts/sites</li>
+      <li>Réseaux programmables via API</li>
+    </ul>
+
+    <h3>// 3. Datacenters distribués</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Stretching Layer 2 entre sites géographiques</li>
+      <li>DCI (Data Center Interconnect)</li>
+      <li>Active-active datacenters</li>
+    </ul>
+
+    <h3>// 4. Conteneurs (Kubernetes)</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>CNI plugins (Calico, Flannel...)</li>
+      <li>Isolation entre namespaces</li>
+      <li>Networking pods cross-hosts</li>
+    </ul>
+
+    <h3>// Quand NE PAS utiliser VxLAN ?</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>❌ Petits réseaux (<100 VMs) → VLANs suffisent</li>
+      <li>❌ Pas de multi-tenancy → overhead inutile</li>
+      <li>❌ Équipements ne supportent pas → mise à jour nécessaire</li>
+      <li>❌ Latence critique → overhead encapsulation peut impacter</li>
+    </ul>
+  </div>
+
+  <!-- 8. CE QUI TROMPE LES CANDIDATS -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : VxLAN = 4096 segments</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. VxLAN = <strong>16,777,216</strong> segments (2^24).<br><br>
+        4096 = VLAN (12 bits)<br>
+        16 millions = VxLAN (24 bits VNI)
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : VxLAN port TCP 4789</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. VxLAN utilise <strong>UDP port 4789</strong> (pas TCP).<br><br>
+        UDP = sans connexion, approprié pour encapsulation
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : VxLAN = Layer 3 uniquement</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. VxLAN = <strong>Layer 2 over Layer 3</strong>.<br><br>
+        Overlay = Layer 2 (Ethernet)<br>
+        Underlay = Layer 3 (IP routé)<br>
+        VxLAN encapsule Layer 2 dans Layer 3
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #4 : VTEP = routeur</div>
+      <div class="trap-content">
+        <strong>Pas exactement</strong>. VTEP = point d'encapsulation/désencapsulation.<br><br>
+        Peut être switch ToR (hardware) ou hyperviseur (software).<br>
+        Pas forcément un routeur.
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. CE QUE COMPTIA PEUT TE POSER -->
+  <div class="section">
+    <div class="section-label">🎯 Questions types</div>
+    <h2>Ce que CompTIA peut te poser</h2>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #1 : Nombre de segments VxLAN</div>
+      <div class="comptia-content">
+        "Combien de segments VxLAN maximum ?"<br><br>
+        <strong>Réponse : 16,777,216</strong> (VNI = 24 bits, 2^24)
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #2 : Port VxLAN</div>
+      <div class="comptia-content">
+        "Quel port UDP utilise VxLAN ?"<br><br>
+        <strong>Réponse : 4789</strong>
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #3 : Rôle VTEP</div>
+      <div class="comptia-content">
+        "C'est quoi un VTEP ?"<br><br>
+        <strong>Réponse : VXLAN Tunnel Endpoint</strong> — équipement qui encapsule/désencapsule trames VxLAN (pont entre overlay et underlay)
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #4 : Cas d'usage VxLAN</div>
+      <div class="comptia-content">
+        "Datacenter cloud avec 50,000 clients isolés. Quelle technologie ?"<br><br>
+        <strong>Réponse : VxLAN</strong><br>
+        VLANs limités à 4096, insuffisants. VxLAN = 16M segments.
+      </div>
+    </div>
+  </div>
+
+  <!-- 10. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">C'est quoi VxLAN ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Virtual Extensible LAN — technologie encapsulation créant réseaux virtuels Layer 2 (overlay) par-dessus infrastructure IP Layer 3 (underlay). VNI 24 bits = 16M segments.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">Différence overlay vs underlay ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Underlay</strong> : Réseau IP physique Layer 3 qui transporte paquets<br><strong>Overlay</strong> : Réseau virtuel Layer 2 créé par encapsulation par-dessus underlay</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">C'est quoi un VTEP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">VXLAN Tunnel Endpoint — équipement qui encapsule/désencapsule trames VxLAN. Pont entre overlay et underlay. Peut être switch ToR ou hyperviseur.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">C'est quoi le VNI ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">VXLAN Network Identifier — identifiant 24 bits du segment VxLAN (équivalent VLAN ID). 2^24 = 16,777,216 VNIs possibles.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">Port UDP VxLAN ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>4789 UDP</strong> (destination). Source port = aléatoire pour load balancing.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">Combien de segments VxLAN maximum ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>16,777,216</strong> (VNI = 24 bits, 2^24)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">Question type examen : Datacenter 50,000 clients isolés. Technologie ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>VxLAN</strong> (16M segments). VLANs insuffisants (4096 max).</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">08</span><span class="exq-text">VxLAN = Layer 2 ou Layer 3 ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Layer 2 over Layer 3</strong> — overlay L2 transporté par underlay L3</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">09</span><span class="exq-text">Overhead encapsulation VxLAN ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">~50 bytes (Outer Ethernet 14 + Outer IP 20 + UDP 8 + VxLAN header 8)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">10</span><span class="exq-text">Limitation VLAN traditionnels ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">4096 VLANs max (12 bits), pas de mobilité multi-site, dépendance réseau physique</div>
+  </div>
+
+  <!-- 11. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>VxLAN</strong> : Layer 2 over Layer 3, overlay network, 16M segments (VNI 24 bits)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>VTEP</strong> : VXLAN Tunnel Endpoint, encapsule/désencapsule, pont overlay/underlay</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>VNI</strong> : 24 bits = 16,777,216 segments (vs VLAN 12 bits = 4096)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Port UDP 4789</strong> (destination), source aléatoire pour ECMP</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Encapsulation MAC-in-UDP : Outer Eth + Outer IP + UDP + VxLAN header + Inner frame</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Cas d'usage : datacenters cloud, multi-tenancy, virtualisation, DCI, Kubernetes</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Nouveau en N10-009 — sujet datacenter/cloud moderne</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 5 : Port Security</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">I06 - Phase 2</span>
+    <a class="nav-btn next" href="#">Cours 7 : ... →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m2_i06_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>
