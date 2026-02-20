@@ -332,23 +332,23 @@ const PLAN = [
           { id:"c14", name:"c14. Aggregation de liens (LACP)", url:"cours-14-lacp-agregation-liens",           desc:"802.3ad, port-channel, active/passive, load balancing", tags:["key","lab"], diff:2 },
           { id:"c15", name:"c15. CDP / LLDP", url:"cours-15-cdp-lldp",                            desc:"Protocoles de découverte de voisins — utiles pour la cartographie réseau et le dépannage", tags:["proto","lab"], diff:1 },
           // COUCHE RÉSEAU
-          { id:"c16", name:"c16. Adressage IPv4 — bases", url:"cours-16-adressage-ipv4-bases",                desc:"Classes A/B/C/D/E, adresses privées RFC 1918, loopback 127.0.0.1, broadcast", tags:["key","exam"], diff:1 },
-          { id:"c16b", name:"c16b. Default Gateway — rôle précis", url:"cours-16b-default-gateway-role-precis",          desc:"Quand un hôte envoie vers une IP hors de son sous-réseau, il envoie au gateway. L'hôte compare dst IP + masque avec sa propre IP — si réseau différent → gateway. Sans gateway = pas de communication inter-réseau.", tags:["key","exam"], diff:1 },
+          { id:"c16", name:"c16. Adressage IPv4 — bases", url:"cours-16-adressage-ipv4-bases",                desc:"Classes A/B/C/D/E, adresses privées RFC 1918, loopback 127.0.0.1, broadcast", tags:["key","exam"], diff:2 },
+          { id:"c16b", name:"c16b. Default Gateway — rôle précis", url:"cours-16b-default-gateway-role-precis",          desc:"Quand un hôte envoie vers une IP hors de son sous-réseau, il envoie au gateway. L'hôte compare dst IP + masque avec sa propre IP — si réseau différent → gateway. Sans gateway = pas de communication inter-réseau.", tags:["key","exam"], diff:2 },
           { id:"c17", name:"c17. CIDR et sous-réseaux (Subnetting)", url:"cours-17-cidr-subnetting",     desc:"Masques /8 à /30, calcul réseau/broadcast/hôtes, notation CIDR, tableaux de sous-réseaux", tags:["key","exam"], diff:3 },
           { id:"c18", name:"c18. VLSM — sous-réseaux à longueur variable", url:"cours-18-vlsm", desc:"Optimiser l'espace d'adressage, résoudre des scénarios de conception réseau", tags:["key","exam"], diff:3 },
           { id:"c19", name:"c19. Adresses spéciales IPv4", url:"cours-19-adresses-speciales-ipv4",               desc:"APIPA 169.254.x.x, RFC 1918 privées, loopback, multicast 224.x, broadcast limité 255.255.255.255", tags:["exam"], diff:2 },
-          { id:"c20", name:"c20. NAT / PAT", url:"cours-20-nat-pat",                             desc:"Static NAT, Dynamic NAT, PAT (overload) — tables de traduction, intérieur/extérieur, troubleshooting", tags:["key","exam","lab"], diff:2 },
+          { id:"c20", name:"c20. NAT / PAT", url:"cours-20-nat-pat",                             desc:"Static NAT, Dynamic NAT, PAT (overload) — tables de traduction, intérieur/extérieur, troubleshooting", tags:["key","exam","lab"], diff:3 },
           { id:"c21", name:"c21. Adressage IPv6 — bases", url:"cours-21-ipv6-bases",                desc:"Format 128 bits, notation abrégée (:: et groupes nuls), types d'adresses, préfixes courants", tags:["key","proto"], diff:2 },
           { id:"c22", name:"c22. IPv6 — configuration et transition", url:"cours-22-ipv6-configuration-transition",    desc:"EUI-64, SLAAC, DHCPv6 stateful/stateless, dual-stack, tunneling 6to4, NAT64", tags:["key","lab"], diff:3 },
           { id:"c23", name:"c23. ICMP et ICMPv6", url:"cours-23-icmp-icmpv6",                        desc:"Types/codes ICMP, ping (echo request/reply), TTL, traceroute, Destination Unreachable, Redirect", tags:["key","exam","proto"], diff:2 },
           // COUCHE TRANSPORT
-          { id:"c24", name:"c24. TCP — protocole orienté connexion", url:"cours-24-tcp-protocole-connexion",     desc:"3-way handshake (SYN/SYN-ACK/ACK), fenêtrage, contrôle de flux, numéros de séquence, retransmission", tags:["key","exam"], diff:2 },
-          { id:"c25", name:"c25. UDP — protocole sans connexion", url:"cours-25-udp-protocole-sans-connexion",        desc:"Caractéristiques, cas d'usage (streaming, VoIP, DNS, DHCP), comparaison TCP vs UDP", tags:["key","exam"], diff:1 },
+          { id:"c24", name:"c24. TCP — protocole orienté connexion", url:"cours-24-tcp-protocole-connexion",     desc:"3-way handshake (SYN/SYN-ACK/ACK), fenêtrage, contrôle de flux, numéros de séquence, retransmission", tags:["key","exam"], diff:3 },
+          { id:"c25", name:"c25. UDP — protocole sans connexion", url:"cours-25-udp-protocole-sans-connexion",        desc:"Caractéristiques, cas d'usage (streaming, VoIP, DNS, DHCP), comparaison TCP vs UDP", tags:["key","exam"], diff:2 },
           { id:"c26", name:"c26. Ports et numéros de service", url:"cours-26-ports-numeros-service",           desc:"Ports bien connus 0-1023, enregistrés 1024-49151 — mémoriser les 20+ ports clés CompTIA", tags:["key","exam","proto"], diff:2 },
           // COUCHE APPLICATION
-          { id:"c27", name:"c27. DNS — Résolution de noms", url:"cours-27-dns-resolution-noms",              desc:"Processus de résolution, récursif vs itératif, cache, enregistrements A/AAAA/CNAME/MX/PTR/SOA/NS/TXT/SRV", tags:["key","lab","exam","proto"], diff:2 },
-          { id:"c28", name:"c28. DHCP — Attribution automatique", url:"cours-28-dhcp-attribution-automatique",        desc:"Processus DORA, scope, bail, réservation, exclusion, DHCP relay (ip helper-address), failover", tags:["key","lab","exam"], diff:2 },
-          { id:"c29", name:"c29. Protocoles web et transfert", url:"cours-29-protocoles-web-transfert",           desc:"HTTP (port 80) / HTTPS (port 443) / FTP (20/21) / SFTP (22) / FTPS / TFTP (69) / SMB (445)", tags:["key","proto"], diff:1 },
+          { id:"c27", name:"c27. DNS — Résolution de noms", url:"cours-27-dns-resolution-noms",              desc:"Processus de résolution, récursif vs itératif, cache, enregistrements A/AAAA/CNAME/MX/PTR/SOA/NS/TXT/SRV", tags:["key","lab","exam","proto"], diff:3 },
+          { id:"c28", name:"c28. DHCP — Attribution automatique", url:"cours-28-dhcp-attribution-automatique",        desc:"Processus DORA, scope, bail, réservation, exclusion, DHCP relay (ip helper-address), failover", tags:["key","lab","exam"], diff:3 },
+          { id:"c29", name:"c29. Protocoles web et transfert", url:"cours-29-protocoles-web-transfert",           desc:"HTTP (port 80) / HTTPS (port 443) / FTP (20/21) / SFTP (22) / FTPS / TFTP (69) / SMB (445)", tags:["key","proto"], diff:2 },
           { id:"c30", name:"c30. Protocoles de messagerie et admin", url:"cours-30-protocoles-messagerie-admin",     desc:"SMTP(25/587) / IMAP(143/993) / POP3(110/995) / SSH(22) / Telnet(23) / RDP(3389) / SNMP(161/162) / NTP(123)", tags:["key","proto","exam"], diff:2 },
         ]
       }
@@ -367,9 +367,9 @@ const PLAN = [
         note: "On applique les concepts de Phase 1 à de vraies infrastructures",
         topics: [
           // ROUTING
-          { id:"i01", name:"i01. Routage — concepts fondamentaux", url:"cours-01-routage-concepts-fondamentaux",       desc:"Table de routage, routes statiques, routes par défaut, distance administrative, métrique", tags:["key","exam"], diff:2 },
+          { id:"i01", name:"i01. Routage — concepts fondamentaux", url:"cours-01-routage-concepts-fondamentaux",       desc:"Table de routage, routes statiques, routes par défaut, distance administrative, métrique", tags:["key","exam"], diff:3 },
           { id:"i02", name:"i02. Protocoles de routage dynamique", url:"cours-02-protocoles-routage-dynamique",       desc:"RIP v2, OSPF (link-state), EIGRP (Cisco), BGP (inter-AS) — comparaison et cas d'usage", tags:["key","exam","proto"], diff:3 },
-          { id:"i03", name:"i03. Routage inter-VLAN", url:"cours-03-routage-inter-vlan",                    desc:"Router-on-a-stick (sous-interfaces), Layer 3 Switch (SVI), avantages/inconvénients", tags:["key","lab","exam"], diff:2 },
+          { id:"i03", name:"i03. Routage inter-VLAN", url:"cours-03-routage-inter-vlan",                    desc:"Router-on-a-stick (sous-interfaces), Layer 3 Switch (SVI), avantages/inconvénients", tags:["key","lab","exam"], diff:3 },
           // SWITCHING AVANCÉ
           { id:"i04", name:"i04. DHCP Snooping & DAI", url:"cours-04-dhcp-snooping-dai",                  desc:"DHCP Snooping (ports trusted/untrusted), Dynamic ARP Inspection — sécurité switching", tags:["key","exam"], diff:3 },
           { id:"i05", name:"Port Security",                          desc:"Sticky MAC, violation modes (shutdown/restrict/protect), max MAC addresses — exam très fréquent", tags:["key","exam","lab"], diff:2 },
