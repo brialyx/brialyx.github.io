@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 32 — Protocoles de routage dynamique · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .proto-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 18px 22px; margin-bottom: 14px; }
+  .proto-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .proto-name { font-family: 'IBM Plex Mono', monospace; font-size: 1.1rem; font-weight: 800; color: var(--accent); }
+  .proto-badges { display: flex; gap: 8px; }
+  .proto-badge { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; font-weight: 600; }
+  .badge-type { background: rgba(167,139,250,0.1); color: var(--purple); }
+  .badge-ad { background: rgba(34,211,160,0.1); color: var(--green); }
+  .proto-body { font-size: 0.88rem; line-height: 1.7; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .comptia-box { background: rgba(251,191,36,0.05); border: 2px solid var(--amber); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .comptia-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--amber); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .comptia-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 2.0 — Implémentation</span> &nbsp;›&nbsp; Cours 2</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Module 2.0 · I02</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-proto">PROTO</span>
+    <span class="pill pill-diff">⚡⚡⚡ Difficile</span>
+  </div>
+
+  <h1>Protocoles de <span>routage dynamique</span></h1>
+  <span class="tagline">// RIP v2, OSPF, EIGRP, BGP — apprendre et échanger routes automatiquement</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends routage dynamique vs statique</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais RIP v2</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise OSPF</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends EIGRP et BGP</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. DYNAMIQUE VS STATIQUE -->
+  <div class="section">
+    <div class="section-label">Avant de commencer</div>
+    <h2>Routage dynamique — apprendre automatiquement</h2>
+
+    <p><strong>Routage dynamique</strong> = routeurs échangent automatiquement des informations sur les réseaux et calculent les meilleurs chemins. Adaptation automatique aux pannes.</p>
+
+    <h3>// Statique vs Dynamique</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>Routage statique</th><th>Routage dynamique</th></tr>
+        <tr><td><strong>Configuration</strong></td><td>Manuelle, route par route</td><td>Auto, protocole échange routes</td></tr>
+        <tr><td><strong>Adaptation pannes</strong></td><td>❌ Manuelle</td><td>✅ Automatique (convergence)</td></tr>
+        <tr><td><strong>Scalabilité</strong></td><td>❌ Difficile (>10 routeurs)</td><td>✅ Bonne (1000+ routeurs)</td></tr>
+        <tr><td><strong>Overhead</strong></td><td>✅ Aucun</td><td>⚠️ CPU, RAM, bande passante</td></tr>
+        <tr><td><strong>Sécurité</strong></td><td>✅ Pas d'annonces</td><td>⚠️ Annonces interceptables</td></tr>
+        <tr><td><strong>Complexité</strong></td><td>✅ Simple</td><td>⚠️ Nécessite expertise</td></tr>
+        <tr><td><strong>Usage</strong></td><td>Petits réseaux, liens spécifiques</td><td>Moyens/grands réseaux</td></tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen Network+</strong>
+        CompTIA teste : différence distance-vector vs link-state, métriques (hop count vs cost), distance admin (RIP 120, OSPF 110, EIGRP 90, BGP 20/200), convergence, IGP vs EGP. Connais les 4 protocoles par cœur !
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. TYPES PROTOCOLES -->
+  <div class="section">
+    <div class="section-label">Classification</div>
+    <h2>Types de protocoles — distance-vector vs link-state</h2>
+
+    <h3>// 1. Distance-Vector</h3>
+    <p><strong>Principe :</strong> Routeur connaît direction (vector) et distance vers destinations.</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Routeur envoie sa table complète à voisins</li>
+      <li>Mise à jour périodique (ex: toutes les 30s)</li>
+      <li>Ne connaît pas topologie complète</li>
+      <li><strong>Exemples :</strong> RIP, EIGRP (hybride)</li>
+      <li><strong>Avantage :</strong> Simple, faible overhead CPU</li>
+      <li><strong>Inconvénient :</strong> Convergence lente, boucles possibles</li>
+    </ul>
+
+    <h3>// 2. Link-State</h3>
+    <p><strong>Principe :</strong> Routeur connaît topologie complète du réseau (carte détaillée).</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Routeur envoie état de ses liens (LSA) à tous</li>
+      <li>Chaque routeur construit carte complète (LSDB)</li>
+      <li>Calcul SPF (Dijkstra) pour meilleur chemin</li>
+      <li><strong>Exemples :</strong> OSPF, IS-IS</li>
+      <li><strong>Avantage :</strong> Convergence rapide, pas de boucles, scalable</li>
+      <li><strong>Inconvénient :</strong> Plus complexe, overhead CPU/RAM plus élevé</li>
+    </ul>
+
+    <h3>// IGP vs EGP</h3>
+    <p><strong>IGP (Interior Gateway Protocol)</strong> = routage au sein d'un même AS (Autonomous System)</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>RIP, OSPF, EIGRP</li>
+      <li>Usage : réseau interne entreprise</li>
+    </ul>
+
+    <p><strong>EGP (Exterior Gateway Protocol)</strong> = routage entre AS différents</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>BGP</li>
+      <li>Usage : Internet, ISPs</li>
+    </ul>
+  </div>
+
+  <!-- 3. RIP -->
+  <div class="section">
+    <div class="section-label">Protocol distance-vector</div>
+    <h2>RIP v2 — Routing Information Protocol</h2>
+
+    <div class="proto-card">
+      <div class="proto-header">
+        <div class="proto-name">RIP v2</div>
+        <div class="proto-badges">
+          <span class="proto-badge badge-type">Distance-Vector</span>
+          <span class="proto-badge badge-ad">AD: 120</span>
+        </div>
+      </div>
+      <div class="proto-body">
+        <strong>Métrique :</strong> Hop count (nombre de routeurs)<br>
+        <strong>Max :</strong> 15 hops (16 = infini/inaccessible)<br>
+        <strong>Mise à jour :</strong> Toutes les 30 secondes<br>
+        <strong>Port :</strong> UDP 520<br>
+        <strong>Convergence :</strong> Lente (plusieurs minutes)<br>
+        <strong>Status :</strong> Legacy, rarement utilisé aujourd'hui
+      </div>
+    </div>
+
+    <h3>// Fonctionnement</h3>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Routeur envoie table routage complète à voisins (broadcast/multicast)</li>
+      <li>Voisins ajoutent +1 hop à chaque route reçue</li>
+      <li>Si nouvelle route ou meilleure route (moins de hops) → mise à jour table</li>
+      <li>Répète toutes les 30 secondes</li>
+    </ol>
+
+    <h3>// Avantages RIP</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ Très simple à configurer</li>
+      <li>✅ Standard ouvert (pas propriétaire)</li>
+      <li>✅ Faible overhead</li>
+    </ul>
+
+    <h3>// Inconvénients RIP</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>❌ Limité 15 hops (petits réseaux uniquement)</li>
+      <li>❌ Métrique simpliste (pas de bande passante)</li>
+      <li>❌ Convergence très lente</li>
+      <li>❌ Updates périodiques = bande passante gaspillée</li>
+      <li>❌ Obsolète, remplacé par OSPF</li>
+    </ul>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>RIP = Legacy</strong>
+        Ne déployer RIP que si : contrainte compatibilité anciens équipements, réseau très petit (<10 routeurs), simplicité absolue requise. Sinon → OSPF recommandé.
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. OSPF -->
+  <div class="section">
+    <div class="section-label">Protocol link-state</div>
+    <h2>OSPF — Open Shortest Path First</h2>
+
+    <div class="proto-card">
+      <div class="proto-header">
+        <div class="proto-name">OSPF</div>
+        <div class="proto-badges">
+          <span class="proto-badge badge-type">Link-State</span>
+          <span class="proto-badge badge-ad">AD: 110</span>
+        </div>
+      </div>
+      <div class="proto-body">
+        <strong>Métrique :</strong> Cost (basé bande passante)<br>
+        <strong>Max :</strong> Pas de limite hops<br>
+        <strong>Mise à jour :</strong> Événements (changements uniquement)<br>
+        <strong>Protocole :</strong> IP protocol 89<br>
+        <strong>Convergence :</strong> Rapide (secondes)<br>
+        <strong>Status :</strong> Standard moderne, très répandu
+      </div>
+    </div>
+
+    <h3>// Fonctionnement</h3>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Routeurs échangent LSAs (Link State Advertisements)</li>
+      <li>Chaque routeur construit LSDB (Link State Database) = carte complète</li>
+      <li>Calcul algorithme SPF/Dijkstra pour trouver meilleur chemin vers chaque réseau</li>
+      <li>Mise à jour uniquement si changement topologie (événement)</li>
+    </ol>
+
+    <h3>// Concepts clés OSPF</h3>
+    <p><strong>Area</strong> : Zone logique pour diviser réseau. Area 0 (backbone) = obligatoire, toutes areas connectées à Area 0.</p>
+    <p><strong>Router ID</strong> : Identifiant unique routeur OSPF (IP la plus haute ou loopback).</p>
+    <p><strong>DR/BDR</strong> : Designated Router et Backup (réseaux multi-access comme Ethernet) pour réduire overhead.</p>
+
+    <h3>// Avantages OSPF</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ Scalable (1000+ routeurs)</li>
+      <li>✅ Convergence rapide</li>
+      <li>✅ Métrique intelligente (bande passante)</li>
+      <li>✅ Pas de limite hops</li>
+      <li>✅ Hiérarchique (areas) = optimisé grands réseaux</li>
+      <li>✅ Standard ouvert</li>
+    </ul>
+
+    <h3>// Inconvénients OSPF</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>⚠️ Complexe à configurer</li>
+      <li>⚠️ Overhead CPU/RAM (calcul SPF)</li>
+      <li>⚠️ Design areas nécessite expertise</li>
+    </ul>
+
+    <div class="callout ok">
+      <span class="callout-icon">✅</span>
+      <div class="callout-body">
+        <strong>OSPF = Standard moderne</strong>
+        Recommandé pour la plupart des réseaux entreprise. Convergence rapide, scalable, métrique intelligente. C'est le protocole IGP le plus déployé.
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. EIGRP -->
+  <div class="section">
+    <div class="section-label">Protocol hybride Cisco</div>
+    <h2>EIGRP — Enhanced Interior Gateway Routing Protocol</h2>
+
+    <div class="proto-card">
+      <div class="proto-header">
+        <div class="proto-name">EIGRP</div>
+        <div class="proto-badges">
+          <span class="proto-badge badge-type">Hybride</span>
+          <span class="proto-badge badge-ad">AD: 90</span>
+        </div>
+      </div>
+      <div class="proto-body">
+        <strong>Métrique :</strong> Composite (BP, délai, charge, fiabilité)<br>
+        <strong>Max :</strong> 255 hops (par défaut 100)<br>
+        <strong>Mise à jour :</strong> Événements + triggered<br>
+        <strong>Protocole :</strong> IP protocol 88<br>
+        <strong>Convergence :</strong> Très rapide (sub-seconde)<br>
+        <strong>Status :</strong> Propriétaire Cisco (ouvert 2013 mais peu adopté)
+      </div>
+    </div>
+
+    <h3>// Caractéristiques</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Combine avantages distance-vector et link-state</li>
+      <li>DUAL (Diffusing Update Algorithm) : convergence instantanée</li>
+      <li>Successors et Feasible Successors (backup route pré-calculée)</li>
+      <li>Métrique composite très précise</li>
+      <li>Moins d'overhead que OSPF</li>
+    </ul>
+
+    <h3>// Avantages EIGRP</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ Convergence la plus rapide (sub-seconde)</li>
+      <li>✅ Métrique très précise</li>
+      <li>✅ Plus simple qu'OSPF (pas d'areas)</li>
+      <li>✅ Moins de CPU/RAM qu'OSPF</li>
+      <li>✅ Backup route pré-calculée</li>
+    </ul>
+
+    <h3>// Inconvénients EIGRP</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>❌ Historiquement propriétaire Cisco</li>
+      <li>❌ Peu adopté hors environnements Cisco</li>
+      <li>❌ Moins de documentation/expertise que OSPF</li>
+    </ul>
+
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>EIGRP = Environnements Cisco</strong>
+        Si infrastructure 100% Cisco → EIGRP excellent choix (convergence rapide, simple). Sinon → OSPF pour compatibilité multi-vendor.
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. BGP -->
+  <div class="section">
+    <div class="section-label">Protocol inter-AS</div>
+    <h2>BGP — Border Gateway Protocol</h2>
+
+    <div class="proto-card">
+      <div class="proto-header">
+        <div class="proto-name">BGP</div>
+        <div class="proto-badges">
+          <span class="proto-badge badge-type">Path-Vector</span>
+          <span class="proto-badge badge-ad">eBGP: 20 / iBGP: 200</span>
+        </div>
+      </div>
+      <div class="proto-body">
+        <strong>Métrique :</strong> AS Path + attributs (LOCAL_PREF, MED, WEIGHT...)<br>
+        <strong>Type :</strong> EGP (Exterior Gateway Protocol)<br>
+        <strong>Port :</strong> TCP 179<br>
+        <strong>Convergence :</strong> Lente (minutes)<br>
+        <strong>Status :</strong> Protocole de l'Internet
+      </div>
+    </div>
+
+    <h3>// Rôle BGP</h3>
+    <p>BGP = protocole de routage <strong>entre AS</strong> (Autonomous Systems). C'est le protocole qui fait fonctionner Internet.</p>
+
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>eBGP (External)</strong> : Entre AS différents (ISP ↔ ISP)</li>
+      <li><strong>iBGP (Internal)</strong> : Au sein d'un même AS</li>
+      <li>Chaque ISP = 1 AS (ex: AS15169 = Google)</li>
+      <li>BGP échange préfixes IP entre AS</li>
+    </ul>
+
+    <h3>// Caractéristiques</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Path-vector : connaît chemin complet AS (évite boucles)</li>
+      <li>Policy-based : choix basés sur politiques, pas juste métrique</li>
+      <li>Scalable : gère table routage Internet (900,000+ préfixes)</li>
+      <li>TCP 179 (fiabilité, pas UDP)</li>
+    </ul>
+
+    <h3>// Usage BGP</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>ISPs</strong> : Échanger routes Internet</li>
+      <li><strong>Grandes entreprises multi-sites</strong> : Si plusieurs connexions ISP (multi-homing)</li>
+      <li><strong>Datacenters</strong> : Anycast, redondance</li>
+    </ul>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>BGP = Complexité extrême</strong>
+        Ne PAS utiliser BGP sauf : vous êtes ISP, datacenter, ou grande entreprise avec AS propre et multi-homing. BGP mal configuré = blackhole Internet. Nécessite expertise élevée.
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. COMPARAISON -->
+  <div class="section">
+    <div class="section-label">Tableau comparatif</div>
+    <h2>RIP vs OSPF vs EIGRP vs BGP</h2>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>RIP v2</th><th>OSPF</th><th>EIGRP</th><th>BGP</th></tr>
+        <tr><td><strong>Type</strong></td><td>Distance-vector</td><td>Link-state</td><td>Hybride</td><td>Path-vector</td></tr>
+        <tr><td><strong>Métrique</strong></td><td>Hop count</td><td>Cost (BP)</td><td>Composite</td><td>AS Path + attributs</td></tr>
+        <tr><td><strong>Distance admin</strong></td><td>120</td><td>110</td><td>90</td><td>eBGP 20, iBGP 200</td></tr>
+        <tr><td><strong>Max hops</strong></td><td>15</td><td>Illimité</td><td>255</td><td>Illimité</td></tr>
+        <tr><td><strong>Convergence</strong></td><td>Lente</td><td>Rapide</td><td>Très rapide</td><td>Lente</td></tr>
+        <tr><td><strong>Scalabilité</strong></td><td>❌ Faible</td><td>✅ Bonne</td><td>✅ Bonne</td><td>✅ Excellent</td></tr>
+        <tr><td><strong>Complexité</strong></td><td>Simple</td><td>Complexe</td><td>Moyenne</td><td>Très complexe</td></tr>
+        <tr><td><strong>Standard</strong></td><td>Ouvert</td><td>Ouvert</td><td>Cisco</td><td>Ouvert</td></tr>
+        <tr><td><strong>Scope</strong></td><td>IGP</td><td>IGP</td><td>IGP</td><td>EGP</td></tr>
+        <tr><td><strong>Usage</strong></td><td>Legacy</td><td>Entreprise</td><td>Cisco only</td><td>Internet/ISP</td></tr>
+      </table>
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Quelle protocole choisir ?</strong>
+        <strong>Petit réseau simple :</strong> Routes statiques ou RIP (legacy)<br>
+        <strong>Entreprise multi-vendor :</strong> OSPF (standard)<br>
+        <strong>Environnement 100% Cisco :</strong> EIGRP (rapide)<br>
+        <strong>ISP / multi-AS :</strong> BGP (Internet)
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. CE QUI TROMPE LES CANDIDATS -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : OSPF AD = 100</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Distance administrative OSPF = <strong>110</strong> (pas 100)<br><br>
+        RIP = 120, OSPF = 110, EIGRP = 90
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : RIP métrique = bande passante</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. RIP = hop count uniquement.<br><br>
+        RIP : hop count<br>
+        OSPF : cost (basé bande passante)<br>
+        EIGRP : composite (BP + délai + charge + fiabilité)
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : BGP = IGP</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. BGP = <strong>EGP</strong> (Exterior Gateway Protocol)<br><br>
+        <strong>IGP</strong> : RIP, OSPF, EIGRP (au sein d'un AS)<br>
+        <strong>EGP</strong> : BGP (entre AS différents)
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #4 : EIGRP = standard ouvert</div>
+      <div class="trap-content">
+        <strong>Historiquement FAUX</strong>. EIGRP = propriétaire Cisco (ouvert 2013 mais peu adopté).<br><br>
+        À l'examen, considérer EIGRP comme protocole Cisco.
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. CE QUE COMPTIA PEUT TE POSER -->
+  <div class="section">
+    <div class="section-label">🎯 Questions types</div>
+    <h2>Ce que CompTIA peut te poser</h2>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #1 : Choix protocole</div>
+      <div class="comptia-content">
+        "Une entreprise veut déployer routage dynamique sur réseau multi-vendor avec 50 routeurs. Quel protocole recommander ?"<br><br>
+        <strong>Réponse : OSPF</strong> (standard ouvert, scalable, convergence rapide)
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #2 : Distance administrative</div>
+      <div class="comptia-content">
+        "Quelle distance administrative pour OSPF ?"<br><br>
+        <strong>Réponse : 110</strong>
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #3 : Métrique RIP</div>
+      <div class="comptia-content">
+        "Quelle métrique utilise RIP pour choisir le meilleur chemin ?"<br><br>
+        <strong>Réponse : Hop count</strong> (nombre de routeurs traversés)
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #4 : Type protocole</div>
+      <div class="comptia-content">
+        "OSPF est quel type de protocole ?"<br><br>
+        <strong>Réponse : Link-state</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">C'est quoi le routage dynamique ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Routeurs échangent automatiquement infos routes et calculent meilleurs chemins. Adaptation auto aux pannes.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">Différence distance-vector vs link-state ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Distance-vector</strong> : Connaît direction + distance, envoie table complète<br><strong>Link-state</strong> : Connaît topologie complète, calcul SPF</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">Distance admin RIP, OSPF, EIGRP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">RIP = <strong>120</strong>, OSPF = <strong>110</strong>, EIGRP = <strong>90</strong></div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">Métrique RIP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Hop count</strong> (nombre de routeurs). Max 15 hops.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">Métrique OSPF ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Cost</strong> basé sur bande passante (10^8 / BP)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">OSPF = quel type ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Link-state</strong> (connaît topologie complète, calcul SPF/Dijkstra)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">BGP = IGP ou EGP ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>EGP</strong> (Exterior Gateway Protocol — routage entre AS différents)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">08</span><span class="exq-text">Question type examen : Protocole pour entreprise multi-vendor ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>OSPF</strong> (standard ouvert, scalable, convergence rapide)</div>
+  </div>
+
+  <!-- 11. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>RIP v2</strong> : Distance-vector, hop count, AD=120, max 15 hops, legacy</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>OSPF</strong> : Link-state, cost (BP), AD=110, convergence rapide, standard entreprise</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>EIGRP</strong> : Hybride, métrique composite, AD=90, très rapide, Cisco</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>BGP</strong> : Path-vector, AS Path, AD=20 (eBGP) / 200 (iBGP), EGP, Internet</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Distance-vector vs Link-state : table complète vs topologie + SPF</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>IGP (RIP/OSPF/EIGRP) = au sein AS. EGP (BGP) = entre AS</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 1 : Routage fondamentaux</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">I02 - Phase 2</span>
+    <a class="nav-btn next" href="#">Cours 3 : Routage inter-VLAN →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m2_i02_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>

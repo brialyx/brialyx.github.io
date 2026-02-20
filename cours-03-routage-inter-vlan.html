@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 3 — Routage inter-VLAN · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .comptia-box { background: rgba(251,191,36,0.05); border: 2px solid var(--amber); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .comptia-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--amber); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .comptia-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 2.0 — Implémentation</span> &nbsp;›&nbsp; Cours 3</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Module 2.0 · I03</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-lab">🧪 LAB</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡⚡ Difficile</span>
+  </div>
+
+  <h1><span>Routage inter-VLAN</span></h1>
+  <span class="tagline">// Router-on-a-stick (sous-interfaces), Layer 3 Switch (SVI) — communication entre VLANs</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends pourquoi les VLANs sont isolés</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise Router-on-a-stick</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais Layer 3 Switch (SVI)</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je sais comparer les 2 méthodes</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. PROBLÈME -->
+  <div class="section">
+    <div class="section-label">Avant de commencer</div>
+    <h2>Le problème — VLANs ne communiquent pas</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🏢</span>
+      <div class="callout-body">
+        <strong>Analogie — étages d'immeuble</strong>
+        VLANs = étages différents d'un immeuble. VLAN 10 (étage 1) et VLAN 20 (étage 2) sont isolés. Pour qu'un employé étage 1 parle à un étage 2, il faut passer par l'ascenseur (routeur). Sans ascenseur, impossible de communiquer entre étages.
+      </div>
+    </div>
+
+    <p><strong>Rappel :</strong> Les VLANs créent des domaines de broadcast séparés. Un PC en VLAN 10 ne peut PAS communiquer directement avec VLAN 20.</p>
+
+    <p><strong>Pourquoi ?</strong> Les switches opèrent en couche 2 (MAC). Pour communiquer entre réseaux IP différents → besoin routage (couche 3).</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--green)">Scénario :</strong><br>
+      PC1 (VLAN 10) : 192.168.10.5/24<br>
+      PC2 (VLAN 20) : 192.168.20.5/24<br><br>
+
+      PC1 ping PC2 → ❌ ÉCHEC<br>
+      Raison : Réseaux IP différents, pas de routage
+    </div>
+
+    <p><strong>Solution :</strong> Routage inter-VLAN (inter-VLAN routing)</p>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen Network+</strong>
+        CompTIA teste : différence router-on-a-stick vs Layer 3 switch, configuration sous-interfaces (802.1Q), SVI (VLAN interface), avantages/inconvénients chaque méthode. Sache QUAND utiliser quelle solution !
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. MÉTHODE 1 : ROUTER-ON-A-STICK -->
+  <div class="section">
+    <div class="section-label">Méthode 1 — Routeur externe</div>
+    <h2>Router-on-a-stick — sous-interfaces 802.1Q</h2>
+
+    <p><strong>Router-on-a-stick</strong> = routeur externe avec <strong>1 seule interface physique</strong> divisée en <strong>sous-interfaces logiques</strong> (une par VLAN).</p>
+
+    <h3>// Architecture</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;line-height:1.8;">
+      [Switch Layer 2]<br>
+      VLAN 10: 192.168.10.0/24<br>
+      VLAN 20: 192.168.20.0/24<br>
+            │<br>
+            │ Trunk 802.1Q (1 seul câble)<br>
+            │<br>
+      [Routeur]<br>
+      Gi0/0.10 → 192.168.10.1 (Gateway VLAN 10)<br>
+      Gi0/0.20 → 192.168.20.1 (Gateway VLAN 20)
+    </div>
+
+    <h3>// Configuration Cisco</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--green)">Routeur :</strong><br>
+      Router(config)# interface GigabitEthernet0/0<br>
+      Router(config-if)# no shutdown<br>
+      Router(config-if)# exit<br><br>
+
+      <strong style="color:var(--accent)"># Sous-interface VLAN 10</strong><br>
+      Router(config)# interface GigabitEthernet0/0.10<br>
+      Router(config-subif)# encapsulation dot1Q 10<br>
+      Router(config-subif)# ip address 192.168.10.1 255.255.255.0<br>
+      Router(config-subif)# exit<br><br>
+
+      <strong style="color:var(--accent)"># Sous-interface VLAN 20</strong><br>
+      Router(config)# interface GigabitEthernet0/0.20<br>
+      Router(config-subif)# encapsulation dot1Q 20<br>
+      Router(config-subif)# ip address 192.168.20.1 255.255.255.0<br>
+      Router(config-subif)# exit
+    </div>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--green)">Switch :</strong><br>
+      Switch(config)# interface GigabitEthernet0/1<br>
+      Switch(config-if)# switchport mode trunk<br>
+      Switch(config-if)# switchport trunk allowed vlan 10,20<br>
+      Switch(config-if)# exit
+    </div>
+
+    <h3>// Fonctionnement</h3>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>PC1 (VLAN 10) veut ping PC2 (VLAN 20)</li>
+      <li>PC1 envoie paquet vers gateway 192.168.10.1</li>
+      <li>Switch envoie trame sur trunk avec tag VLAN 10</li>
+      <li>Routeur reçoit sur sous-interface Gi0/0.10</li>
+      <li>Routeur route vers VLAN 20</li>
+      <li>Routeur envoie sur Gi0/0.20 avec tag VLAN 20</li>
+      <li>Switch reçoit, forward vers VLAN 20</li>
+      <li>PC2 reçoit paquet</li>
+    </ol>
+
+    <h3>// Avantages router-on-a-stick</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ Pas besoin switch Layer 3 (coût réduit)</li>
+      <li>✅ 1 seul câble (trunk) entre switch et routeur</li>
+      <li>✅ Configuration relativement simple</li>
+      <li>✅ Fonctionne avec tout switch géré</li>
+    </ul>
+
+    <h3>// Inconvénients router-on-a-stick</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>❌ Goulot d'étranglement (1 seul lien physique)</li>
+      <li>❌ Performances limitées (tout trafic inter-VLAN passe par là)</li>
+      <li>❌ Point de défaillance unique</li>
+      <li>❌ Ne scale pas (nombreux VLANs = congestion)</li>
+    </ul>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Limitation performance</strong>
+        Si lien trunk = 1 Gbps, TOUS les VLANs partagent cette bande passante. Trafic intense inter-VLAN = saturation lien. Pas adapté grands réseaux.
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. MÉTHODE 2 : LAYER 3 SWITCH -->
+  <div class="section">
+    <div class="section-label">Méthode 2 — Switch routeur</div>
+    <h2>Layer 3 Switch — SVI (Switch Virtual Interface)</h2>
+
+    <p><strong>Layer 3 Switch</strong> = switch capable de router (couche 3) en plus de switcher (couche 2). Combine fonctions switch + routeur.</p>
+
+    <p><strong>SVI (Switch Virtual Interface)</strong> = interface virtuelle VLAN sur switch Layer 3. Agit comme gateway du VLAN.</p>
+
+    <h3>// Architecture</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;line-height:1.8;">
+      [Layer 3 Switch]<br>
+      <br>
+      Interface VLAN 10 (SVI) → 192.168.10.1 (Gateway VLAN 10)<br>
+      Interface VLAN 20 (SVI) → 192.168.20.1 (Gateway VLAN 20)<br>
+      <br>
+      Routage interne dans le switch (hardware)
+    </div>
+
+    <h3>// Configuration Cisco</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--green)"># Activer routage IP</strong><br>
+      Switch(config)# ip routing<br><br>
+
+      <strong style="color:var(--accent)"># Créer VLANs</strong><br>
+      Switch(config)# vlan 10<br>
+      Switch(config-vlan)# name Engineering<br>
+      Switch(config-vlan)# exit<br>
+      Switch(config)# vlan 20<br>
+      Switch(config-vlan)# name Sales<br>
+      Switch(config-vlan)# exit<br><br>
+
+      <strong style="color:var(--accent)"># Configurer SVI VLAN 10</strong><br>
+      Switch(config)# interface vlan 10<br>
+      Switch(config-if)# ip address 192.168.10.1 255.255.255.0<br>
+      Switch(config-if)# no shutdown<br>
+      Switch(config-if)# exit<br><br>
+
+      <strong style="color:var(--accent)"># Configurer SVI VLAN 20</strong><br>
+      Switch(config)# interface vlan 20<br>
+      Switch(config-if)# ip address 192.168.20.1 255.255.255.0<br>
+      Switch(config-if)# no shutdown<br>
+      Switch(config-if)# exit
+    </div>
+
+    <h3>// Fonctionnement</h3>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>PC1 (VLAN 10) veut ping PC2 (VLAN 20)</li>
+      <li>PC1 envoie vers gateway 192.168.10.1 (SVI VLAN 10)</li>
+      <li>Switch reçoit, identifie destination = autre VLAN</li>
+      <li>Switch route <strong>en interne</strong> (ASIC hardware)</li>
+      <li>Switch forward vers VLAN 20 via SVI VLAN 20</li>
+      <li>PC2 reçoit paquet</li>
+    </ol>
+
+    <p><strong>Clé :</strong> Routage effectué <strong>en hardware</strong> (ASIC) → vitesse wire-speed (ligne)</p>
+
+    <h3>// Avantages Layer 3 Switch</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ Performances excellentes (routage hardware wire-speed)</li>
+      <li>✅ Pas de goulot d'étranglement (pas de lien unique)</li>
+      <li>✅ Scalable (nombreux VLANs sans problème)</li>
+      <li>✅ Simplifie architecture (1 équipement au lieu de 2)</li>
+      <li>✅ Pas de latence ajoutée (routage interne)</li>
+    </ul>
+
+    <h3>// Inconvénients Layer 3 Switch</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>❌ Coût plus élevé (switch Layer 3 > Layer 2)</li>
+      <li>❌ Plus complexe à configurer/gérer</li>
+      <li>❌ Fonctions routage limitées vs routeur dédié (NAT, VPN...)</li>
+    </ul>
+
+    <div class="callout ok">
+      <span class="callout-icon">✅</span>
+      <div class="callout-body">
+        <strong>Layer 3 Switch = Standard entreprise</strong>
+        Pour routage inter-VLAN moderne, Layer 3 switch = solution recommandée. Performances, scalabilité, simplicité. Router-on-a-stick = legacy ou petits réseaux.
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. COMPARAISON -->
+  <div class="section">
+    <div class="section-label">Comparaison</div>
+    <h2>Router-on-a-stick vs Layer 3 Switch</h2>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>Router-on-a-stick</th><th>Layer 3 Switch</th></tr>
+        <tr><td><strong>Équipement</strong></td><td>Switch L2 + Routeur externe</td><td>Switch L3 unique</td></tr>
+        <tr><td><strong>Connexion</strong></td><td>1 trunk 802.1Q</td><td>Interne (aucun câble)</td></tr>
+        <tr><td><strong>Routage</strong></td><td>Software (CPU routeur)</td><td>Hardware (ASIC wire-speed)</td></tr>
+        <tr><td><strong>Performances</strong></td><td>⚠️ Limitées (goulot trunk)</td><td>✅ Excellentes</td></tr>
+        <tr><td><strong>Scalabilité</strong></td><td>❌ Faible (trunk saturé)</td><td>✅ Bonne</td></tr>
+        <tr><td><strong>Latence</strong></td><td>⚠️ Ajoutée (aller-retour routeur)</td><td>✅ Minimale</td></tr>
+        <tr><td><strong>Point défaillance</strong></td><td>⚠️ Lien trunk unique</td><td>✅ Interne</td></tr>
+        <tr><td><strong>Coût</strong></td><td>✅ Plus économique</td><td>⚠️ Plus cher</td></tr>
+        <tr><td><strong>Complexité</strong></td><td>✅ Simple</td><td>⚠️ Plus complexe</td></tr>
+        <tr><td><strong>Usage moderne</strong></td><td>Legacy / petits réseaux</td><td>Standard entreprise</td></tr>
+      </table>
+    </div>
+
+    <h3>// Quand utiliser router-on-a-stick ?</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Petit réseau (<50 postes)</li>
+      <li>Peu de VLANs (2-3)</li>
+      <li>Trafic inter-VLAN faible</li>
+      <li>Budget limité (switch L2 existant)</li>
+      <li>Pas besoin hautes performances</li>
+    </ul>
+
+    <h3>// Quand utiliser Layer 3 Switch ?</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Réseau moyen/grand (50+ postes)</li>
+      <li>Nombreux VLANs (4+)</li>
+      <li>Trafic inter-VLAN important</li>
+      <li>Performances critiques</li>
+      <li>Infrastructure moderne/scalable</li>
+    </ul>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Question type examen</strong>
+        "Une entreprise a 10 VLANs avec trafic inter-VLAN intense. Quelle solution recommander ?"<br><br>
+        <strong>Réponse : Layer 3 Switch</strong> (performances, scalabilité)<br><br>
+        Si question mentionne "budget limité, 2 VLANs" → Router-on-a-stick acceptable
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. CE QUI TROMPE LES CANDIDATS -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : Switch L2 peut router inter-VLAN</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Switch Layer 2 ne peut PAS router. Il segmente VLANs mais ne communique pas entre eux.<br><br>
+        Besoin : routeur externe (router-on-a-stick) OU switch Layer 3
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : Router-on-a-stick = plusieurs câbles</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Router-on-a-stick = <strong>1 seul câble</strong> (trunk 802.1Q).<br><br>
+        Plusieurs sous-interfaces logiques sur 1 interface physique.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : SVI = port physique</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. SVI (Switch Virtual Interface) = interface <strong>VIRTUELLE</strong>.<br><br>
+        Pas de port physique. C'est une interface logique VLAN sur switch Layer 3.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #4 : Layer 3 Switch remplace routeur partout</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Layer 3 switch = routage inter-VLAN interne.<br><br>
+        Pour WAN, VPN, NAT, filtrage avancé → routeur dédié nécessaire.<br>
+        Layer 3 switch = routage LAN uniquement.
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. CE QUE COMPTIA PEUT TE POSER -->
+  <div class="section">
+    <div class="section-label">🎯 Questions types</div>
+    <h2>Ce que CompTIA peut te poser</h2>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #1 : Méthode recommandée</div>
+      <div class="comptia-content">
+        "Une entreprise avec 8 VLANs et trafic inter-VLAN élevé. Quelle solution ?"<br><br>
+        <strong>Réponse : Layer 3 Switch</strong> (performances hardware, scalable)
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #2 : Configuration trunk</div>
+      <div class="comptia-content">
+        "Pour router-on-a-stick, quel type de lien entre switch et routeur ?"<br><br>
+        <strong>Réponse : Trunk 802.1Q</strong> (transporte tous VLANs avec tags)
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #3 : SVI</div>
+      <div class="comptia-content">
+        "C'est quoi une SVI ?"<br><br>
+        <strong>Réponse : Switch Virtual Interface</strong> — interface virtuelle VLAN sur switch Layer 3 qui agit comme gateway du VLAN
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #4 : Limitation router-on-a-stick</div>
+      <div class="comptia-content">
+        "Quelle est la principale limitation de router-on-a-stick ?"<br><br>
+        <strong>Réponse :</strong> Goulot d'étranglement sur lien trunk unique (tout trafic inter-VLAN passe par là)
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">Pourquoi VLANs ne communiquent pas par défaut ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Switch = couche 2 (MAC). VLANs = réseaux IP différents. Communication inter-réseaux nécessite routage (couche 3).</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">C'est quoi router-on-a-stick ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Routeur externe avec 1 interface physique divisée en sous-interfaces logiques (une par VLAN). Lien trunk 802.1Q vers switch.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">C'est quoi une SVI ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Switch Virtual Interface — interface virtuelle VLAN sur switch Layer 3. Agit comme gateway du VLAN.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">Avantage Layer 3 Switch vs router-on-a-stick ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Performances excellentes (routage hardware wire-speed), pas de goulot, scalable, simplifie architecture</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">Inconvénient router-on-a-stick ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Goulot d'étranglement trunk unique, performances limitées, point défaillance unique, ne scale pas</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">Question type examen : 10 VLANs, trafic intense. Solution ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Layer 3 Switch</strong> (performances, scalabilité)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">Commande activer routage sur switch Cisco ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><code>ip routing</code></div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">08</span><span class="exq-text">Router-on-a-stick utilise combien de câbles ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>1 seul</strong> (trunk 802.1Q avec tags)</div>
+  </div>
+
+  <!-- 8. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span>VLANs isolés par défaut. Communication inter-VLAN nécessite routage (couche 3)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Router-on-a-stick</strong> : 1 routeur externe, sous-interfaces, trunk 802.1Q. Économique mais goulot.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Layer 3 Switch</strong> : Routage interne hardware (SVI). Performances excellentes, scalable.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>SVI = Switch Virtual Interface (virtuelle, pas physique). Gateway VLAN.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Layer 3 Switch = standard moderne. Router-on-a-stick = legacy/petit réseau.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Config L3 switch : <code>ip routing</code> puis <code>interface vlan X</code></span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 2 : Protocoles routage</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">I03 - Phase 2</span>
+    <a class="nav-btn next" href="#">Cours 4 : DHCP Snooping & DAI →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m2_i03_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cours 4 — DHCP Snooping & DAI · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .comptia-box { background: rgba(251,191,36,0.05); border: 2px solid var(--amber); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .comptia-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--amber); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .comptia-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 2.0 — Implémentation</span> &nbsp;›&nbsp; Cours 4</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Module 2.0 · I04</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡⚡ Difficile</span>
+  </div>
+
+  <h1><span>DHCP Snooping</span> & DAI</h1>
+  <span class="tagline">// Sécurité switching — bloquer serveurs DHCP et ARP malveillants</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends les attaques DHCP</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise DHCP Snooping</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends DAI</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais trusted vs untrusted</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. ATTAQUE DHCP -->
+  <div class="section">
+    <div class="section-label">Menaces</div>
+    <h2>Attaque DHCP — serveur DHCP malveillant</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🎭</span>
+      <div class="callout-body">
+        <strong>Analogie — faux réceptionniste</strong>
+        Tu arrives à l'hôtel et deux personnes se présentent comme réceptionnistes. Une est légitime, l'autre est un imposteur qui veut te donner une fausse clé pour voler tes affaires. Si tu ne sais pas qui est légitime, tu risques de faire confiance au mauvais.  Serveur DHCP malveillant = même principe.
+      </div>
+    </div>
+
+    <p><strong>Attaque DHCP</strong> = attaquant installe serveur DHCP malveillant sur le réseau. Clients reçoivent configurations incorrectes.</p>
+
+    <h3>// Scénario d'attaque</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--green)">1. Client envoie DHCP Discover (broadcast)</strong><br>
+      → Serveur légitime ET malveillant reçoivent<br><br>
+
+      <strong style="color:var(--amber)">2. Les DEUX répondent avec DHCP Offer</strong><br>
+      Serveur légitime : IP=192.168.1.10, Gateway=192.168.1.1, DNS=8.8.8.8<br>
+      Serveur MALVEILLANT : IP=192.168.1.50, Gateway=<strong style="color:var(--red)">10.0.0.666</strong>, DNS=<strong style="color:var(--red)">attaquant</strong><br><br>
+
+      <strong style="color:var(--red)">3. Client accepte la réponse la PLUS RAPIDE</strong><br>
+      → Si serveur malveillant répond en premier → client compromis !
+    </div>
+
+    <h3>// Conséquences</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Gateway malveillante</strong> : Attaquant devient Man-in-the-Middle (intercepte tout le trafic)</li>
+      <li><strong>DNS malveillant</strong> : Phishing (google.com → faux site de l'attaquant)</li>
+      <li><strong>Déni de service</strong> : Configuration incorrecte → client perd connexion</li>
+      <li><strong>Vol d'identifiants</strong> : Trafic redirigé vers attaquant</li>
+    </ul>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Attaque triviale</strong>
+        Installer serveur DHCP malveillant = extrêmement facile. N'importe quel PC avec logiciel DHCP. Aucune sécurité native dans DHCP. Protection OBLIGATOIRE en production.
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. DHCP SNOOPING -->
+  <div class="section">
+    <div class="section-label">Protection DHCP</div>
+    <h2>DHCP Snooping — filtrer serveurs DHCP</h2>
+
+    <p><strong>DHCP Snooping</strong> = fonctionnalité switch qui contrôle quels ports peuvent envoyer des messages DHCP serveur.</p>
+
+    <h3>// Principe : Trusted vs Untrusted</h3>
+    <p>Switch classifie tous les ports en 2 catégories :</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Type port</th><th>Autorisé</th><th>Bloqué</th><th>Usage</th></tr>
+        <tr>
+          <td><strong>Trusted</strong></td>
+          <td>✅ Tous messages DHCP (serveur + client)</td>
+          <td>❌ Rien</td>
+          <td>Ports vers serveurs DHCP légitimes, uplinks routeurs/switches</td>
+        </tr>
+        <tr>
+          <td><strong>Untrusted</strong></td>
+          <td>✅ Messages DHCP <strong>client</strong> uniquement (Discover, Request)</td>
+          <td>❌ Messages DHCP <strong>serveur</strong> (Offer, Ack)</td>
+          <td>Ports vers utilisateurs finaux (PCs, imprimantes...)</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>// Fonctionnement</h3>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Switch configure ports <strong>trusted</strong> (vers serveur DHCP) et <strong>untrusted</strong> (vers clients)</li>
+      <li>Client envoie DHCP Discover → ✅ Autorisé (port untrusted peut envoyer messages client)</li>
+      <li>Serveur légitime (port trusted) envoie Offer → ✅ Autorisé</li>
+      <li>Serveur malveillant (port untrusted) tente envoyer Offer → ❌ <strong>BLOQUÉ</strong> par switch</li>
+      <li>Switch construit <strong>Snooping Binding Table</strong> : IP ↔ MAC ↔ Port ↔ VLAN</li>
+    </ol>
+
+    <h3>// Configuration Cisco</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--green)"># Activer DHCP Snooping global</strong><br>
+      Switch(config)# ip dhcp snooping<br><br>
+
+      <strong style="color:var(--accent)"># Activer DHCP Snooping sur VLAN 10</strong><br>
+      Switch(config)# ip dhcp snooping vlan 10<br><br>
+
+      <strong style="color:var(--accent)"># Configurer port TRUSTED (vers serveur DHCP)</strong><br>
+      Switch(config)# interface GigabitEthernet0/1<br>
+      Switch(config-if)# ip dhcp snooping trust<br>
+      Switch(config-if)# exit<br><br>
+
+      <strong style="color:var(--amber)"># Ports vers clients = untrusted par défaut</strong><br>
+      (Pas de commande nécessaire — untrusted = défaut)<br><br>
+
+      <strong style="color:var(--green)"># Vérifier</strong><br>
+      Switch# show ip dhcp snooping<br>
+      Switch# show ip dhcp snooping binding
+    </div>
+
+    <h3>// Snooping Binding Table</h3>
+    <p>Switch enregistre chaque attribution DHCP réussie :</p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      MAC Address      IP Address   Lease  Type  VLAN  Interface<br>
+      00:1A:2B:3C:4D:5E 192.168.1.10 86400  dhcp  10    Gi0/10<br>
+      00:AA:BB:CC:DD:EE 192.168.1.20 86400  dhcp  10    Gi0/15
+    </div>
+
+    <p>Cette table sert ensuite à <strong>DAI</strong> (Dynamic ARP Inspection) !</p>
+
+    <div class="callout ok">
+      <span class="callout-icon">🔒</span>
+      <div class="callout-body">
+        <strong>Protection obligatoire</strong>
+        DHCP Snooping = MUST en production. Activer sur tous VLANs utilisateurs. Marquer trusted UNIQUEMENT ports vers serveurs DHCP légitimes et uplinks. Tous autres ports = untrusted.
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. ATTAQUE ARP POISONING -->
+  <div class="section">
+    <div class="section-label">Menaces ARP</div>
+    <h2>ARP Poisoning — empoisonner cache ARP</h2>
+
+    <p><strong>Rappel ARP :</strong> Résoudre IP en MAC. Problème : ARP n'a AUCUNE sécurité native, accepte toute réponse.</p>
+
+    <h3>// Attaque ARP Poisoning</h3>
+    <p>Attaquant envoie fausses réponses ARP pour corrompre cache ARP des victimes.</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--green)">Réseau légitime :</strong><br>
+      Gateway: 192.168.1.1 → MAC: AA:AA:AA:AA:AA:AA<br>
+      PC Victime: 192.168.1.10<br>
+      Attaquant: 192.168.1.50 → MAC: BB:BB:BB:BB:BB:BB<br><br>
+
+      <strong style="color:var(--red)">Attaquant envoie faux ARP Reply :</strong><br>
+      "192.168.1.1 (gateway) est maintenant à MAC BB:BB:BB:BB:BB:BB"<br><br>
+
+      <strong style="color:var(--amber)">Cache ARP victime corrompu :</strong><br>
+      192.168.1.1 → <strong style="color:var(--red)">BB:BB:BB:BB:BB:BB</strong> (MAC attaquant !)<br><br>
+
+      <strong style="color:var(--red)">Conséquence :</strong><br>
+      Victime envoie tout son trafic vers attaquant<br>
+      → Attaquant intercepte, forward vers vraie gateway<br>
+      → Man-in-the-Middle réussi
+    </div>
+
+    <h3>// Conséquences ARP Poisoning</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Man-in-the-Middle</strong> : Attaquant intercepte tout le trafic</li>
+      <li><strong>Session hijacking</strong> : Vol sessions HTTP, cookies</li>
+      <li><strong>Sniffing</strong> : Capture mots de passe, données sensibles</li>
+      <li><strong>Déni de service</strong> : Envoyer trafic vers IP inexistante</li>
+    </ul>
+
+    <div class="callout warn">
+      <span class="callout-icon">🎭</span>
+      <div class="callout-body">
+        <strong>Attaque silencieuse</strong>
+        ARP Poisoning totalement invisible utilisateur. Trafic semble normal. Outils gratuits (arpspoof, Ettercap). Protection DAI = critique.
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. DAI -->
+  <div class="section">
+    <div class="section-label">Protection ARP</div>
+    <h2>DAI — Dynamic ARP Inspection</h2>
+
+    <p><strong>DAI (Dynamic ARP Inspection)</strong> = fonctionnalité switch qui valide messages ARP en les comparant à la <strong>DHCP Snooping Binding Table</strong>.</p>
+
+    <h3>// Principe</h3>
+    <p>Switch inspecte <strong>TOUS les messages ARP</strong> sur ports untrusted et vérifie cohérence IP ↔ MAC.</p>
+
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Client envoie ARP Reply : "192.168.1.10 est à MAC 00:1A:2B:3C:4D:5E"</li>
+      <li>Switch consulte DHCP Snooping Binding Table</li>
+      <li>Vérification : 192.168.1.10 ↔ 00:1A:2B:3C:4D:5E ↔ Port Gi0/10 ?</li>
+      <li>Si correspondance → ✅ Forward</li>
+      <li>Si pas de correspondance → ❌ <strong>DROP + LOG</strong></li>
+    </ol>
+
+    <h3>// Configuration Cisco</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--green)"># Prérequis : DHCP Snooping déjà activé</strong><br><br>
+
+      <strong style="color:var(--accent)"># Activer DAI sur VLAN 10</strong><br>
+      Switch(config)# ip arp inspection vlan 10<br><br>
+
+      <strong style="color:var(--accent)"># Configurer port TRUSTED (vers routeur/switch)</strong><br>
+      Switch(config)# interface GigabitEthernet0/1<br>
+      Switch(config-if)# ip arp inspection trust<br>
+      Switch(config-if)# exit<br><br>
+
+      <strong style="color:var(--amber)"># Ports vers clients = untrusted par défaut</strong><br>
+      (Validation DAI appliquée automatiquement)<br><br>
+
+      <strong style="color:var(--green)"># Vérifier</strong><br>
+      Switch# show ip arp inspection<br>
+      Switch# show ip arp inspection statistics
+    </div>
+
+    <h3>// Trusted vs Untrusted (DAI)</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Type port</th><th>Validation DAI</th><th>Usage</th></tr>
+        <tr>
+          <td><strong>Trusted</strong></td>
+          <td>❌ Non (bypass validation)</td>
+          <td>Uplinks vers routeurs/switches, serveurs</td>
+        </tr>
+        <tr>
+          <td><strong>Untrusted</strong></td>
+          <td>✅ Oui (validation stricte)</td>
+          <td>Ports vers utilisateurs finaux</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>// Protections supplémentaires DAI</h3>
+    <p><strong>Rate limiting</strong> : Limiter nombre messages ARP/sec sur ports untrusted (éviter saturation CPU switch)</p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Switch(config-if)# ip arp inspection limit rate 15<br>
+      (Max 15 paquets ARP/sec sur ce port)
+    </div>
+
+    <p><strong>Validations supplémentaires :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Source MAC</strong> : MAC source Ethernet = MAC source ARP</li>
+      <li><strong>Destination MAC</strong> : MAC destination cohérente</li>
+      <li><strong>IP</strong> : Vérifier adresses IP valides (pas 0.0.0.0, broadcast...)</li>
+    </ul>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Switch(config)# ip arp inspection validate src-mac dst-mac ip
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">✅</span>
+      <div class="callout-body">
+        <strong>DAI = protection ARP Poisoning</strong>
+        DAI bloque attaques ARP Poisoning en validant correspondance IP ↔ MAC via DHCP Snooping Table. Activer TOUJOURS avec DHCP Snooping. Les deux ensemble = sécurité couche 2 robuste.
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. RELATION DHCP SNOOPING + DAI -->
+  <div class="section">
+    <div class="section-label">Synergie</div>
+    <h2>DHCP Snooping + DAI — ensemble complet</h2>
+
+    <p>Ces deux mécanismes fonctionnent <strong>ensemble</strong> pour sécuriser la couche 2 :</p>
+
+    <h3>// Pipeline de sécurité</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--green)">1. DHCP Snooping</strong><br>
+      → Bloque serveurs DHCP malveillants<br>
+      → Construit Binding Table (IP ↔ MAC ↔ Port)<br><br>
+
+      <strong style="color:var(--accent)">2. DAI</strong><br>
+      → Utilise Binding Table pour valider ARP<br>
+      → Bloque ARP Poisoning<br><br>
+
+      <strong style="color:var(--purple)">Résultat :</strong><br>
+      ✅ Serveurs DHCP légitimes uniquement<br>
+      ✅ Base de données IP/MAC fiable<br>
+      ✅ Messages ARP validés contre base<br>
+      ✅ Attaques Man-in-the-Middle bloquées
+    </div>
+
+    <h3>// Configuration complète type</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--green)"># 1. Activer DHCP Snooping</strong><br>
+      Switch(config)# ip dhcp snooping<br>
+      Switch(config)# ip dhcp snooping vlan 10,20,30<br><br>
+
+      <strong style="color:var(--accent)"># 2. Activer DAI</strong><br>
+      Switch(config)# ip arp inspection vlan 10,20,30<br>
+      Switch(config)# ip arp inspection validate src-mac dst-mac ip<br><br>
+
+      <strong style="color:var(--amber)"># 3. Ports TRUSTED (uplinks, serveurs)</strong><br>
+      Switch(config)# interface range Gi0/1-2<br>
+      Switch(config-if-range)# ip dhcp snooping trust<br>
+      Switch(config-if-range)# ip arp inspection trust<br>
+      Switch(config-if-range)# exit<br><br>
+
+      <strong style="color:var(--purple)"># 4. Ports UNTRUSTED (clients) avec rate limit</strong><br>
+      Switch(config)# interface range Gi0/10-24<br>
+      Switch(config-if-range)# ip arp inspection limit rate 15<br>
+      Switch(config-if-range)# exit
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Configuration obligatoire ensemble</strong>
+        DAI nécessite DHCP Snooping (utilise la Binding Table). Impossible d'activer DAI sans DHCP Snooping activé en premier. Toujours configurer les DEUX.
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. CE QUI TROMPE LES CANDIDATS -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : Trusted = sécurisé, Untrusted = dangereux</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. C'est l'inverse de l'intuition !<br><br>
+        <strong>Trusted</strong> : Fait confiance au port → bypass validation (moins de sécurité)<br>
+        <strong>Untrusted</strong> : Ne fait PAS confiance → validation stricte (plus de sécurité)<br><br>
+        Trusted = uplinks fiables. Untrusted = clients (protection maximale).
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : DAI fonctionne seul</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. DAI nécessite DHCP Snooping.<br><br>
+        DAI valide ARP en comparant à <strong>DHCP Snooping Binding Table</strong>.<br>
+        Sans DHCP Snooping → pas de Binding Table → DAI ne peut pas fonctionner.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : DHCP Snooping bloque ARP Poisoning</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. DHCP Snooping bloque serveurs DHCP malveillants.<br>
+        <strong>DAI</strong> bloque ARP Poisoning.<br><br>
+        Les deux protègent différentes attaques (mais travaillent ensemble).
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #4 : Tous ports doivent être trusted ou untrusted</div>
+      <div class="trap-content">
+        <strong>Par défaut = untrusted</strong>. Pas besoin configurer explicitement.<br><br>
+        Configurer <strong>trusted uniquement</strong> sur ports vers serveurs légitimes / uplinks.<br>
+        Tous autres ports = untrusted automatiquement.
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. CE QUE COMPTIA PEUT TE POSER -->
+  <div class="section">
+    <div class="section-label">🎯 Questions types</div>
+    <h2>Ce que CompTIA peut te poser</h2>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #1 : Protection serveur DHCP malveillant</div>
+      <div class="comptia-content">
+        "Quelle fonctionnalité switch empêche serveurs DHCP malveillants ?"<br><br>
+        <strong>Réponse : DHCP Snooping</strong>
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #2 : Protection ARP Poisoning</div>
+      <div class="comptia-content">
+        "Quelle technologie protège contre ARP Poisoning / ARP spoofing ?"<br><br>
+        <strong>Réponse : DAI (Dynamic ARP Inspection)</strong>
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #3 : Port type</div>
+      <div class="comptia-content">
+        "Un port connecté au serveur DHCP légitime doit être configuré comment ?"<br><br>
+        <strong>Réponse : Trusted</strong> (pour DHCP Snooping et DAI)
+      </div>
+    </div>
+
+    <div class="comptia-box">
+      <div class="comptia-title">Question type #4 : Dépendance DAI</div>
+      <div class="comptia-content">
+        "DAI nécessite quelle autre fonctionnalité pour fonctionner ?"<br><br>
+        <strong>Réponse : DHCP Snooping</strong> (utilise la Binding Table)
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. EXERCICES -->
+  <div class="section">
+    <div class="section-label">🧪 Exercices interactifs</div>
+    <h2>Teste-toi — sans regarder le cours</h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Clique pour révéler la réponse.</p>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">01</span><span class="exq-text">C'est quoi DHCP Snooping ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Fonctionnalité switch qui contrôle quels ports peuvent envoyer messages DHCP serveur. Bloque serveurs DHCP malveillants.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">02</span><span class="exq-text">Différence trusted vs untrusted ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>Trusted</strong> : Tous messages autorisés, bypass validation (uplinks, serveurs)<br><strong>Untrusted</strong> : Validation stricte, messages serveur bloqués (clients)</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">03</span><span class="exq-text">C'est quoi la Binding Table ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Table créée par DHCP Snooping : IP ↔ MAC ↔ Port ↔ VLAN. Utilisée par DAI pour valider ARP.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">04</span><span class="exq-text">C'est quoi DAI ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer">Dynamic ARP Inspection — valide messages ARP en comparant à DHCP Snooping Binding Table. Bloque ARP Poisoning.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">05</span><span class="exq-text">DAI peut fonctionner sans DHCP Snooping ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>NON</strong> ❌. DAI nécessite DHCP Snooping (utilise Binding Table). Toujours activer les deux ensemble.</div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">06</span><span class="exq-text">Question type examen : Protection serveur DHCP malveillant ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>DHCP Snooping</strong></div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">07</span><span class="exq-text">Question type examen : Protection ARP Poisoning ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><strong>DAI (Dynamic ARP Inspection)</strong></div>
+
+    <div class="exq" onclick="toggleAnswer(this)"><span class="exq-num">08</span><span class="exq-text">Commande Cisco activer DHCP Snooping sur VLAN 10 ?</span><span class="exq-reveal">▼ voir</span></div>
+    <div class="exq-answer"><code>ip dhcp snooping</code> puis <code>ip dhcp snooping vlan 10</code></div>
+  </div>
+
+  <!-- 9. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>DHCP Snooping</strong> : Bloque serveurs DHCP malveillants. Trusted (serveurs) vs Untrusted (clients). Crée Binding Table.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>DAI</strong> : Bloque ARP Poisoning. Valide ARP via Binding Table. Nécessite DHCP Snooping actif.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Trusted = bypass validation (uplinks, serveurs légitimes). Untrusted = validation stricte (clients).</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Les deux ensemble = sécurité couche 2 robuste (DHCP + ARP)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Config : <code>ip dhcp snooping</code> puis <code>ip arp inspection</code> puis marquer ports trusted</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span>Obligatoire en production sur tous VLANs utilisateurs</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 3 : Routage inter-VLAN</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">I04 - Phase 2</span>
+    <a class="nav-btn next" href="#">Cours 5 : ... →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m2_i04_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>
