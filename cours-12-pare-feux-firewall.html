@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I12 — Pare-feux (Firewall) · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .comptia-box { background: rgba(251,191,36,0.05); border: 2px solid var(--amber); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .comptia-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--amber); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .comptia-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 2.0 — Implémentation</span> &nbsp;›&nbsp; Cours 12</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 2 · I12</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-lab">🧪 LAB</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡⚡ Difficile</span>
+  </div>
+
+  <h1><span>Pare-feux</span> (Firewall)</h1>
+  <span class="tagline">// Stateless vs Stateful, NGFW, zones (Inside/DMZ/Outside), ACL, règles directionnelles</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je différencie Stateless vs Stateful</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise les zones (Inside/DMZ/Outside)</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends ACL et règles directionnelles</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais NGFW</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. CONCEPT -->
+  <div class="section">
+    <div class="section-label">Concept</div>
+    <h2>Firewall — filtrage et contrôle d'accès</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🚪</span>
+      <div class="callout-body">
+        <strong>Analogie — videur de boîte de nuit</strong>
+        Firewall = videur qui contrôle qui entre/sort. Il vérifie : identité (IP), heure (règles temporelles), tenue (protocole autorisé). Si pas conforme → refus entrée. Liste VIP (whitelist) entre automatiquement.
+      </div>
+    </div>
+
+    <p><strong>Firewall</strong> = équipement ou logiciel filtrant trafic réseau selon <strong>règles de sécurité</strong>.</p>
+
+    <h3>// Fonctions principales</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Filtrage paquets</strong> : Autoriser/bloquer basé sur IP source/dest, ports, protocoles</li>
+      <li><strong>Inspection état</strong> : Suivi connexions (stateful)</li>
+      <li><strong>Zones sécurité</strong> : Séparer réseaux (Inside/Outside/DMZ)</li>
+      <li><strong>NAT/PAT</strong> : Masquage IPs privées</li>
+      <li><strong>Logs</strong> : Enregistrer tentatives accès</li>
+    </ul>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen Network+</strong>
+        CompTIA teste : Stateless vs Stateful (différence critique), zones (Inside/DMZ/Outside), ACL (ordre règles, implicit deny), règles directionnelles (inbound/outbound). Question TRÈS fréquente : "Firewall bloque connexion légitime, pourquoi ?"
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. STATELESS VS STATEFUL -->
+  <div class="section">
+    <div class="section-label">Types de filtrage</div>
+    <h2>Stateless vs Stateful — la différence CRITIQUE</h2>
+
+    <h3>// Stateless Firewall (Packet Filtering)</h3>
+    <p><strong>Stateless</strong> = filtre chaque paquet <strong>individuellement</strong>, SANS mémoire des connexions précédentes.</p>
+
+    <p><strong>Caractéristiques :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Examine : IP source, IP dest, port source, port dest, protocole (TCP/UDP/ICMP)</li>
+      <li>❌ <strong>Pas de contexte</strong> : Ne sait pas si paquet appartient à connexion établie</li>
+      <li>❌ <strong>Règles bidirectionnelles requises</strong> : Autoriser trafic sortant ET entrant de retour</li>
+      <li>⚠️ Vulnérable : Spoofing, fragmentation attacks</li>
+    </ul>
+
+    <p><strong>Exemple problème :</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Règle : Autoriser Inside (192.168.1.0/24) → Outside (any) port 80<br><br>
+
+      <strong>Problème :</strong> Trafic sortant OK, MAIS réponse serveur bloquée !<br>
+      → Besoin règle retour : Outside → Inside port >1024 (ports éphémères)<br>
+      → Risque sécurité : Ouvre plage ports large
+    </div>
+
+    <h3>// Stateful Firewall (Stateful Inspection)</h3>
+    <p><strong>Stateful</strong> = suivi connexions. Mémorise état sessions (établies, nouvelles, fermées).</p>
+
+    <p><strong>Caractéristiques :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ <strong>Table d'états</strong> : Enregistre connexions actives (IP, ports, état TCP)</li>
+      <li>✅ <strong>Autorisation automatique retours</strong> : Si connexion sortante établie → réponses entrantes autorisées</li>
+      <li>✅ <strong>Sécurité renforcée</strong> : Détecte paquets hors contexte</li>
+      <li>✅ <strong>Règles simplifiées</strong> : 1 règle sortante suffit</li>
+    </ul>
+
+    <p><strong>Exemple solution :</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Règle : Autoriser Inside → Outside port 80<br><br>
+
+      <strong>Stateful automatic</strong> : Firewall mémorise connexion sortante<br>
+      → Réponse serveur reconnue comme partie connexion établie<br>
+      → Autorisée automatiquement, SANS règle retour explicite<br>
+      → Sécurisé : Ports éphémères pas ouverts globalement
+    </div>
+
+    <h3>// Comparaison Stateless vs Stateful</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>Stateless</th><th>Stateful</th></tr>
+        <tr><td><strong>Contexte</strong></td><td>❌ Aucun (paquet par paquet)</td><td>✅ Suivi connexions</td></tr>
+        <tr><td><strong>Règles retour</strong></td><td>⚠️ Nécessaires (bidirectionnelles)</td><td>✅ Automatiques</td></tr>
+        <tr><td><strong>Sécurité</strong></td><td>⚠️ Faible (spoofing)</td><td>✅ Forte</td></tr>
+        <tr><td><strong>Performances</strong></td><td>✅ Rapide (simple)</td><td>⚠️ Plus lent (table états)</td></tr>
+        <tr><td><strong>Usage moderne</strong></td><td>❌ Obsolète</td><td>✅ Standard</td></tr>
+      </table>
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Question type examen</strong>
+        "Firewall bloque réponses serveurs web légitimes. Cause probable ?"<br><br>
+        <strong>Réponse : Firewall Stateless SANS règle retour</strong><br><br>
+        Solution : Passer Stateful OU ajouter règle entrante ports éphémères
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. ZONES SÉCURITÉ -->
+  <div class="section">
+    <div class="section-label">Segmentation</div>
+    <h2>Zones de sécurité — Inside / DMZ / Outside</h2>
+
+    <p><strong>Zones</strong> = segmentation logique réseau selon niveau de confiance.</p>
+
+    <h3>// Zone Inside (Trusted)</h3>
+    <p><strong>Réseau interne</strong> — confiance élevée.</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Équipements : PCs employés, serveurs internes, imprimantes</li>
+      <li>IPs : Privées (192.168.x.x, 10.x.x.x)</li>
+      <li>Niveau sécurité : <strong>Élevé</strong> (confiance maximale)</li>
+      <li>Règles : Accès sortant libre (Internet), accès entrant bloqué par défaut</li>
+    </ul>
+
+    <h3>// Zone Outside (Untrusted)</h3>
+    <p><strong>Internet public</strong> — confiance zéro.</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Équipements : Internet, réseaux tiers, attaquants potentiels</li>
+      <li>IPs : Publiques</li>
+      <li>Niveau sécurité : <strong>Zéro</strong> (hostile par défaut)</li>
+      <li>Règles : Trafic entrant TRÈS restreint (uniquement services publics autorisés)</li>
+    </ul>
+
+    <h3>// Zone DMZ (DeMilitarized Zone)</h3>
+    <p><strong>Zone tampon</strong> — confiance limitée, exposition contrôlée.</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Équipements : Serveurs publics (web, mail, DNS, FTP)</li>
+      <li>IPs : Publiques ou privées (selon NAT)</li>
+      <li>Niveau sécurité : <strong>Moyen</strong> (isolée Inside ET Outside)</li>
+      <li>Règles : Internet → DMZ autorisé (ports spécifiques), DMZ → Inside très restreint</li>
+    </ul>
+
+    <h3>// Architecture typique</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;line-height:1.8;">
+      [Internet] (Outside)<br>
+          ↓<br>
+      [Firewall Interface 1]<br>
+          ↓<br>
+      [DMZ] — Serveurs web, mail<br>
+          ↓<br>
+      [Firewall Interface 2]<br>
+          ↓<br>
+      [Inside] — Réseau interne<br><br>
+
+      → Internet peut accéder DMZ (port 80/443)<br>
+      → DMZ NE PEUT PAS initier connexions vers Inside<br>
+      → Inside peut accéder DMZ (admin, backups)<br>
+      → Inside peut accéder Internet
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">🛡️</span>
+      <div class="callout-body">
+        <strong>Pourquoi DMZ ?</strong>
+        Si serveur web compromis dans DMZ → attaquant NE PEUT PAS accéder Inside directement. DMZ = isolation serveurs publics pour limiter blast radius si compromission.
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. ACL -->
+  <div class="section">
+    <div class="section-label">Règles</div>
+    <h2>ACL (Access Control List) — règles de filtrage</h2>
+
+    <p><strong>ACL</strong> = liste ordonnée de règles définissant quel trafic autoriser/bloquer.</p>
+
+    <h3>// Structure règle ACL</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>[Action] [Protocole] [IP Source] [Port Source] [IP Dest] [Port Dest]</strong><br><br>
+
+      Exemple :<br>
+      <strong style="color:var(--green)">PERMIT</strong> TCP 192.168.1.0/24 ANY ANY 80<br>
+      → Autorise réseau interne → any destination port 80 (HTTP)<br><br>
+
+      <strong style="color:var(--red)">DENY</strong> TCP ANY ANY 10.0.0.5 22<br>
+      → Bloque tout trafic SSH vers 10.0.0.5
+    </div>
+
+    <h3>// Ordre règles = CRITIQUE</h3>
+    <p>Règles évaluées <strong>de haut en bas</strong>. Première correspondance = appliquée, reste ignoré.</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--red)">❌ MAUVAIS ORDRE :</strong><br>
+      1. DENY ALL<br>
+      2. PERMIT 192.168.1.0/24 → ANY port 80<br><br>
+
+      → Règle 1 bloque TOUT (y compris trafic légitime)<br>
+      → Règle 2 jamais atteinte !<br><br>
+
+      <strong style="color:var(--green)">✅ BON ORDRE :</strong><br>
+      1. PERMIT 192.168.1.0/24 → ANY port 80<br>
+      2. DENY ALL<br><br>
+
+      → Règle 1 autorise trafic légitime<br>
+      → Règle 2 bloque reste (implicit deny)
+    </div>
+
+    <h3>// Implicit Deny</h3>
+    <p><strong>Implicit Deny</strong> = règle invisible à la fin de TOUTES les ACL : "DENY ALL".</p>
+    <p>Si aucune règle explicite ne correspond → paquet <strong>bloqué par défaut</strong>.</p>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Oublier Implicit Deny = erreur classique</strong>
+        Admin ajoute règle DENY spécifique en fin d'ACL → pense "bloquer juste ça".<br>
+        Oublie que l'Implicit Deny qui suit bloque TOUT le reste aussi !<br>
+        Solution : Toujours ajouter PERMIT nécessaires AVANT DENY final.
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. RÈGLES DIRECTIONNELLES -->
+  <div class="section">
+    <div class="section-label">Direction trafic</div>
+    <h2>Règles directionnelles — Inbound vs Outbound</h2>
+
+    <p>Règles firewall appliquées selon <strong>direction trafic</strong> par rapport à l'interface.</p>
+
+    <h3>// Inbound (Entrant)</h3>
+    <p>Trafic entrant VERS réseau protégé (Outside → Inside).</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Exemple : Internet → Serveur web interne</li>
+      <li>Par défaut : <strong>DENY ALL</strong> (sécurité maximale)</li>
+      <li>Autoriser : Uniquement services publics nécessaires</li>
+    </ul>
+
+    <h3>// Outbound (Sortant)</h3>
+    <p>Trafic sortant DEPUIS réseau protégé (Inside → Outside).</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Exemple : Employés → Internet navigation web</li>
+      <li>Par défaut : Souvent <strong>PERMIT ALL</strong> (confiance interne)</li>
+      <li>Restreindre : Bloquer sites dangereux, P2P, protocoles interdits</li>
+    </ul>
+
+    <h3>// Exemple config</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--green)">OUTBOUND (Inside → Outside) :</strong><br>
+      PERMIT TCP 192.168.1.0/24 → ANY port 80,443 (HTTP/S)<br>
+      PERMIT UDP 192.168.1.0/24 → ANY port 53 (DNS)<br>
+      DENY ALL (implicit)<br><br>
+
+      <strong style="color:var(--red)">INBOUND (Outside → Inside) :</strong><br>
+      PERMIT TCP ANY → 203.0.113.5 port 443 (HTTPS vers serveur web public)<br>
+      PERMIT established connections (stateful return traffic)<br>
+      DENY ALL (implicit)
+    </div>
+  </div>
+
+  <!-- 6. NGFW -->
+  <div class="section">
+    <div class="section-label">Évolution</div>
+    <h2>NGFW (Next-Generation Firewall)</h2>
+
+    <p><strong>NGFW</strong> = firewall avancé combinant filtrage traditionnel + fonctions sécurité modernes.</p>
+
+    <h3>// Fonctions NGFW</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ <strong>Stateful inspection</strong> (base)</li>
+      <li>✅ <strong>Application awareness</strong> : Identifie applications (Facebook, Skype) pas juste ports</li>
+      <li>✅ <strong>IPS intégré</strong> : Détection/prévention intrusions inline</li>
+      <li>✅ <strong>Deep packet inspection (DPI)</strong> : Analyse contenu paquets (malware, phishing)</li>
+      <li>✅ <strong>SSL/TLS inspection</strong> : Décryptage HTTPS pour analyser contenu chiffré</li>
+      <li>✅ <strong>User identity</strong> : Règles basées sur utilisateur (pas juste IP)</li>
+      <li>✅ <strong>Threat intelligence</strong> : Feeds signatures malware/botnet temps réel</li>
+      <li>✅ <strong>Sandboxing</strong> : Exécuter fichiers suspects dans environnement isolé</li>
+    </ul>
+
+    <h3>// Firewall traditionnel vs NGFW</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Fonction</th><th>Firewall traditionnel</th><th>NGFW</th></tr>
+        <tr><td><strong>Filtrage IP/port</strong></td><td>✅ Oui</td><td>✅ Oui</td></tr>
+        <tr><td><strong>Stateful inspection</strong></td><td>✅ Oui</td><td>✅ Oui</td></tr>
+        <tr><td><strong>Application awareness</strong></td><td>❌ Non</td><td>✅ Oui</td></tr>
+        <tr><td><strong>IPS intégré</strong></td><td>❌ Non</td><td>✅ Oui</td></tr>
+        <tr><td><strong>DPI</strong></td><td>❌ Non</td><td>✅ Oui</td></tr>
+        <tr><td><strong>SSL inspection</strong></td><td>❌ Non</td><td>✅ Oui</td></tr>
+        <tr><td><strong>User-based policies</strong></td><td>❌ Non</td><td>✅ Oui</td></tr>
+      </table>
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">🚀</span>
+      <div class="callout-body">
+        <strong>NGFW = standard moderne</strong>
+        Menaces modernes (malware, APT, ransomware) nécessitent inspection avancée. NGFW = firewall + IPS + antivirus + DPI. Recommandé entreprises 2024+.
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. PIÈGES -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : Stateless = pas de règles</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Stateless a des règles MAIS sans contexte connexions.<br><br>
+        Stateless = règles existent mais appliquées paquet par paquet individuellement.<br>
+        Stateful = règles + suivi état connexions.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : DMZ = plus sécurisée que Inside</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. DMZ = <strong>MOINS</strong> sécurisée que Inside.<br><br>
+        DMZ exposée Internet (serveurs publics). Inside = isolée, confiance élevée.<br>
+        DMZ → Inside bloqué par défaut pour protéger Inside.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : Ordre ACL pas important</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Ordre = <strong>CRITIQUE</strong>.<br><br>
+        Première règle correspondante appliquée, reste ignoré.<br>
+        DENY ALL en haut → bloque TOUT (y compris légitime).
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Stateless</strong> : Paquet par paquet, pas contexte, règles bidirectionnelles. <strong>Stateful</strong> : Suivi connexions, retours automatiques (standard)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Zones</strong> : Inside (confiance élevée), Outside (zéro confiance), DMZ (tampon serveurs publics)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>ACL</strong> : Ordre critique (haut→bas, première correspondance). Implicit Deny à la fin.</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Règles directionnelles</strong> : Inbound (entrant) restrictif, Outbound (sortant) permissif</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>NGFW</strong> : Application awareness, IPS, DPI, SSL inspection, user-based policies</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 11 : Équipements réseau</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">I12 - Phase 2</span>
+    <a class="nav-btn next" href="#">Cours 13 : IDS/IPS →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m2_i12_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+  <div style="margin-top:40px;text-align:center;">
+  <a class="nav-btn" href="index.html">← Accueil — Plan de cours</a>
+</body>
+</html>

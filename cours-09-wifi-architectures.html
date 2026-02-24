@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I09 — Wi-Fi : Architectures · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .comptia-box { background: rgba(251,191,36,0.05); border: 2px solid var(--amber); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .comptia-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--amber); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .comptia-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 2.0 — Implémentation</span> &nbsp;›&nbsp; Cours 9</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 2 · I09</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡☆ Moyen</span>
+  </div>
+
+  <h1>Wi-Fi — <span>Architectures</span></h1>
+  <span class="tagline">// BSS/ESS/IBSS, SSID, BSSID, cellules, WLC (contrôleur), CAPWAP, AP autonome vs léger</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je différencie BSS, ESS, IBSS</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends SSID vs BSSID</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise WLC et CAPWAP</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais AP autonome vs léger</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. BSS -->
+  <div class="section">
+    <div class="section-label">Architecture de base</div>
+    <h2>BSS (Basic Service Set)</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">📡</span>
+      <div class="callout-body">
+        <strong>Analogie — cellule téléphonique</strong>
+        BSS = 1 antenne de téléphone portable avec sa zone de couverture. Tous les téléphones dans la zone se connectent à cette antenne. En Wi-Fi, BSS = 1 Access Point + tous ses clients dans sa zone de couverture.
+      </div>
+    </div>
+
+    <p><strong>BSS (Basic Service Set)</strong> = unité de base d'un réseau Wi-Fi. 1 AP + tous les clients dans sa portée radio.</p>
+
+    <h3>// Composants BSS</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>1 Access Point (AP)</strong> : Point d'accès sans fil</li>
+      <li><strong>Clients (stations)</strong> : Laptops, smartphones, tablettes, IoT</li>
+      <li><strong>Zone de couverture</strong> : Portée radio de l'AP (~30-100m selon obstacles)</li>
+    </ul>
+
+    <h3>// BSSID (Basic Service Set Identifier)</h3>
+    <p><strong>BSSID</strong> = adresse MAC de l'AP. Identifie UNIQUEMENT cet AP parmi tous les autres.</p>
+    <p><strong>Format :</strong> <code>00:1A:2B:3C:4D:5E</code> (adresse MAC 48 bits)</p>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>BSSID = MAC de l'AP</strong>
+        1 AP = 1 BSSID. Si AP dual-band (2.4 + 5 GHz) → 2 BSSIDs (1 MAC par bande).
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. SSID -->
+  <div class="section">
+    <div class="section-label">Identification réseau</div>
+    <h2>SSID (Service Set Identifier)</h2>
+
+    <p><strong>SSID</strong> = nom du réseau Wi-Fi visible par utilisateurs. C'est ce que tu vois quand tu cherches réseaux disponibles.</p>
+
+    <h3>// Caractéristiques SSID</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Longueur</strong> : 0-32 caractères (ASCII)</li>
+      <li><strong>Case-sensitive</strong> : "WiFi" ≠ "wifi"</li>
+      <li><strong>Broadcast</strong> : Annoncé dans beacons par défaut</li>
+      <li><strong>Hidden SSID</strong> : Peut être masqué (non broadcast)</li>
+    </ul>
+
+    <h3>// SSID vs BSSID</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>SSID</th><th>BSSID</th></tr>
+        <tr><td><strong>C'est quoi</strong></td><td>Nom réseau (lisible)</td><td>Adresse MAC de l'AP</td></tr>
+        <tr><td><strong>Format</strong></td><td>Texte (0-32 char)</td><td>MAC 48 bits</td></tr>
+        <tr><td><strong>Visible</strong></td><td>Oui (sauf hidden)</td><td>Oui (identifiant technique)</td></tr>
+        <tr><td><strong>Unique</strong></td><td>Non (plusieurs APs même SSID)</td><td>Oui (1 BSSID = 1 AP)</td></tr>
+        <tr><td><strong>Exemple</strong></td><td>"Corp-WiFi"</td><td>00:1A:2B:3C:4D:5E</td></tr>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Hidden SSID ≠ sécurité</strong>
+        Masquer SSID n'empêche PAS détection. Outils (Wireshark, airodump-ng) voient toujours réseau. Hidden SSID = "security through obscurity" (inefficace). Vrais sécurité = WPA3 + long mot de passe.
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. ESS -->
+  <div class="section">
+    <div class="section-label">Architecture étendue</div>
+    <h2>ESS (Extended Service Set)</h2>
+
+    <p><strong>ESS</strong> = plusieurs APs avec même SSID connectés au même réseau. Permet roaming (itinérance) entre APs.</p>
+
+    <h3>// ESS = Plusieurs BSS interconnectés</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      ESS "Corp-WiFi" :<br><br>
+
+      AP1 (BSSID: 00:11:22:33:44:55) → SSID "Corp-WiFi"<br>
+      AP2 (BSSID: AA:BB:CC:DD:EE:FF) → SSID "Corp-WiFi"<br>
+      AP3 (BSSID: 11:22:33:44:55:66) → SSID "Corp-WiFi"<br><br>
+
+      → Utilisateur voit 1 seul réseau "Corp-WiFi"<br>
+      → En réalité 3 APs différents (3 BSSIDs)<br>
+      → Client bascule automatiquement entre APs (roaming)
+    </div>
+
+    <h3>// Roaming (itinérance)</h3>
+    <p>Client se déplace entre zones de couverture d'APs différents → bascule automatiquement vers AP avec meilleur signal SANS perdre connexion.</p>
+
+    <p><strong>Conditions roaming :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Tous APs avec <strong>même SSID</strong></li>
+      <li>Tous APs sur <strong>même VLAN/subnet</strong> (Layer 2 roaming)</li>
+      <li>Zones de couverture avec <strong>overlap 10-15%</strong></li>
+      <li>Même sécurité (WPA2/WPA3) et même clé</li>
+    </ul>
+
+    <div class="callout ok">
+      <span class="callout-icon">✅</span>
+      <div class="callout-body">
+        <strong>ESS = campus/entreprise</strong>
+        Bureau avec 50 APs "Corp-WiFi" → 1 ESS, 50 BSS. Employé se déplace librement, toujours connecté au même SSID. Smartphone bascule automatiquement entre APs selon signal.
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. IBSS -->
+  <div class="section">
+    <div class="section-label">Architecture Ad-Hoc</div>
+    <h2>IBSS (Independent Basic Service Set)</h2>
+
+    <p><strong>IBSS</strong> = réseau Wi-Fi peer-to-peer SANS Access Point. Clients communiquent directement entre eux.</p>
+
+    <p><strong>Aussi appelé :</strong> Ad-Hoc mode</p>
+
+    <h3>// Cas d'usage IBSS</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Partage fichiers entre 2 laptops (pas d'infrastructure)</li>
+      <li>Gaming LAN party temporaire</li>
+      <li>Connexion directe entre appareils (rare aujourd'hui)</li>
+    </ul>
+
+    <h3>// IBSS vs BSS</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>BSS (Infrastructure)</th><th>IBSS (Ad-Hoc)</th></tr>
+        <tr><td><strong>AP requis</strong></td><td>✅ Oui</td><td>❌ Non</td></tr>
+        <tr><td><strong>Topologie</strong></td><td>Étoile (clients→AP)</td><td>Mesh (peer-to-peer)</td></tr>
+        <tr><td><strong>Portée</strong></td><td>Zone AP (~100m)</td><td>Portée entre clients</td></tr>
+        <tr><td><strong>Usage</strong></td><td>Standard (99% des cas)</td><td>Temporaire, rare</td></tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>IBSS = quasi obsolète</strong>
+        Aujourd'hui remplacé par Wi-Fi Direct, Bluetooth, AirDrop. IBSS rarement utilisé en production. CompTIA teste concept pour culture générale.
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. WLC -->
+  <div class="section">
+    <div class="section-label">Gestion centralisée</div>
+    <h2>WLC (Wireless LAN Controller)</h2>
+
+    <p><strong>WLC (Wireless LAN Controller)</strong> = équipement centralisant gestion de tous les APs. Contrôle configuration, sécurité, roaming.</p>
+
+    <h3>// Fonctions WLC</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Configuration centralisée</strong> : SSIDs, canaux, puissance TX, sécurité</li>
+      <li><strong>Gestion APs légers</strong> : APs "dumb" sans config locale</li>
+      <li><strong>Roaming fluide</strong> : Orchestration handoffs entre APs</li>
+      <li><strong>Sécurité</strong> : Authentification RADIUS, policies centralisées</li>
+      <li><strong>Monitoring</strong> : Surveillance trafic, clients, performances</li>
+      <li><strong>Load balancing</strong> : Distribution clients entre APs</li>
+    </ul>
+
+    <h3>// Architecture WLC</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;line-height:1.8;">
+      [WLC] ←→ [Switch Core]<br>
+        ↓ CAPWAP tunnels<br>
+      [AP1] [AP2] [AP3] ... [AP50]<br>
+        ↓ Radio<br>
+      [Clients Wi-Fi]<br><br>
+
+      → WLC contrôle 50 APs depuis 1 point central<br>
+      → Admin configure SSIDs/sécurité sur WLC uniquement<br>
+      → Tous APs appliquent config automatiquement
+    </div>
+
+    <h3>// Avantages WLC</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ Config centralisée (pas AP par AP)</li>
+      <li>✅ Roaming Layer 3 (entre subnets)</li>
+      <li>✅ Scalabilité (centaines d'APs)</li>
+      <li>✅ Monitoring unifié</li>
+      <li>✅ Zero-touch provisioning APs</li>
+    </ul>
+  </div>
+
+  <!-- 6. CAPWAP -->
+  <div class="section">
+    <div class="section-label">Protocole</div>
+    <h2>CAPWAP — protocole WLC ↔ AP</h2>
+
+    <p><strong>CAPWAP (Control And Provisioning of Wireless Access Points)</strong> = protocole standard communication WLC ↔ APs légers.</p>
+
+    <h3>// 2 tunnels CAPWAP</h3>
+    <p><strong>1. Control tunnel (UDP 5246)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Configuration AP (SSID, canal, puissance)</li>
+      <li>Monitoring, statistiques</li>
+      <li>Management, découverte APs</li>
+    </ul>
+
+    <p><strong>2. Data tunnel (UDP 5247)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Trafic client encapsulé (données utilisateurs)</li>
+      <li>Client → AP → CAPWAP tunnel → WLC → réseau</li>
+    </ul>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Ports CAPWAP à retenir</strong>
+        Control : <strong>UDP 5246</strong><br>
+        Data : <strong>UDP 5247</strong>
+      </div>
+    </div>
+
+    <h3>// LWAPP vs CAPWAP</h3>
+    <p><strong>LWAPP</strong> (Lightweight Access Point Protocol) = prédécesseur propriétaire Cisco de CAPWAP. <strong>CAPWAP</strong> = standard IETF RFC 5415/5416 (successeur).</p>
+  </div>
+
+  <!-- 7. AP AUTONOME VS LÉGER -->
+  <div class="section">
+    <div class="section-label">Types d'AP</div>
+    <h2>AP Autonome vs AP Léger</h2>
+
+    <h3>// AP Autonome (Standalone / Fat AP)</h3>
+    <p><strong>AP indépendant</strong> avec config locale complète. Fonctionne seul sans WLC.</p>
+
+    <p><strong>Caractéristiques :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Configuration via interface web locale</li>
+      <li>Intelligence complète (DHCP, NAT, firewall, VPN...)</li>
+      <li>Pas besoin WLC</li>
+      <li>Usage : SOHO, petits bureaux (1-5 APs)</li>
+    </ul>
+
+    <h3>// AP Léger (Lightweight / Thin AP)</h3>
+    <p><strong>AP "dumb"</strong> qui dépend totalement du WLC. Pas de config locale.</p>
+
+    <p><strong>Caractéristiques :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Zéro config locale (WLC configure tout via CAPWAP)</li>
+      <li>Juste radio + tunneling vers WLC</li>
+      <li>Requiert WLC obligatoirement</li>
+      <li>Usage : Entreprises, campus, datacenters (10-1000+ APs)</li>
+    </ul>
+
+    <h3>// Comparaison</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>AP Autonome</th><th>AP Léger</th></tr>
+        <tr><td><strong>Config</strong></td><td>Locale (chaque AP)</td><td>Centralisée (WLC)</td></tr>
+        <tr><td><strong>Intelligence</strong></td><td>Complète</td><td>Minimale</td></tr>
+        <tr><td><strong>WLC requis</strong></td><td>❌ Non</td><td>✅ Oui</td></tr>
+        <tr><td><strong>Scalabilité</strong></td><td>⚠️ Faible (1-10 APs)</td><td>✅ Élevée (100s APs)</td></tr>
+        <tr><td><strong>Coût</strong></td><td>AP cher, pas de WLC</td><td>AP moins cher + WLC</td></tr>
+        <tr><td><strong>Usage</strong></td><td>SOHO, PME</td><td>Entreprises, campus</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 8. PIÈGES -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : SSID = BSSID</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>.<br>
+        <strong>SSID</strong> : Nom réseau (texte, plusieurs APs peuvent avoir même)<br>
+        <strong>BSSID</strong> : Adresse MAC de l'AP (unique par AP)
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : ESS = 1 AP</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. ESS = <strong>plusieurs APs</strong> avec même SSID.<br>
+        BSS = 1 AP
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : CAPWAP port TCP 5246</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. CAPWAP = <strong>UDP</strong> (pas TCP).<br>
+        Control : UDP 5246, Data : UDP 5247
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>BSS</strong> : 1 AP + clients. <strong>BSSID</strong> = MAC de l'AP (unique)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>SSID</strong> : Nom réseau Wi-Fi (0-32 char, plusieurs APs peuvent avoir même)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>ESS</strong> : Plusieurs APs même SSID → roaming entre APs</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>IBSS</strong> : Ad-Hoc peer-to-peer sans AP (obsolète)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>WLC</strong> : Contrôleur centralisé gérant tous APs légers</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>CAPWAP</strong> : Protocole WLC↔AP. UDP 5246 (control) + UDP 5247 (data)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>AP Autonome</strong> : Config locale, indépendant. <strong>AP Léger</strong> : Dépend WLC via CAPWAP</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 8 : Wi-Fi canaux</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">I09 - Phase 2</span>
+    <a class="nav-btn next" href="#">Cours 10 : Wi-Fi sécurité →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m2_i09_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+</body>
+</html>

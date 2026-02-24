@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I11 — Équipements réseau et leurs rôles · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .comptia-box { background: rgba(251,191,36,0.05); border: 2px solid var(--amber); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .comptia-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--amber); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .comptia-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .exq { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s; }
+  .exq:hover { border-color: rgba(56,189,248,0.25); }
+  .exq-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); min-width: 24px; flex-shrink: 0; margin-top: 2px; }
+  .exq-text { flex: 1; color: var(--text); }
+  .exq-reveal { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 0.7rem; white-space: nowrap; margin-top: 2px; }
+  .exq-answer { display: none; background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.85rem; color: var(--green); margin-bottom: 10px; line-height: 1.8; }
+  .exq-answer.visible { display: block; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 2.0 — Implémentation</span> &nbsp;›&nbsp; Cours 11</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 2 · I11</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡☆ Moyen</span>
+  </div>
+
+  <h1><span>Équipements réseau</span> et leurs rôles</h1>
+  <span class="tagline">// Hub (L1), Switch (L2/L3), Routeur (L3), Firewall, WAP, Proxy, Load Balancer, IDS/IPS</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je différencie Hub vs Switch vs Routeur</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais les couches OSI de chaque équipement</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise rôles Firewall, Proxy, Load Balancer</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends IDS vs IPS</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. TABLEAU COMPARATIF -->
+  <div class="section">
+    <div class="section-label">Vue d'ensemble</div>
+    <h2>Panorama équipements réseau</h2>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Équipement</th><th>Couche OSI</th><th>Rôle principal</th><th>Décision sur</th></tr>
+        <tr><td><strong>Hub</strong></td><td>Layer 1</td><td>Répéteur multiport</td><td>❌ Aucune (répète tout)</td></tr>
+        <tr><td><strong>Switch</strong></td><td>Layer 2</td><td>Commutation intelligente</td><td>Adresse MAC</td></tr>
+        <tr><td><strong>Switch L3</strong></td><td>Layer 2+3</td><td>Switch + Routage</td><td>MAC + IP</td></tr>
+        <tr><td><strong>Routeur</strong></td><td>Layer 3</td><td>Routage inter-réseaux</td><td>Adresse IP</td></tr>
+        <tr><td><strong>Firewall</strong></td><td>Layer 3-7</td><td>Filtrage sécurité</td><td>IP, port, protocole, contenu</td></tr>
+        <tr><td><strong>WAP</strong></td><td>Layer 2</td><td>Point d'accès Wi-Fi</td><td>MAC (sans-fil)</td></tr>
+        <tr><td><strong>Proxy</strong></td><td>Layer 7</td><td>Intermédiaire HTTP/S</td><td>URL, contenu web</td></tr>
+        <tr><td><strong>Load Balancer</strong></td><td>Layer 4-7</td><td>Répartition charge</td><td>IP/port ou HTTP</td></tr>
+        <tr><td><strong>IDS</strong></td><td>Layer 2-7</td><td>Détection intrusions (passif)</td><td>Signatures, anomalies</td></tr>
+        <tr><td><strong>IPS</strong></td><td>Layer 2-7</td><td>Prévention intrusions (inline)</td><td>Signatures, anomalies</td></tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen Network+</strong>
+        CompTIA teste : couches OSI de chaque équipement, différence Hub vs Switch, Switch L2 vs L3, IDS vs IPS, Forward vs Reverse Proxy. Mémoriser le tableau !
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. HUB -->
+  <div class="section">
+    <div class="section-label">Layer 1</div>
+    <h2>Hub — répéteur multiport (obsolète)</h2>
+
+    <p><strong>Hub</strong> = équipement Layer 1 (Physique) qui répète signal électrique sur TOUS les ports.</p>
+
+    <h3>// Fonctionnement</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Reçoit trame sur port 1 → <strong>répète sur TOUS les autres ports</strong></li>
+      <li>❌ Pas d'intelligence (ne lit pas MAC, ne filtre rien)</li>
+      <li>❌ Domaine de collision unique (tous ports partagent bande passante)</li>
+      <li>❌ Half-duplex uniquement</li>
+    </ul>
+
+    <h3>// Problèmes Hub</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Collisions</strong> : 2 équipements transmettent en même temps → collision</li>
+      <li><strong>Bande passante partagée</strong> : Hub 100Mbps avec 10 PCs = 10Mbps par PC</li>
+      <li><strong>Sécurité zéro</strong> : Tout le monde voit tout le trafic (facile à sniffer)</li>
+    </ul>
+
+    <div class="callout warn">
+      <span class="callout-icon">🚫</span>
+      <div class="callout-body">
+        <strong>Hub = OBSOLÈTE</strong>
+        Plus utilisé depuis ~2000. Remplacé par switches. Si tu vois Hub en production → remplacer immédiatement par switch. CompTIA teste concept pour culture générale uniquement.
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. SWITCH -->
+  <div class="section">
+    <div class="section-label">Layer 2</div>
+    <h2>Switch — commutation intelligente MAC</h2>
+
+    <p><strong>Switch</strong> = équipement Layer 2 (Data Link) qui forward trames basé sur <strong>adresses MAC</strong>.</p>
+
+    <h3>// Fonctionnement</h3>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Apprentissage MAC</strong> : Switch construit table MAC (MAC ↔ port)</li>
+      <li><strong>Forward intelligent</strong> : Trame vers MAC connue → envoi UNIQUEMENT sur port destination</li>
+      <li><strong>Flooding</strong> : MAC inconnue → broadcast sur tous ports (sauf source)</li>
+      <li><strong>Filtrage</strong> : Trame intra-port ignorée</li>
+    </ol>
+
+    <h3>// Avantages vs Hub</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ <strong>Domaines de collision séparés</strong> (1 par port)</li>
+      <li>✅ <strong>Full-duplex</strong> : TX et RX simultanés</li>
+      <li>✅ <strong>Bande passante dédiée</strong> : Chaque port = 100Mbps/1Gbps complet</li>
+      <li>✅ <strong>Meilleure sécurité</strong> : Trafic pas broadcast (sauf ARP/broadcast)</li>
+    </ul>
+
+    <h3>// Switch L2 vs Switch L3</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>Switch Layer 2</th><th>Switch Layer 3</th></tr>
+        <tr><td><strong>Couche</strong></td><td>Layer 2 uniquement</td><td>Layer 2 + Layer 3</td></tr>
+        <tr><td><strong>Décision</strong></td><td>Adresse MAC</td><td>MAC + IP</td></tr>
+        <tr><td><strong>Routage</strong></td><td>❌ Non</td><td>✅ Oui (inter-VLAN)</td></tr>
+        <tr><td><strong>VLANs</strong></td><td>✅ Oui (isolation L2)</td><td>✅ Oui + routage inter-VLAN</td></tr>
+        <tr><td><strong>Usage</strong></td><td>Access layer, simple</td><td>Distribution/Core, routage rapide</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 4. ROUTEUR -->
+  <div class="section">
+    <div class="section-label">Layer 3</div>
+    <h2>Routeur — routage inter-réseaux</h2>
+
+    <p><strong>Routeur</strong> = équipement Layer 3 (Network) qui route paquets entre <strong>réseaux différents</strong> basé sur adresses IP.</p>
+
+    <h3>// Rôle principal</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Interconnecter réseaux (LANs, WANs, Internet)</li>
+      <li>Prendre décisions routage basées sur <strong>table de routage</strong></li>
+      <li>Séparer domaines de broadcast (1 broadcast domain par interface)</li>
+      <li>NAT/PAT (traduire IPs privées ↔ publiques)</li>
+    </ul>
+
+    <h3>// Switch vs Routeur</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>Switch (L2)</th><th>Routeur (L3)</th></tr>
+        <tr><td><strong>Couche</strong></td><td>Layer 2</td><td>Layer 3</td></tr>
+        <tr><td><strong>Décision sur</strong></td><td>Adresse MAC</td><td>Adresse IP</td></tr>
+        <tr><td><strong>Domaine broadcast</strong></td><td>1 seul (tous ports)</td><td>Séparé par interface</td></tr>
+        <tr><td><strong>Usage</strong></td><td>Même réseau (LAN)</td><td>Entre réseaux différents</td></tr>
+        <tr><td><strong>Exemple</strong></td><td>PC1 → PC2 (même subnet)</td><td>LAN → Internet</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 5. FIREWALL -->
+  <div class="section">
+    <div class="section-label">Sécurité</div>
+    <h2>Firewall — filtrage et protection</h2>
+
+    <p><strong>Firewall</strong> = équipement Layer 3-7 qui filtre trafic selon <strong>règles de sécurité</strong>.</p>
+
+    <h3>// Rôles</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Bloquer trafic non autorisé (entrant/sortant)</li>
+      <li>Autoriser uniquement services légitimes</li>
+      <li>Protéger périmètre réseau (Inside ↔ Outside)</li>
+      <li>Créer zones sécurisées (DMZ)</li>
+    </ul>
+
+    <p><strong>Types :</strong> Stateless, Stateful, NGFW (Next-Generation Firewall).</p>
+    <p><em>→ Détails complets dans Cours 12</em></p>
+  </div>
+
+  <!-- 6. WAP -->
+  <div class="section">
+    <div class="section-label">Sans-fil</div>
+    <h2>WAP (Wireless Access Point)</h2>
+
+    <p><strong>WAP</strong> = équipement Layer 2 qui permet connexion Wi-Fi. Bridge entre réseau filaire (Ethernet) et sans-fil (802.11).</p>
+
+    <h3>// Rôle</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Émettre signal Wi-Fi (SSID, sécurité WPA2/WPA3)</li>
+      <li>Accepter connexions clients sans-fil</li>
+      <li>Forward trames entre Wi-Fi ↔ Ethernet</li>
+      <li>Gérer authentification clients</li>
+    </ul>
+
+    <p><strong>Types :</strong> AP autonome, AP léger (contrôlé par WLC).</p>
+    <p><em>→ Détails complets dans Cours 7-10 (Wi-Fi)</em></p>
+  </div>
+
+  <!-- 7. PROXY -->
+  <div class="section">
+    <div class="section-label">Intermédiaire</div>
+    <h2>Proxy — intermédiaire applicatif</h2>
+
+    <p><strong>Proxy</strong> = équipement Layer 7 (Application) qui agit comme intermédiaire entre client et serveur.</p>
+
+    <h3>// Types</h3>
+    <p><strong>Forward Proxy</strong> : Client → Proxy → Internet</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Cache web (accélérer accès sites fréquents)</li>
+      <li>Filtrage contenu (bloquer sites interdits)</li>
+      <li>Anonymisation (masquer IP client)</li>
+      <li>Usage : Entreprises (contrôle employés)</li>
+    </ul>
+
+    <p><strong>Reverse Proxy</strong> : Internet → Proxy → Serveurs internes</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Load balancing (répartir requêtes)</li>
+      <li>SSL termination (déchiffrer HTTPS)</li>
+      <li>Protection serveurs (cache, WAF)</li>
+      <li>Usage : Datacenters, sites web haute disponibilité</li>
+    </ul>
+
+    <p><em>→ Détails complets dans Cours 14</em></p>
+  </div>
+
+  <!-- 8. LOAD BALANCER -->
+  <div class="section">
+    <div class="section-label">Haute disponibilité</div>
+    <h2>Load Balancer — répartition de charge</h2>
+
+    <p><strong>Load Balancer</strong> = équipement Layer 4-7 qui répartit trafic entre plusieurs serveurs.</p>
+
+    <h3>// Rôles</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Haute disponibilité</strong> : Si serveur tombe → redirect vers autres</li>
+      <li><strong>Scalabilité</strong> : Ajouter serveurs = plus de capacité</li>
+      <li><strong>Performances</strong> : Répartir charge uniformément</li>
+    </ul>
+
+    <h3>// Algorithmes</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Round-robin</strong> : Tour à tour (serveur 1, 2, 3, 1, 2...)</li>
+      <li><strong>Least-connection</strong> : Serveur avec moins de connexions actives</li>
+      <li><strong>IP hash</strong> : Client IP → toujours même serveur (persistence)</li>
+    </ul>
+
+    <p><em>→ Détails complets dans Cours 14</em></p>
+  </div>
+
+  <!-- 9. IDS/IPS -->
+  <div class="section">
+    <div class="section-label">Détection/Prévention</div>
+    <h2>IDS vs IPS — intrusion detection/prevention</h2>
+
+    <h3>// IDS (Intrusion Detection System)</h3>
+    <p><strong>IDS</strong> = système de détection <strong>PASSIF</strong>. Écoute trafic en copie (mirroring), alerte admin si attaque détectée.</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Mode : Out-of-band (passif)</li>
+      <li>Action : <strong>Alerte uniquement</strong> (logs, SIEM)</li>
+      <li>Impact : ❌ Ne bloque rien</li>
+    </ul>
+
+    <h3>// IPS (Intrusion Prevention System)</h3>
+    <p><strong>IPS</strong> = système de prévention <strong>ACTIF</strong>. Inline dans flux, bloque attaques en temps réel.</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Mode : In-band (inline)</li>
+      <li>Action : <strong>Bloque + alerte</strong></li>
+      <li>Impact : ✅ Arrête attaques</li>
+    </ul>
+
+    <h3>// IDS vs IPS</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>IDS</th><th>IPS</th></tr>
+        <tr><td><strong>Mode</strong></td><td>Passif (out-of-band)</td><td>Actif (inline)</td></tr>
+        <tr><td><strong>Action</strong></td><td>Alerte admin</td><td>Bloque attaque</td></tr>
+        <tr><td><strong>Impact perf</strong></td><td>❌ Aucun</td><td>⚠️ Léger (latence)</td></tr>
+        <tr><td><strong>Risque</strong></td><td>❌ Pas de faux positifs bloquants</td><td>⚠️ Faux positifs = coupures</td></tr>
+        <tr><td><strong>Usage</strong></td><td>Monitoring, analyse</td><td>Protection active</td></tr>
+      </table>
+    </div>
+
+    <p><em>→ Détails complets dans Cours 13</em></p>
+  </div>
+
+  <!-- 10. PIÈGES -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : Switch = Layer 3</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Switch standard = <strong>Layer 2</strong> (MAC).<br><br>
+        Switch <strong>Layer 3</strong> existe MAIS c'est une catégorie spéciale (switch + routeur). Par défaut, switch = L2.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : IDS bloque attaques</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. IDS = <strong>alerte uniquement</strong> (passif).<br><br>
+        <strong>IPS</strong> = bloque attaques (actif, inline)
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : Hub = Switch lent</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Hub ≠ Switch lent.<br><br>
+        Hub = Layer 1 (répète tout, domaine collision unique, obsolète)<br>
+        Switch = Layer 2 (décisions MAC, domaines collision séparés)
+      </div>
+    </div>
+  </div>
+
+  <!-- 11. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Hub</strong> (L1) : Répète tout, obsolète. <strong>Switch</strong> (L2) : MAC, intelligent. <strong>Routeur</strong> (L3) : IP, inter-réseaux</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Switch L3</strong> : Combine switching L2 + routage L3 (inter-VLAN rapide)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Firewall</strong> (L3-7) : Filtrage sécurité, règles ACL, zones DMZ</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>WAP</strong> (L2) : Access Point Wi-Fi, bridge Ethernet ↔ 802.11</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Proxy</strong> (L7) : Forward (client→Internet) vs Reverse (Internet→serveurs)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Load Balancer</strong> (L4-7) : Répartition charge, haute disponibilité (round-robin, least-connection)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>IDS</strong> : Passif, alerte. <strong>IPS</strong> : Actif inline, bloque attaques</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 10 : Wi-Fi sécurité</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">I11 - Phase 2</span>
+    <a class="nav-btn next" href="#">Cours 12 : Firewall →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m2_i11_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+function toggleAnswer(exqEl) {
+  const answer = exqEl.nextElementSibling;
+  const open = answer.classList.contains('visible');
+  document.querySelectorAll('.exq-answer').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.exq-reveal').forEach(r => r.textContent = '▼ voir');
+  if(!open) { answer.classList.add('visible'); exqEl.querySelector('.exq-reveal').textContent = '▲ cacher'; }
+}
+initMastery();
+</script>
+  <div style="margin-top:40px;text-align:center;">
+  <a class="nav-btn" href="index.html">← Accueil — Plan de cours</a>
+</body>
+</html>
