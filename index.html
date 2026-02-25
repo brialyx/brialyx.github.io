@@ -313,17 +313,17 @@ const PLAN = [
         note: "Point de départ absolu — tout repose sur ces bases",
         topics: [
           // COUCHE PAR COUCHE (bas vers haut = progression OSI)
-          { id:"c01", name:"c1. Binaire & systèmes de numérotation", url:"cours-01-binaire-numerotation.html",    desc:"Binaire, décimal, hexadécimal — conversions indispensables pour le subnetting", tags:["key","exam"], diff:1 },
-          { id:"c02", name:"c2. Modèle OSI — 7 couches", url:"cours-02-modele-osi.html",                desc:"Physique→Liaison→Réseau→Transport→Session→Présentation→Application ; mnémoniques", tags:["key","exam"], diff:1 },
-          { id:"c03", name:"c3. Encapsulation / Décapsulation", url:"cours-03-encapsulation-decapsulation.html",         desc:"Comment les données sont encapsulées couche par couche (PDU : bit, trame, paquet, segment, donnée)", tags:["key","exam"], diff:2 },
-          { id:"c04", name:"c4. Modèle TCP/IP — 4 couches", url:"cours-04-modele-tcp-ip.html",             desc:"Lien réseau / Internet / Transport / Application — comparaison avec OSI", tags:["key","exam"], diff:1 },
+          { id:"c01", name:"c01. Binaire & systèmes de numérotation", url:"cours-01-binaire-numerotation.html",    desc:"Binaire, décimal, hexadécimal — conversions indispensables pour le subnetting", tags:["key","exam"], diff:1 },
+          { id:"c02", name:"c02. Modèle OSI — 7 couches", url:"cours-02-modele-osi.html",                desc:"Physique→Liaison→Réseau→Transport→Session→Présentation→Application ; mnémoniques", tags:["key","exam"], diff:1 },
+          { id:"c03", name:"c03. Encapsulation / Décapsulation", url:"cours-03-encapsulation-decapsulation.html",         desc:"Comment les données sont encapsulées couche par couche (PDU : bit, trame, paquet, segment, donnée)", tags:["key","exam"], diff:2 },
+          { id:"c04", name:"c04. Modèle TCP/IP — 4 couches", url:"cours-04-modele-tcp-ip.html",             desc:"Lien réseau / Internet / Transport / Application — comparaison avec OSI", tags:["key","exam"], diff:1 },
           // COUCHE PHYSIQUE
-          { id:"c05", name:"c5. Types de câblage cuivre", url:"cours-05-cablage-cuivre",               desc:"UTP Cat5e/Cat6/Cat6a, STP, coaxial — débit, portée, blindage, connecteur RJ-45", tags:["key","lab"], diff:2 },
-          { id:"c06", name:"c6. Câblage fibre optique", url:"cours-06-cablage-fibre-optique",                 desc:"Monomode (SMF) vs Multimode (MMF), connecteurs LC/SC/ST/MTP, pertes", tags:["key","lab"], diff:2 },
-          { id:"c07", name:"c7. Connecteurs & transceivers", url:"cours-07-connecteurs-transceivers",            desc:"SFP, SFP+, QSFP, DAC, BiDi, GBIC — formats et cas d'usage", tags:["proto"], diff:2 },
-          { id:"c08", name:"c8. Standards Ethernet IEEE 802.3", url:"cours-08-standards-ethernet-ieee-802-3",         desc:"10/100/1G/10GBase-T, Half/Full-duplex, Auto-negociation, PoE 802.3af/at/bt", tags:["key","proto"], diff:2 },
-          { id:"c08b", name:"c8b. Structure de la trame Ethernet", url:"cours-08b-structure-trame-ethernet",         desc:"Préambule (7B) + SFD (1B), MAC destination (6B), MAC source (6B), EtherType/Length (2B), Payload (46-1500B), FCS (4B) — taille min 64B, max 1518B", tags:["key","exam"], diff:2 },
-          { id:"c09", name:"c9. MTU et fragmentation IP", url:"cours-9-mtu-fragmentation-ip",               desc:"MTU = 1500 octets par défaut, fragmentation, PMTUD, problèmes jumbo frames", tags:["key","exam"], diff:2 },
+          { id:"c05", name:"c05. Types de câblage cuivre", url:"cours-05-cablage-cuivre",               desc:"UTP Cat5e/Cat6/Cat6a, STP, coaxial — débit, portée, blindage, connecteur RJ-45", tags:["key","lab"], diff:2 },
+          { id:"c06", name:"c06. Câblage fibre optique", url:"cours-06-cablage-fibre-optique",                 desc:"Monomode (SMF) vs Multimode (MMF), connecteurs LC/SC/ST/MTP, pertes", tags:["key","lab"], diff:2 },
+          { id:"c07", name:"c07. Connecteurs & transceivers", url:"cours-07-connecteurs-transceivers",            desc:"SFP, SFP+, QSFP, DAC, BiDi, GBIC — formats et cas d'usage", tags:["proto"], diff:2 },
+          { id:"c08", name:"c08. Standards Ethernet IEEE 802.3", url:"cours-08-standards-ethernet-ieee-802-3",         desc:"10/100/1G/10GBase-T, Half/Full-duplex, Auto-negociation, PoE 802.3af/at/bt", tags:["key","proto"], diff:2 },
+          { id:"c08b", name:"c08b. Structure de la trame Ethernet", url:"cours-08b-structure-trame-ethernet",         desc:"Préambule (7B) + SFD (1B), MAC destination (6B), MAC source (6B), EtherType/Length (2B), Payload (46-1500B), FCS (4B) — taille min 64B, max 1518B", tags:["key","exam"], diff:2 },
+          { id:"c09", name:"c09. MTU et fragmentation IP", url:"cours-9-mtu-fragmentation-ip",               desc:"MTU = 1500 octets par défaut, fragmentation, PMTUD, problèmes jumbo frames", tags:["key","exam"], diff:2 },
           // COUCHE LIAISON
           { id:"c10", name:"c10. Topologies réseau", url:"cours-10-topologies-reseau",                     desc:"Bus, Étoile, Étoile étendue, Anneau, Maillé (full/partial), Point-à-Point, Hub-and-Spoke", tags:["key"], diff:1 },
           { id:"c11", name:"c11. Switching — bases", url:"cours-11-switching-bases",                     desc:"MAC address table, forwarding/filtering, flooding, collision domain vs broadcast domain", tags:["key","lab"], diff:2 },
@@ -375,9 +375,9 @@ const PLAN = [
           { id:"i05", name:"i05. Port Security", url:"cours-05-port-security",                         desc:"Sticky MAC, violation modes (shutdown/restrict/protect), max MAC addresses — exam très fréquent", tags:["key","exam","lab"], diff:3 },
           { id:"i06", name:"i06. VxLAN", url:"cours-06-vxlan",                                 desc:"Virtual Extensible LAN — overlay réseau pour datacenters, VTEP, encapsulation UDP port 4789", tags:["new","key"], diff:3 },
           // SANS-FIL
-          { id:"i07", name:"i7. Wi-Fi — Standards 802.11", url:"cours-07-wifi-standards-802-11",              desc:"802.11a/b/g/n/ac/ax (Wi-Fi 6/6E), bandes 2.4GHz vs 5GHz, débits théoriques, MIMO", tags:["key","proto"], diff:2 },
-          { id:"i08", name:"i8. Wi-Fi — Canaux et fréquences", url:"cours-08-wifi-canaux-frequences",          desc:"Canaux non-chevauchants (1/6/11 sur 2.4GHz), canaux 5GHz, interférences, RSSI, SNR", tags:["key","exam","lab"], diff:3 },
-          { id:"i09", name:"i9. Wi-Fi — Architectures", url:"cours-09-wifi-architectures",                 desc:"BSS/ESS/IBSS, SSID, BSSID, cellules, WLC (contrôleur), CAPWAP, AP autonome vs léger", tags:["key","exam"], diff:2 },
+          { id:"i07", name:"i07. Wi-Fi — Standards 802.11", url:"cours-07-wifi-standards-802-11",              desc:"802.11a/b/g/n/ac/ax (Wi-Fi 6/6E), bandes 2.4GHz vs 5GHz, débits théoriques, MIMO", tags:["key","proto"], diff:2 },
+          { id:"i08", name:"i08. Wi-Fi — Canaux et fréquences", url:"cours-08-wifi-canaux-frequences",          desc:"Canaux non-chevauchants (1/6/11 sur 2.4GHz), canaux 5GHz, interférences, RSSI, SNR", tags:["key","exam","lab"], diff:3 },
+          { id:"i09", name:"i09. Wi-Fi — Architectures", url:"cours-09-wifi-architectures",                 desc:"BSS/ESS/IBSS, SSID, BSSID, cellules, WLC (contrôleur), CAPWAP, AP autonome vs léger", tags:["key","exam"], diff:2 },
           { id:"i10", name:"i10. Wi-Fi — Sécurité sans-fil", url:"cours-10-wifi-securite-sans-fil",             desc:"WEP (vulnérable), WPA/WPA2/WPA3, EAP, PEAP, TKIP vs AES/CCMP, Personal vs Enterprise", tags:["key","exam"], diff:3 },
           // ÉQUIPEMENTS
           { id:"i11", name:"i11. Équipements réseau et leurs rôles", url:"cours-11-equipements-reseau-roles",     desc:"Hub (L1), Switch (L2/L3), Routeur (L3), Firewall, WAP, Proxy, Load Balancer, IDS/IPS", tags:["key","exam"], diff:2 },
@@ -398,8 +398,8 @@ const PLAN = [
           { id:"i22b", name:"i22b. 802.1p CoS — Class of Service", url:"cours-22b-cos-802-1p-class-of-service",         desc:"3 bits dans le header 802.1Q (0=Best Effort → 7=Network Control), marquage au niveau Liaison de données, priorité de trafic avant DSCP (couche 3), utilisé pour VoIP (CoS 5) et signalisation (CoS 3)", tags:["key","exam","proto"], diff:3 },
           { id:"i23", name:"i23. VoIP et qualité de service (QoS)", url:"cours-23-voip-qos-quality-of-service",      desc:"DSCP, CoS 802.1p, marquage, file d'attente prioritaire, jitter (<50ms), latence, gigue, SIP/RTP", tags:["key","proto","exam"], diff:3 },
           // PHYSIQUE
-          { id:"i24", name:"i24. Installation physique — MDF/IDF",        desc:"Main Distribution Frame, Intermediate Distribution Frame, patch panels, armoires, gestion des câbles", tags:["new","key"], diff:1 },
-          { id:"i25", name:"i25. Infrastructure as Code (IaC)",           desc:"Ansible, Terraform — automatisation de la configuration réseau, reproductibilité", tags:["new"], diff:2 },
+          { id:"i24", name:"i24. Installation physique — MDF/IDF", url:"cours-24-installation-physique-mdf-idf",       desc:"Main Distribution Frame, Intermediate Distribution Frame, patch panels, armoires, gestion des câbles", tags:["new","key"], diff:2 },
+          { id:"i25", name:"i25. Infrastructure as Code (IaC)", url:"cours-25-infrastructure-as-code-iac",          desc:"Ansible, Terraform — automatisation de la configuration réseau, reproductibilité", tags:["new"], diff:3 },
         ]
       }
     ]
@@ -416,8 +416,8 @@ const PLAN = [
         bgColor: "rgba(34,211,160,0.10)",
         note: "Maintenir et surveiller un réseau en production",
         topics: [
-          { id:"o01", name:"Documentation réseau",                   desc:"Diagrammes logiques vs physiques, inventaire des équipements, schémas de câblage, baseline", tags:["key","exam"], diff:1 },
-          { id:"o02", name:"Change Management (gestion des changements)", desc:"Processus RFC, approbation, fenêtre de maintenance, rollback plan, CMDB", tags:["key","exam"], diff:2 },
+          { id:"o01", name:"o01. Documentation réseau", url:"cours-01-documentation-reseau",                  desc:"Diagrammes logiques vs physiques, inventaire des équipements, schémas de câblage, baseline", tags:["key","exam"], diff:2 },
+          { id:"o02", name:"o02. Change Management (gestion des changements)", url:"cours-02-change-management", desc:"Processus RFC, approbation, fenêtre de maintenance, rollback plan, CMDB", tags:["key","exam"], diff:2 },
           { id:"o03", name:"Gestion des adresses IP (IPAM)",         desc:"Suivi des plages, conflits d'adresses, outils IPAM, documentation des VLAN", tags:["key","lab"], diff:1 },
           { id:"o04", name:"Monitoring réseau — SNMP",               desc:"SNMP v1/v2c/v3, OID, MIB, traps, polling — v3 = sécurisé (authPriv)", tags:["key","lab","proto"], diff:2 },
           { id:"o05", name:"Monitoring — NetFlow & sFlow",           desc:"Analyse de flux, comptabilité trafic, détection anomalies, collecteurs NetFlow", tags:["key","lab"], diff:2 },
