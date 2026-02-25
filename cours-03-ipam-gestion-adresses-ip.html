@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>O03 — Gestion des adresses IP (IPAM) · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 3.0 — Opérations & Surveillance</span> &nbsp;›&nbsp; Cours 03</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 3 · O03</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-lab">🧪 LAB</span>
+    <span class="pill pill-diff">⚡⚡☆ Moyen</span>
+  </div>
+
+  <h1><span>Gestion des adresses IP</span> (IPAM)</h1>
+  <span class="tagline">// Suivi des plages, conflits d'adresses, outils IPAM, documentation des VLAN</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends concept IPAM</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise suivi plages IP et allocation</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais détection/résolution conflits IP</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je sais utiliser outils IPAM (NetBox, phpIPAM)</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- CONCEPT IPAM -->
+  <div class="section">
+    <div class="section-label">IP Address Management</div>
+    <h2>IPAM — Pourquoi gérer les IPs ?</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">📋</span>
+      <div class="callout-body">
+        <strong>Analogie — attribution places parking</strong>
+        Réseau = parking. IPs = places numérotées. Sans gestion : 2 voitures même place (conflit IP), places vides perdues (gaspillage), chaos retrouver voiture. IPAM = registre central attribution places.
+      </div>
+    </div>
+
+    <p><strong>IPAM (IP Address Management)</strong> = processus/outils suivre et gérer espace adressage IP réseau. Évite conflits, optimise utilisation, maintient documentation.</p>
+
+    <h3>// Problèmes sans IPAM</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>❌ <strong>Conflits IP</strong> : 2 devices même IP → réseau casse</li>
+      <li>❌ <strong>Épuisement non détecté</strong> : Subnet /24 saturé → pas d'IPs libres nouveaux devices</li>
+      <li>❌ <strong>Gaspillage</strong> : Grandes plages réservées, sous-utilisées</li>
+      <li>❌ <strong>Pas visibilité</strong> : "Combien d'IPs libres VLAN 10 ?" → personne sait</li>
+      <li>❌ <strong>Troubleshooting lent</strong> : "Qui utilise 10.0.1.50 ?" → chercher partout</li>
+    </ul>
+
+    <h3>// Bénéfices IPAM</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ <strong>Prévention conflits</strong> : Base centralisée allocation IPs</li>
+      <li>✅ <strong>Visibilité utilisation</strong> : Taux occupation subnets (80% utilisé → planifier expansion)</li>
+      <li>✅ <strong>Optimisation</strong> : Récupérer IPs inutilisées</li>
+      <li>✅ <strong>Automatisation</strong> : Intégration DHCP, DNS</li>
+      <li>✅ <strong>Audit/Compliance</strong> : Historique allocations (qui, quand, pourquoi)</li>
+    </ul>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Conflit IP = catastrophe réseau</strong>
+        2 devices même IP → comportement erratique, connexions intermittentes, downtime. IPAM = assurance anti-conflits.
+      </div>
+    </div>
+  </div>
+
+  <!-- SUIVI PLAGES -->
+  <div class="section">
+    <div class="section-label">IP ranges</div>
+    <h2>Suivi des plages IP</h2>
+
+    <h3>// Hiérarchie allocation</h3>
+    <p>Organisation typique espace IP entreprise :</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;line-height:1.8;">
+      <strong>Supernet global :</strong> 10.0.0.0/8 (entreprise)<br>
+          ↓<br>
+      <strong>Sites :</strong><br>
+      - Site HQ : 10.0.0.0/16 (65K IPs)<br>
+      - Site Paris : 10.1.0.0/16<br>
+      - Site NY : 10.2.0.0/16<br>
+          ↓<br>
+      <strong>VLANs par site :</strong> (HQ exemple)<br>
+      - VLAN 10 Data : 10.0.10.0/24 (254 IPs)<br>
+      - VLAN 20 Voice : 10.0.20.0/24<br>
+      - VLAN 30 Servers : 10.0.30.0/24<br>
+      - VLAN 40 Guest : 10.0.40.0/24<br>
+          ↓<br>
+      <strong>Sous-allocations :</strong> (VLAN 10 exemple)<br>
+      - 10.0.10.1-10.0.10.50 : Statiques (serveurs, imprimantes)<br>
+      - 10.0.10.51-10.0.10.250 : DHCP pool (PCs, laptops)<br>
+      - 10.0.10.251-10.0.10.254 : Réservées (gateway, monitoring)
+    </div>
+
+    <h3>// Documentation plages</h3>
+    <p><strong>Informations tracker par subnet :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Plage CIDR</strong> : 10.0.10.0/24</li>
+      <li><strong>VLAN associé</strong> : VLAN 10 (Data)</li>
+      <li><strong>Site/Localisation</strong> : HQ Bâtiment A</li>
+      <li><strong>Gateway</strong> : 10.0.10.1</li>
+      <li><strong>Utilisation</strong> : Workstations employees</li>
+      <li><strong>Taux occupation</strong> : 180/254 (71% utilisé)</li>
+      <li><strong>DHCP pool</strong> : 10.0.10.51-250 (si applicable)</li>
+      <li><strong>Statiques réservées</strong> : .1 gateway, .2 switch mgmt, .254 monitoring</li>
+      <li><strong>Responsable</strong> : IT Team contact</li>
+    </ul>
+
+    <h3>// Exemple tableau suivi plages</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Subnet</th><th>VLAN</th><th>Site</th><th>Usage</th><th>Utilisation</th><th>Gateway</th></tr>
+        <tr><td>10.0.10.0/24</td><td>VLAN 10</td><td>HQ</td><td>Data workstations</td><td>180/254 (71%)</td><td>10.0.10.1</td></tr>
+        <tr><td>10.0.20.0/24</td><td>VLAN 20</td><td>HQ</td><td>Voice (VoIP)</td><td>95/254 (37%)</td><td>10.0.20.1</td></tr>
+        <tr><td>10.0.30.0/24</td><td>VLAN 30</td><td>HQ</td><td>Servers production</td><td>42/254 (17%)</td><td>10.0.30.1</td></tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">📊</span>
+      <div class="callout-body">
+        <strong>Seuil alerte utilisation</strong>
+        Configurer alertes IPAM : Subnet >80% utilisé → notification planifier expansion (ajouter subnet ou agrandir plage avant saturation complète).
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFLITS IP -->
+  <div class="section">
+    <div class="section-label">Duplicate address</div>
+    <h2>Conflits d'adresses IP</h2>
+
+    <h3>// Causes conflits IP</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>IP statique dupliquée</strong> : Admin assigne manuellement 10.0.1.50 déjà utilisée</li>
+      <li><strong>DHCP pool overlap</strong> : Pool DHCP inclut IPs statiques → DHCP assigne IP déjà utilisée</li>
+      <li><strong>Rogue DHCP server</strong> : Serveur DHCP non autorisé distribue IPs en conflit</li>
+      <li><strong>IP statique dans pool DHCP</strong> : Device statique .100, pool DHCP contient .100</li>
+      <li><strong>Device relié après longue absence</strong> : Laptop déconnecté 6 mois, IP réassignée entre-temps</li>
+    </ul>
+
+    <h3>// Symptômes conflit IP</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Windows : Alerte "IP address conflict detected"</li>
+      <li>Linux/Mac : Logs ARP duplicate address</li>
+      <li>Connexion réseau intermittente (fonctionne puis casse)</li>
+      <li>Impossibilité communiquer certains hosts</li>
+      <li>Switch logs : Duplicate MAC same port flip-flop</li>
+    </ul>
+
+    <h3>// Détection conflits</h3>
+    <p><strong>Gratuitous ARP</strong> : Device envoie ARP request sa propre IP au boot. Si réponse → conflit détecté.</p>
+    <p><strong>IPAM scanning</strong> : Outils scannent réseau périodiquement, détectent duplicates.</p>
+    <p><strong>Switch CAM table</strong> : Surveiller flip-flop MAC addresses (indicateur conflit).</p>
+
+    <h3>// Résolution conflit</h3>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Identifier devices</strong> : Qui utilise IP en conflit ? (arp -a, switch MAC table)</li>
+      <li><strong>Déterminer légitime</strong> : Quel device devrait avoir IP ?</li>
+      <li><strong>Changer IP illégitime</strong> : Reassigner IP différente au device non autorisé</li>
+      <li><strong>Documenter IPAM</strong> : Mettre à jour base IPAM avec allocation correcte</li>
+      <li><strong>Prévention future</strong> : Séparer plages statiques/DHCP clairement</li>
+    </ol>
+
+    <h3>// Prévention conflits (Best practices)</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ <strong>IPAM centralisé</strong> : Base unique allocation IPs</li>
+      <li>✅ <strong>Séparation stricte</strong> : Statiques (.1-.50), DHCP (.51-.250), Réservées (.251-.254)</li>
+      <li>✅ <strong>DHCP exclusions</strong> : Exclure plage statiques du pool DHCP</li>
+      <li>✅ <strong>DHCP Snooping</strong> : Bloquer rogue DHCP servers</li>
+      <li>✅ <strong>Scanning régulier</strong> : Détecter IPs non documentées</li>
+    </ul>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Exemple séparation plages :</strong><br><br>
+
+      Subnet: 10.0.10.0/24 (254 IPs utilisables)<br><br>
+
+      <strong style="color:var(--accent)">Statiques (.1-.50) :</strong><br>
+      - 10.0.10.1 : Gateway<br>
+      - 10.0.10.2 : Switch management<br>
+      - 10.0.10.10-40 : Serveurs, imprimantes<br>
+      - 10.0.10.50 : Monitoring probe<br><br>
+
+      <strong style="color:var(--green)">DHCP Pool (.51-.250) :</strong><br>
+      - 10.0.10.51-250 : Workstations dynamiques<br>
+      - <strong>Exclusion DHCP : .1-.50</strong> (évite overlap)<br><br>
+
+      <strong style="color:var(--amber)">Réservées (.251-.254) :</strong><br>
+      - 10.0.10.254 : Future expansion<br><br>
+
+      → Pas overlap possible → Zéro conflits
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Question fréquente examen</strong>
+        "Prévenir conflits IP entre allocations statiques et DHCP ?"<br><br>
+        <strong>Réponse : DHCP exclusions (exclure plage statiques du pool DHCP)</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- OUTILS IPAM -->
+  <div class="section">
+    <div class="section-label">Software</div>
+    <h2>Outils IPAM</h2>
+
+    <h3>// Fonctionnalités IPAM tools</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Gestion subnets</strong> : Créer/modifier/supprimer subnets, allocation hiérarchique</li>
+      <li><strong>Tracking IPs</strong> : Base données chaque IP (utilisée, libre, réservée)</li>
+      <li><strong>Scanning réseau</strong> : Découverte automatique devices, détection IPs non documentées</li>
+      <li><strong>Intégration DHCP/DNS</strong> : Synchronisation automatique</li>
+      <li><strong>Détection conflits</strong> : Alertes duplicates</li>
+      <li><strong>Rapports utilisation</strong> : Graphiques occupation, prévisions épuisement</li>
+      <li><strong>Historique</strong> : Qui assigné IP quand</li>
+      <li><strong>API</strong> : Automatisation (scripts, intégration autres outils)</li>
+    </ul>
+
+    <h3>// Outils populaires</h3>
+
+    <p><strong>NetBox</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Open-source (gratuit)</li>
+      <li>IPAM + DCIM (Data Center Infrastructure Management)</li>
+      <li>Web interface moderne, API REST complète</li>
+      <li>Documentation VLANs, racks, équipements</li>
+      <li>Communauté active</li>
+    </ul>
+
+    <p><strong>phpIPAM</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Open-source PHP/MySQL</li>
+      <li>Simple, léger</li>
+      <li>Scanning automatique (ping/SNMP)</li>
+      <li>Gestion VLANs, subnets</li>
+      <li>PowerDNS integration</li>
+    </ul>
+
+    <p><strong>Infoblox</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Commercial (entreprise)</li>
+      <li>IPAM + DNS + DHCP (DDI suite)</li>
+      <li>Automatisation avancée</li>
+      <li>Très cher (10K$/an+)</li>
+    </ul>
+
+    <p><strong>Microsoft IPAM (Windows Server)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Inclus Windows Server</li>
+      <li>Intégration Active Directory</li>
+      <li>Gestion DHCP/DNS Windows</li>
+      <li>Environnements Microsoft-centric</li>
+    </ul>
+
+    <p><strong>SolarWinds IP Address Manager</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Commercial</li>
+      <li>Découverte automatique réseau</li>
+      <li>Alertes utilisation</li>
+      <li>Intégration suite SolarWinds</li>
+    </ul>
+
+    <h3>// Comparaison outils</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Outil</th><th>Type</th><th>Coût</th><th>Complexité</th><th>Usage</th></tr>
+        <tr><td><strong>NetBox</strong></td><td>Open-source</td><td>Gratuit</td><td>Moyenne</td><td>Entreprises modernes</td></tr>
+        <tr><td><strong>phpIPAM</strong></td><td>Open-source</td><td>Gratuit</td><td>Faible</td><td>PME, simple</td></tr>
+        <tr><td><strong>Infoblox</strong></td><td>Commercial</td><td>Très cher</td><td>Élevée</td><td>Grandes entreprises</td></tr>
+        <tr><td><strong>MS IPAM</strong></td><td>Commercial</td><td>Inclus WinSrv</td><td>Moyenne</td><td>Environnements Microsoft</td></tr>
+        <tr><td><strong>SolarWinds</strong></td><td>Commercial</td><td>Cher</td><td>Moyenne</td><td>Entreprises (monitoring)</td></tr>
+      </table>
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>NetBox = recommandation 2024</strong>
+        NetBox gratuit, moderne, complet (IPAM+DCIM), API excellente, communauté active. Standard open-source IPAM entreprises tech-forward.
+      </div>
+    </div>
+  </div>
+
+  <!-- DOC VLAN -->
+  <div class="section">
+    <div class="section-label">VLANs</div>
+    <h2>Documentation des VLANs</h2>
+
+    <p>IPAM gère aussi documentation VLANs (subnets Layer 3 mappés VLANs Layer 2).</p>
+
+    <h3>// Informations documenter par VLAN</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>VLAN ID</strong> : 10, 20, 30...</li>
+      <li><strong>Nom</strong> : Data, Voice, Servers, Guest</li>
+      <li><strong>Subnet IP</strong> : 10.0.10.0/24</li>
+      <li><strong>Gateway</strong> : 10.0.10.1 (SVI sur switch L3)</li>
+      <li><strong>DHCP scope</strong> : Pool .51-.250</li>
+      <li><strong>Usage/Purpose</strong> : Workstations employees, Téléphones IP, etc.</li>
+      <li><strong>Sites</strong> : HQ, Paris, NY (si VLAN multi-sites)</li>
+      <li><strong>ACLs appliquées</strong> : Restrictions accès inter-VLANs</li>
+      <li><strong>Trunk ports</strong> : Quels switches transportent VLAN</li>
+    </ul>
+
+    <h3>// Exemple documentation VLAN</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>VLAN ID</th><th>Nom</th><th>Subnet</th><th>Gateway</th><th>Usage</th><th>DHCP</th></tr>
+        <tr><td>10</td><td>Data</td><td>10.0.10.0/24</td><td>10.0.10.1</td><td>Workstations employees</td><td>Oui (.51-.250)</td></tr>
+        <tr><td>20</td><td>Voice</td><td>10.0.20.0/24</td><td>10.0.20.1</td><td>VoIP phones</td><td>Oui (.51-.250)</td></tr>
+        <tr><td>30</td><td>Servers</td><td>10.0.30.0/24</td><td>10.0.30.1</td><td>Production servers</td><td>Non (statiques)</td></tr>
+        <tr><td>40</td><td>Guest</td><td>10.0.40.0/24</td><td>10.0.40.1</td><td>Guest WiFi</td><td>Oui (.10-.250)</td></tr>
+        <tr><td>99</td><td>Management</td><td>192.168.99.0/24</td><td>192.168.99.1</td><td>Switches/APs mgmt</td><td>Non</td></tr>
+      </table>
+    </div>
+
+    <h3>// Conventions nommage VLANs</h3>
+    <p>Cohérence noms CRITIQUE (pas "VLAN10", "vlan_10", "Data-VLAN" mélangés).</p>
+
+    <p><strong>Exemples conventions :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Descriptive</strong> : Data, Voice, Servers, Guest, Management</li>
+      <li><strong>Par fonction</strong> : Employees, Contractors, IoT, CCTV</li>
+      <li><strong>Par site</strong> : HQ-Data, Paris-Servers, NY-Voice</li>
+    </ul>
+
+    <div class="callout tip">
+      <span class="callout-icon">📝</span>
+      <div class="callout-body">
+        <strong>VLAN 1 = natif, ne PAS utiliser</strong>
+        VLAN 1 = natif défaut switches Cisco. Best practice sécurité : Changer native VLAN (ex: VLAN 999), ne JAMAIS utiliser VLAN 1 pour data/voice. VLAN 1 = vulnérable VLAN hopping attacks.
+      </div>
+    </div>
+  </div>
+
+  <!-- PIÈGES -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : IPAM = juste liste IPs</div>
+      <div class="trap-content">
+        <strong>INCOMPLET</strong>. IPAM = gestion complète :<br><br>
+        - Subnets/VLANs<br>
+        - Allocation IPs (statiques, DHCP pools)<br>
+        - Détection conflits<br>
+        - Intégration DHCP/DNS<br>
+        - Rapports utilisation<br>
+        - Historique changements<br><br>
+        Pas juste spreadsheet IPs
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : Conflit IP résolu redémarrer device</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Redémarrer = masque temporairement, PAS résout.<br><br>
+        Résolution vraie :<br>
+        1. Identifier QUEL device légitime pour IP<br>
+        2. Reassigner IP à device illégitime<br>
+        3. Documenter IPAM allocation correcte<br>
+        4. Prévenir future (DHCP exclusions)
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : Pool DHCP peut inclure gateway IP</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Gateway (.1) = IP <strong>statique</strong> (router/SVI).<br><br>
+        Pool DHCP doit <strong>EXCLURE</strong> gateway + IPs statiques.<br>
+        Exemple : Subnet .0/24, gateway .1 → Pool DHCP .51-.250 (exclut .1-.50)
+      </div>
+    </div>
+  </div>
+
+  <!-- RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>IPAM</strong> : Gestion centralisée adresses IP. Prévient conflits, optimise utilisation, documente allocations. Tracking subnets/VLANs/IPs</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Suivi plages</strong> : Hiérarchie (supernet → sites → VLANs → sous-allocations). Séparer statiques (.1-.50), DHCP pool (.51-.250), réservées (.251-.254)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Conflits IP</strong> : Causes (statique dupliquée, DHCP overlap). Prévention : DHCP exclusions, IPAM centralisé, séparation stricte plages. Détection : Gratuitous ARP</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Outils IPAM</strong> : NetBox (open-source, moderne), phpIPAM (simple), Infoblox (entreprise cher), MS IPAM (Windows). Fonctions : subnet mgmt, scanning, intégration DHCP/DNS</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Documentation VLANs</strong> : VLAN ID, nom, subnet, gateway, DHCP scope, usage. Conventions nommage cohérentes. VLAN 1 natif = ne PAS utiliser (sécurité)</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 02 : Change Management</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">O03 - Phase 3</span>
+    <a class="nav-btn next" href="#">Cours 04 : Monitoring SNMP →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m3_o03_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+initMastery();
+</script>
+  <div style="margin-top:40px;text-align:center;">
+  <a class="nav-btn" href="index.html">← Accueil — Plan de cours</a>
+</body>
+</html>
