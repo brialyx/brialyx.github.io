@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I16 — Accès Internet · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 2.0 — Implémentation</span> &nbsp;›&nbsp; Cours 16</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 2 · I16</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-diff">⚡⚡☆ Moyen</span>
+  </div>
+
+  <h1><span>Accès Internet</span></h1>
+  <span class="tagline">// DSL (ADSL/VDSL), câble (DOCSIS), fibre (GPON), satellite, cellulaire (4G LTE / 5G NR)</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je différencie DSL (ADSL/VDSL)</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise câble DOCSIS</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends fibre GPON/FTTH</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais satellite et cellulaire (4G/5G)</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- TABLEAU COMPARATIF -->
+  <div class="section">
+    <div class="section-label">Vue d'ensemble</div>
+    <h2>Technologies accès Internet résidentiel/PME</h2>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Technologie</th><th>Débit Download</th><th>Débit Upload</th><th>Latence</th><th>Coût</th></tr>
+        <tr><td><strong>DSL (ADSL)</strong></td><td>1-24 Mbps</td><td>0.5-3 Mbps</td><td>~20ms</td><td>💰 Faible</td></tr>
+        <tr><td><strong>DSL (VDSL2)</strong></td><td>50-100 Mbps</td><td>10-40 Mbps</td><td>~15ms</td><td>💰 Faible-Moyen</td></tr>
+        <tr><td><strong>Câble (DOCSIS 3.1)</strong></td><td>100-1000 Mbps</td><td>35-200 Mbps</td><td>~15ms</td><td>💰💰 Moyen</td></tr>
+        <tr><td><strong>Fibre (GPON)</strong></td><td>100-10000 Mbps</td><td>100-10000 Mbps</td><td>~5ms</td><td>💰💰 Moyen-Élevé</td></tr>
+        <tr><td><strong>Satellite</strong></td><td>25-150 Mbps</td><td>3-20 Mbps</td><td>~500ms</td><td>💰💰💰 Élevé</td></tr>
+        <tr><td><strong>4G LTE</strong></td><td>10-100 Mbps</td><td>5-30 Mbps</td><td>~30ms</td><td>💰💰 Moyen</td></tr>
+        <tr><td><strong>5G NR</strong></td><td>100-3000 Mbps</td><td>50-500 Mbps</td><td>~10ms</td><td>💰💰💰 Élevé</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- DSL -->
+  <div class="section">
+    <div class="section-label">Ligne téléphonique</div>
+    <h2>DSL — Digital Subscriber Line</h2>
+
+    <p><strong>DSL</strong> = Internet sur ligne téléphonique cuivre existante. Fréquences séparées voix/data → téléphone + Internet simultanés.</p>
+
+    <h3>// ADSL (Asymmetric DSL)</h3>
+    <p><strong>Asymétrique</strong> : Download >> Upload</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Download : 1-24 Mbps</li>
+      <li>Upload : 0.5-3 Mbps</li>
+      <li>Distance max : ~5 km du central téléphonique (DSLAM)</li>
+      <li>✅ Bon pour navigation web, streaming</li>
+      <li>⚠️ Upload faible (problème visioconférence, cloud backup)</li>
+    </ul>
+
+    <h3>// VDSL / VDSL2 (Very-high-bit-rate DSL)</h3>
+    <p><strong>DSL haute vitesse</strong> : Version améliorée ADSL</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Download : 50-100 Mbps</li>
+      <li>Upload : 10-40 Mbps</li>
+      <li>Distance max : ~1.5 km (plus court que ADSL)</li>
+      <li>✅ Upload décent (visio OK)</li>
+      <li>⚠️ Portée limitée</li>
+    </ul>
+
+    <h3>// Problème DSL : Distance</h3>
+    <p>Débit DSL <strong>dégrade avec distance</strong> du central (DSLAM). Plus loin = plus lent.</p>
+
+    <div class="callout warn">
+      <span class="callout-icon">📏</span>
+      <div class="callout-body">
+        <strong>Atténuation signal DSL</strong>
+        Maison à 4 km du central → ADSL 5 Mbps au lieu de 24 Mbps annoncés.<br>
+        Câble/Fibre pas affectés par distance (partagé différemment).
+      </div>
+    </div>
+  </div>
+
+  <!-- CÂBLE -->
+  <div class="section">
+    <div class="section-label">Câble coaxial</div>
+    <h2>Câble — DOCSIS</h2>
+
+    <p><strong>Câble</strong> = Internet via réseau TV câble (coaxial). Standard <strong>DOCSIS</strong> (Data Over Cable Service Interface Specification).</p>
+
+    <h3>// Versions DOCSIS</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Version</th><th>Download max</th><th>Upload max</th><th>Année</th></tr>
+        <tr><td><strong>DOCSIS 3.0</strong></td><td>~1 Gbps</td><td>~200 Mbps</td><td>2006</td></tr>
+        <tr><td><strong>DOCSIS 3.1</strong></td><td>~10 Gbps</td><td>~2 Gbps</td><td>2013</td></tr>
+        <tr><td><strong>DOCSIS 4.0</strong></td><td>~10 Gbps</td><td>~6 Gbps</td><td>2017 (déploiement progressif)</td></tr>
+      </table>
+    </div>
+
+    <h3>// Caractéristiques</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ Débits élevés (100-1000 Mbps courant)</li>
+      <li>✅ Latence faible (~15ms)</li>
+      <li>✅ Infrastructure existante (TV câble)</li>
+      <li>⚠️ <strong>Bande passante partagée</strong> : Dégradation heures pointe (voisinage)</li>
+      <li>⚠️ Upload asymétrique (moins que download)</li>
+    </ul>
+
+    <h3>// Topologie</h3>
+    <p>Réseau câble = architecture <strong>partagée</strong> (arbre).</p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;line-height:1.8;">
+      [Head-end ISP] → [Nœud quartier] → Split 32-500 foyers<br>
+          ↓              (partagé)<br>
+      [Cable modem maison 1]<br>
+      [Cable modem maison 2]<br>
+      ...<br>
+      [Cable modem maison 500]<br><br>
+
+      → Tous foyers partagent même pipe<br>
+      → Heures pointe (19h-22h) = congestion possible
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Question type examen</strong>
+        "Utilisateur se plaint débit Internet lent le soir uniquement. Techno probable ?"<br><br>
+        <strong>Réponse : Câble</strong> (bande passante partagée quartier → congestion heures pointe)
+      </div>
+    </div>
+  </div>
+
+  <!-- FIBRE -->
+  <div class="section">
+    <div class="section-label">Fibre optique</div>
+    <h2>Fibre — GPON / FTTH</h2>
+
+    <p><strong>Fibre</strong> = Internet par fibre optique. <strong>FTTH</strong> (Fiber-To-The-Home) = fibre jusqu'au domicile.</p>
+
+    <h3>// GPON (Gigabit Passive Optical Network)</h3>
+    <p>Standard fibre résidentiel dominant.</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Download/Upload : <strong>Symétriques</strong> (100/100, 1000/1000, 10000/10000 Mbps)</li>
+      <li>Latence : ~5ms (ultra-faible)</li>
+      <li>Portée : ~20 km</li>
+      <li>Architecture PON : 1 fibre split vers 32-128 abonnés</li>
+    </ul>
+
+    <h3>// Variantes déploiement fibre</h3>
+    <p><strong>FTTH</strong> (Fiber-To-The-Home) : Fibre jusqu'à la maison (meilleur)</p>
+    <p><strong>FTTC</strong> (Fiber-To-The-Curb) : Fibre jusqu'au trottoir → dernier segment cuivre/DSL</p>
+    <p><strong>FTTN</strong> (Fiber-To-The-Node) : Fibre jusqu'au nœud quartier → dernier km cuivre</p>
+
+    <h3>// Avantages fibre</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ <strong>Débits ultra-élevés</strong> (multi-Gbps)</li>
+      <li>✅ <strong>Symétrique</strong> (upload = download)</li>
+      <li>✅ <strong>Latence ultra-faible</strong> (~5ms)</li>
+      <li>✅ <strong>Pas d'atténuation distance</strong></li>
+      <li>✅ <strong>Pas d'interférences</strong> électromagnétiques</li>
+      <li>⚠️ <strong>Coût installation</strong> (si pas infrastructure)</li>
+    </ul>
+
+    <div class="callout ok">
+      <span class="callout-icon">🚀</span>
+      <div class="callout-body">
+        <strong>Fibre = gold standard 2024</strong>
+        Meilleure technologie accès Internet résidentiel/PME. Déploiements massifs en cours mondialement. Symétrique, ultra-rapide, faible latence.
+      </div>
+    </div>
+  </div>
+
+  <!-- SATELLITE -->
+  <div class="section">
+    <div class="section-label">Sans fil spatial</div>
+    <h2>Satellite — accès zones isolées</h2>
+
+    <p><strong>Satellite</strong> = Internet via antenne parabolique communicant avec satellite géostationnaire/LEO.</p>
+
+    <h3>// Types satellites</h3>
+    <p><strong>Géostationnaires (GEO)</strong> : ~35,786 km altitude</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Latence : <strong>~500-700ms</strong> (aller-retour 70,000+ km)</li>
+      <li>Débits : 25-100 Mbps</li>
+      <li>Exemples : HughesNet, Viasat</li>
+    </ul>
+
+    <p><strong>LEO (Low Earth Orbit)</strong> : ~550 km altitude</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Latence : <strong>~20-40ms</strong> (bien meilleur !)</li>
+      <li>Débits : 50-200 Mbps</li>
+      <li>Exemples : Starlink (SpaceX), OneWeb</li>
+    </ul>
+
+    <h3>// Avantages/Inconvénients</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ <strong>Disponible partout</strong> (zones rurales isolées)</li>
+      <li>⚠️ <strong>Latence élevée</strong> (GEO = inutilisable gaming/VoIP)</li>
+      <li>⚠️ <strong>Coût élevé</strong> (équipement + abonnement)</li>
+      <li>⚠️ <strong>Météo</strong> : Pluie/neige dégradent signal</li>
+      <li>⚠️ <strong>Caps data</strong> souvent (limites mensuelles)</li>
+    </ul>
+
+    <div class="callout tip">
+      <span class="callout-icon">🛰️</span>
+      <div class="callout-body">
+        <strong>Starlink change la donne</strong>
+        Constellation LEO Starlink = latence ~20-40ms (vs 500ms GEO) → gaming/visio possibles. Révolution accès rural.
+      </div>
+    </div>
+  </div>
+
+  <!-- CELLULAIRE -->
+  <div class="section">
+    <div class="section-label">Mobile broadband</div>
+    <h2>Cellulaire — 4G LTE / 5G NR</h2>
+
+    <h3>// 4G LTE (Long-Term Evolution)</h3>
+    <p>4ème génération réseau mobile.</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Download : 10-100 Mbps (théorique 300 Mbps)</li>
+      <li>Upload : 5-30 Mbps</li>
+      <li>Latence : ~30ms</li>
+      <li>✅ Large couverture</li>
+      <li>⚠️ Débits variables (congestion, distance antenne)</li>
+    </ul>
+
+    <h3>// 5G NR (New Radio)</h3>
+    <p>5ème génération — révolution.</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Download : 100-3000 Mbps (théorique 10+ Gbps)</li>
+      <li>Upload : 50-500 Mbps</li>
+      <li>Latence : ~10ms (ultra-faible)</li>
+      <li>✅ Débits ultra-élevés</li>
+      <li>✅ Latence faible (gaming, VR, IoT)</li>
+      <li>⚠️ Couverture limitée (déploiement progressif)</li>
+      <li>⚠️ Portée courte (hautes fréquences mmWave)</li>
+    </ul>
+
+    <h3>// Usage accès Internet fixe (FWA)</h3>
+    <p><strong>FWA (Fixed Wireless Access)</strong> : Box 4G/5G comme accès Internet principal maison/bureau (pas juste mobile).</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Alternative zones sans fibre/câble</li>
+      <li>Installation rapide (pas travaux)</li>
+      <li>⚠️ Caps data souvent</li>
+    </ul>
+  </div>
+
+  <!-- PIÈGES -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : DSL = symétrique</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. <strong>DSL = asymétrique</strong> (ADSL, VDSL).<br>
+        Download >> Upload (ex: 24 Mbps down / 3 Mbps up)<br><br>
+        <strong>Fibre = symétrique</strong> (100/100, 1000/1000)
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : Câble = dédié par foyer</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Câble = <strong>bande passante partagée</strong> quartier.<br><br>
+        Congestion heures pointe possible.<br>
+        <strong>Fibre GPON</strong> aussi partagée MAIS capacité bien supérieure
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : Satellite = basse latence</div>
+      <div class="trap-content">
+        <strong>FAUX</strong> pour GEO. Satellite géostationnaire = <strong>~500ms latence</strong>.<br><br>
+        <strong>Starlink (LEO)</strong> = ~20-40ms (acceptable)<br>
+        DSL/Câble/Fibre = ~5-20ms
+      </div>
+    </div>
+  </div>
+
+  <!-- RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>DSL</strong> : Ligne téléphonique, asymétrique, débit dégrade avec distance. ADSL (24 Mbps), VDSL (100 Mbps)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Câble (DOCSIS)</strong> : Coaxial, partagé quartier, 100-1000 Mbps, congestion heures pointe possible</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Fibre (GPON)</strong> : Symétrique, ultra-rapide (multi-Gbps), latence ~5ms, gold standard 2024</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Satellite</strong> : Zones isolées. GEO (500ms latence), LEO/Starlink (20-40ms latence acceptable)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Cellulaire</strong> : 4G LTE (100 Mbps, 30ms), 5G NR (3 Gbps, 10ms). FWA = accès fixe via mobile</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 15 : Technologies WAN</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">I16 - Phase 2</span>
+    <a class="nav-btn next" href="#">Cours 17 : VPN →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m2_i16_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+initMastery();
+</script>
+  <div style="margin-top:40px;text-align:center;">
+  <a class="nav-btn" href="index.html">← Accueil — Plan de cours</a>
+</body>
+</html>

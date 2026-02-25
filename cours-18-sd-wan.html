@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I18 — SD-WAN · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 2.0 — Implémentation</span> &nbsp;›&nbsp; Cours 18</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 2 · I18</span>
+    <span class="pill pill-new">🆕 NEW</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-diff">⚡⚡⚡ Difficile</span>
+  </div>
+
+  <h1><span>SD-WAN</span></h1>
+  <span class="tagline">// Agrégation de liens WAN, zero-touch provisioning, application-aware routing, centralized policy</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends architecture SD-WAN (overlay/underlay)</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise application-aware routing</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais zero-touch provisioning</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je sais quand SD-WAN vs MPLS</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- CONCEPT -->
+  <div class="section">
+    <div class="section-label">Concept</div>
+    <h2>SD-WAN — Software-Defined WAN</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Analogie — GPS Waze intelligent</strong>
+        SD-WAN = GPS qui choisit route DYNAMIQUEMENT selon conditions temps réel (trafic, accidents). Si route A congestionnée → bascule route B automatiquement. SD-WAN fait pareil avec liens WAN (Internet, MPLS, LTE).
+      </div>
+    </div>
+
+    <p><strong>SD-WAN</strong> = technologie créant réseau WAN virtuel (overlay) au-dessus de multiples liens physiques (underlay). Contrôle centralisé software, routage intelligent applicatif.</p>
+
+    <h3>// Problème WAN traditionnel (MPLS)</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>❌ Coût très élevé</li>
+      <li>❌ Provisioning lent (30-90 jours nouveau site)</li>
+      <li>❌ Bande passante limitée (prix exorbitant scaling up)</li>
+      <li>❌ Rigidité (contrats longs, vendor lock-in)</li>
+      <li>❌ Pas optimisé cloud (SaaS détour via datacenter)</li>
+    </ul>
+
+    <h3>// Solution SD-WAN</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ Utilise Internet broadband (50-70% moins cher)</li>
+      <li>✅ Agrégation multiples liens (Internet + MPLS + 4G/5G)</li>
+      <li>✅ Routage intelligent par application</li>
+      <li>✅ Zero-touch provisioning (site online en heures)</li>
+      <li>✅ Gestion centralisée cloud</li>
+    </ul>
+
+    <div class="callout ok">
+      <span class="callout-icon">🚀</span>
+      <div class="callout-body">
+        <strong>SD-WAN = révolution WAN 2024</strong>
+        Majorité entreprises migrent MPLS → SD-WAN ou hybrid (SD-WAN + MPLS). Économies massives + agilité + cloud-ready.
+      </div>
+    </div>
+  </div>
+
+  <!-- ARCHITECTURE -->
+  <div class="section">
+    <div class="section-label">Architecture</div>
+    <h2>Architecture SD-WAN — Overlay / Underlay</h2>
+
+    <h3>// Underlay (Liens physiques)</h3>
+    <p>Liens WAN réels transportant trafic :</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Internet broadband</strong> (fibre, câble, DSL)</li>
+      <li><strong>MPLS</strong> (optionnel, pour apps critiques)</li>
+      <li><strong>4G/5G LTE</strong> (backup ou mobilité)</li>
+    </ul>
+
+    <h3>// Overlay (Réseau virtuel)</h3>
+    <p>Réseau logique SD-WAN au-dessus des underlays :</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Tunnels chiffrés entre sites (IPsec, GRE)</li>
+      <li>Abstraction liens physiques</li>
+      <li>Routage intelligent software-defined</li>
+    </ul>
+
+    <h3>// Composants SD-WAN</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;line-height:1.8;">
+      <strong style="color:var(--purple)">Orchestrateur (Cloud Controller)</strong><br>
+      ↓ Gestion centralisée, politiques, monitoring<br><br>
+
+      <strong style="color:var(--green)">Edge appliances (Sites)</strong><br>
+      [Bureau Paris] — SD-WAN appliance<br>
+                       ↓ Internet<br>
+                       ↓ MPLS (optionnel)<br>
+                       ↓ 4G backup<br>
+                       ↓<br>
+      [Bureau NY] — SD-WAN appliance<br><br>
+
+      → Overlay : Tunnels virtuels Paris ↔ NY<br>
+      → Underlay : Internet + MPLS + 4G
+    </div>
+  </div>
+
+  <!-- LINK AGGREGATION -->
+  <div class="section">
+    <div class="section-label">Multi-path</div>
+    <h2>Agrégation de liens WAN</h2>
+
+    <p><strong>SD-WAN utilise TOUS les liens simultanément</strong> (pas juste failover). Agrégation active.</p>
+
+    <h3>// Modes utilisation liens</h3>
+
+    <p><strong>1. Active/Active</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Tous liens utilisés simultanément</li>
+      <li>Load balancing intelligent (par application)</li>
+      <li>Bande passante = somme de tous liens</li>
+    </ul>
+
+    <p><strong>2. Active/Standby (Failover)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Lien primaire actif</li>
+      <li>Lien secondaire en backup (utilisé si primaire tombe)</li>
+      <li>Bascule automatique < 1 seconde</li>
+    </ul>
+
+    <h3>// Exemple agrégation</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Site avec 3 liens :<br>
+      - Internet fibre : 500 Mbps<br>
+      - MPLS : 100 Mbps<br>
+      - 4G LTE : 50 Mbps<br><br>
+
+      <strong>Bande passante totale agrégée : ~650 Mbps</strong><br><br>
+
+      SD-WAN distribue :<br>
+      → Applications critiques (VoIP, SAP) : MPLS (QoS garanti)<br>
+      → SaaS (Office 365, Salesforce) : Internet direct (rapide)<br>
+      → Backup data : Internet fibre (capacité)<br>
+      → Si Internet tombe → 4G prend le relais
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>Coût vs MPLS pur</strong>
+        MPLS 500 Mbps = $5000/mois<br>
+        SD-WAN (Internet 500 + MPLS 100 + 4G) = $1500/mois<br>
+        → Économie 70% + résilience accrue !
+      </div>
+    </div>
+  </div>
+
+  <!-- APPLICATION-AWARE ROUTING -->
+  <div class="section">
+    <div class="section-label">Routage intelligent</div>
+    <h2>Application-Aware Routing</h2>
+
+    <p><strong>SD-WAN identifie applications</strong> (DPI - Deep Packet Inspection) et route intelligemment selon politiques.</p>
+
+    <h3>// Fonctionnement</h3>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>SD-WAN identifie application (Zoom, Office 365, SAP, YouTube...)</li>
+      <li>Applique politique définie par admin</li>
+      <li>Route vers lien optimal (latence, bande passante, coût, QoS)</li>
+      <li>Monitore performance temps réel → bascule si dégradation</li>
+    </ol>
+
+    <h3>// Exemples politiques</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Application</th><th>Politique SD-WAN</th><th>Raison</th></tr>
+        <tr>
+          <td><strong>VoIP (Zoom, Teams)</strong></td>
+          <td>MPLS prioritaire</td>
+          <td>Latence faible garantie</td>
+        </tr>
+        <tr>
+          <td><strong>Office 365</strong></td>
+          <td>Internet direct (local breakout)</td>
+          <td>Rapide, pas détour via datacenter</td>
+        </tr>
+        <tr>
+          <td><strong>SAP / ERP critique</strong></td>
+          <td>MPLS</td>
+          <td>SLA garanti, sécurité</td>
+        </tr>
+        <tr>
+          <td><strong>YouTube / Streaming</strong></td>
+          <td>Internet</td>
+          <td>Bande passante élevée, pas critique</td>
+        </tr>
+        <tr>
+          <td><strong>Backup data</strong></td>
+          <td>4G (off-hours)</td>
+          <td>Économie bande passante primaire</td></tr>
+      </table>
+    </div>
+
+    <h3>// Path Selection dynamique</h3>
+    <p>SD-WAN monitore liens temps réel (latence, jitter, perte paquets) → bascule automatiquement si dégradation.</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      VoIP call en cours sur MPLS :<br>
+      → SD-WAN détecte latence MPLS augmente (50ms → 150ms)<br>
+      → Bascule automatiquement VoIP vers Internet (latence 20ms)<br>
+      → Appel pas interrompu, qualité maintenue ✅
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Application-Aware = killer feature SD-WAN</strong>
+        Routage traditionnel = décision basée IP/port uniquement.<br>
+        SD-WAN = identifie application ET contexte business → routage optimal automatique.
+      </div>
+    </div>
+  </div>
+
+  <!-- ZERO-TOUCH PROVISIONING -->
+  <div class="section">
+    <div class="section-label">Déploiement rapide</div>
+    <h2>Zero-Touch Provisioning (ZTP)</h2>
+
+    <p><strong>ZTP</strong> = déploiement nouveau site en <strong>heures</strong> sans intervention technicien sur place. Plug & play.</p>
+
+    <h3>// Workflow ZTP</h3>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Admin cloud</strong> : Ajoute nouveau site dans orchestrateur (nom, politiques)</li>
+      <li><strong>Expédition</strong> : Appliance SD-WAN préconfiguré envoyé au site</li>
+      <li><strong>Installation locale</strong> : Employé bureau branche appliance (Internet + power)</li>
+      <li><strong>Appel maison automatique</strong> : Appliance contacte orchestrateur cloud</li>
+      <li><strong>Config download</strong> : Orchestrateur pousse config complète (tunnels, politiques, certificats)</li>
+      <li><strong>Online</strong> : Site actif en ~10-60 minutes ✅</li>
+    </ol>
+
+    <h3>// vs Provisioning traditionnel MPLS</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>MPLS traditionnel</th><th>SD-WAN ZTP</th></tr>
+        <tr><td><strong>Délai</strong></td><td>30-90 jours</td><td>Heures</td></tr>
+        <tr><td><strong>Technicien sur site</strong></td><td>✅ Nécessaire</td><td>❌ Optionnel</td></tr>
+        <tr><td><strong>Config manuelle</strong></td><td>✅ CLI équipement</td><td>❌ Automatique cloud</td></tr>
+        <tr><td><strong>Coût rollout</strong></td><td>💰💰💰 Élevé</td><td>💰 Faible</td></tr>
+      </table>
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">⚡</span>
+      <div class="callout-body">
+        <strong>ZTP = game-changer retail/franchises</strong>
+        Chaîne retail 500 magasins → rollout SD-WAN en semaines (vs années MPLS). Employé magasin branche box, site online automatiquement.
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTRALIZED POLICY -->
+  <div class="section">
+    <div class="section-label">Gestion unifié</div>
+    <h2>Centralized Policy Management</h2>
+
+    <p><strong>Orchestrateur cloud</strong> = console unique gérant TOUS les sites. Politiques déployées en quelques clics.</p>
+
+    <h3>// Fonctions orchestrateur</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Politiques globales</strong> : "VoIP → MPLS" appliqué instantanément tous sites</li>
+      <li><strong>Monitoring temps réel</strong> : Dashboard visibilité globale (latence, throughput, santé liens)</li>
+      <li><strong>Troubleshooting</strong> : Logs centralisés, analytics</li>
+      <li><strong>Firmware updates</strong> : Push software tous sites simultanément</li>
+      <li><strong>Reporting</strong> : Compliance, utilisation bande passante</li>
+    </ul>
+
+    <h3>// Exemple politique centralisée</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Admin créé politique "Office 365 Direct" :<br>
+      → Détecte trafic Office 365 (SharePoint, Teams, Outlook)<br>
+      → Route vers Internet local (pas via datacenter)<br>
+      → QoS : Priorité haute<br><br>
+
+      <strong>Deploy to: All sites (500 bureaux)</strong><br>
+      [Apply button]<br><br>
+
+      → 500 sites adoptent politique instantanément<br>
+      → Pas besoin SSH chaque équipement
+    </div>
+  </div>
+
+  <!-- PIÈGES -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : SD-WAN = pas besoin Internet</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. SD-WAN <strong>UTILISE Internet</strong> comme underlay principal (+ optionnel MPLS/4G).<br><br>
+        SD-WAN sécurise Internet via chiffrement (IPsec) → équivalent sécurité MPLS
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : SD-WAN remplace firewall</div>
+      <div class="trap-content">
+        <strong>NON</strong>. SD-WAN = <strong>WAN optimization + routage intelligent</strong>.<br><br>
+        Beaucoup SD-WAN incluent firewall basique MAIS firewall complet (NGFW) toujours recommandé séparé/intégré.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : ZTP = aucune intervention</div>
+      <div class="trap-content">
+        <strong>NUANCE</strong>. ZTP = <strong>zero intervention technique réseau</strong>.<br><br>
+        Quelqu'un doit quand même physiquement brancher appliance (employé bureau OK, pas besoin ingénieur réseau).
+      </div>
+    </div>
+  </div>
+
+  <!-- RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>SD-WAN</strong> : Overlay software sur multi-liens (Internet + MPLS + 4G), 50-70% moins cher MPLS, agile, cloud-ready</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Agrégation liens</strong> : Active/Active (tous liens simultanés) ou Active/Standby (failover)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Application-Aware Routing</strong> : Identifie apps (DPI), route intelligemment (VoIP→MPLS, Office 365→Internet direct)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Zero-Touch Provisioning</strong> : Nouveau site online en heures (vs 30-90 jours MPLS), plug & play</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Centralized Policy</strong> : Orchestrateur cloud, gestion unifiée tous sites, deploy politiques instantané</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 17 : VPN</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">I18 - Phase 2</span>
+    <a class="nav-btn next" href="#">Cours 19 : ... →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m2_i18_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+initMastery();
+</script>
+  <div style="margin-top:40px;text-align:center;">
+  <a class="nav-btn" href="index.html">← Accueil — Plan de cours</a>
+</body>
+</html>

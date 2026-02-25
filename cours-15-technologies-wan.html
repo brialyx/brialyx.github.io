@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I15 — Technologies WAN · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .comptia-box { background: rgba(251,191,36,0.05); border: 2px solid var(--amber); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .comptia-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--amber); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .comptia-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 2.0 — Implémentation</span> &nbsp;›&nbsp; Cours 15</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 2 · I15</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡⚡ Difficile</span>
+  </div>
+
+  <h1><span>Technologies WAN</span></h1>
+  <span class="tagline">// MPLS, SD-WAN, Metro Ethernet, circuit dédié, leased line, SONET/SDH, comparaison</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends MPLS (labels, QoS)</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise SD-WAN vs MPLS</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je différencie leased line, Metro Ethernet, SONET</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais avantages/inconvénients chaque technologie</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- 1. TABLEAU COMPARATIF -->
+  <div class="section">
+    <div class="section-label">Vue d'ensemble</div>
+    <h2>Panorama technologies WAN</h2>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Technologie</th><th>Type</th><th>Débit typique</th><th>Coût</th><th>Usage</th></tr>
+        <tr><td><strong>Leased Line (T1/E1)</strong></td><td>Circuit dédié</td><td>1.5-2 Mbps</td><td>💰💰💰 Très élevé</td><td>Legacy (obsolète)</td></tr>
+        <tr><td><strong>SONET/SDH</strong></td><td>Fibre optique</td><td>51 Mbps - 10 Gbps</td><td>💰💰💰 Très élevé</td><td>Télécoms, backbones</td></tr>
+        <tr><td><strong>Metro Ethernet</strong></td><td>Ethernet sur MAN</td><td>10 Mbps - 100 Gbps</td><td>💰💰 Moyen</td><td>Connexions sites métro</td></tr>
+        <tr><td><strong>MPLS</strong></td><td>Label switching</td><td>Variable</td><td>💰💰💰 Élevé</td><td>Entreprises multi-sites</td></tr>
+        <tr><td><strong>SD-WAN</strong></td><td>Overlay software</td><td>Variable</td><td>💰 Faible-Moyen</td><td>Remplacement MPLS moderne</td></tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Pour l'examen Network+</strong>
+        CompTIA teste : différence MPLS vs SD-WAN (question fréquente), avantages Metro Ethernet, obsolescence leased lines, quand utiliser quelle techno. Mémoriser tableau comparatif !
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. LEASED LINE -->
+  <div class="section">
+    <div class="section-label">Circuit dédié legacy</div>
+    <h2>Leased Line — circuit point-à-point dédié</h2>
+
+    <p><strong>Leased Line</strong> = connexion physique dédiée point-à-point entre 2 sites. Bande passante garantie 100% du temps.</p>
+
+    <h3>// Types</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>T1</strong> (USA) : 1.544 Mbps (24 canaux DS0 de 64 Kbps)</li>
+      <li><strong>E1</strong> (Europe) : 2.048 Mbps (32 canaux de 64 Kbps)</li>
+      <li><strong>T3</strong> : 44.736 Mbps (28 circuits T1)</li>
+      <li><strong>E3</strong> : 34.368 Mbps</li>
+    </ul>
+
+    <h3>// Caractéristiques</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ Bande passante garantie (SLA strict)</li>
+      <li>✅ Latence faible et prévisible</li>
+      <li>✅ Sécurité (ligne privée physique)</li>
+      <li>❌ <strong>Coût extrêmement élevé</strong> ($/km)</li>
+      <li>❌ <strong>Débit faible</strong> pour standards modernes</li>
+      <li>❌ Installation longue (semaines/mois)</li>
+    </ul>
+
+    <div class="callout warn">
+      <span class="callout-icon">📉</span>
+      <div class="callout-body">
+        <strong>Leased Lines = OBSOLÈTE</strong>
+        T1/E1 très peu utilisés aujourd'hui (débit faible 1.5Mbps, coût élevé). Remplacés par Metro Ethernet, MPLS, SD-WAN. CompTIA teste concept pour culture générale.
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. SONET/SDH -->
+  <div class="section">
+    <div class="section-label">Fibre haute capacité</div>
+    <h2>SONET / SDH — transport optique</h2>
+
+    <p><strong>SONET</strong> (Synchronous Optical Network - USA) et <strong>SDH</strong> (Synchronous Digital Hierarchy - International) = standards transport données sur fibre optique.</p>
+
+    <h3>// Hiérarchie SONET</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Niveau SONET</th><th>Débit</th><th>Équivalent SDH</th></tr>
+        <tr><td><strong>OC-1</strong></td><td>51.84 Mbps</td><td>STM-0</td></tr>
+        <tr><td><strong>OC-3</strong></td><td>155.52 Mbps</td><td>STM-1</td></tr>
+        <tr><td><strong>OC-12</strong></td><td>622.08 Mbps</td><td>STM-4</td></tr>
+        <tr><td><strong>OC-48</strong></td><td>2.488 Gbps</td><td>STM-16</td></tr>
+        <tr><td><strong>OC-192</strong></td><td>9.953 Gbps</td><td>STM-64</td></tr>
+      </table>
+    </div>
+
+    <h3>// Usage</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Backbones ISP (Internet Service Providers)</li>
+      <li>Réseaux télécoms longue distance</li>
+      <li>Connexions datacenters haute capacité</li>
+    </ul>
+
+    <p><strong>Remarque :</strong> SONET/SDH utilisé par ISPs, pas directement par entreprises typiques (trop complexe/cher).</p>
+  </div>
+
+  <!-- 4. METRO ETHERNET -->
+  <div class="section">
+    <div class="section-label">Ethernet métropolitain</div>
+    <h2>Metro Ethernet — Ethernet sur MAN</h2>
+
+    <p><strong>Metro Ethernet</strong> = service Ethernet étendu sur zone métropolitaine (MAN). Connecte sites d'une même ville/région via infrastructure ISP.</p>
+
+    <h3>// Avantages</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ <strong>Interface familière</strong> : Ethernet standard (pas de conversion protocole)</li>
+      <li>✅ <strong>Débits élevés</strong> : 10 Mbps à 100 Gbps</li>
+      <li>✅ <strong>Coût raisonnable</strong> : Moins cher que leased lines</li>
+      <li>✅ <strong>Scalable</strong> : Augmenter débit facilement</li>
+      <li>✅ <strong>SLA</strong> : Bande passante garantie, latence faible</li>
+    </ul>
+
+    <h3>// Types services Metro Ethernet</h3>
+    <p><strong>E-Line</strong> : Point-à-point (2 sites)</p>
+    <p><strong>E-LAN</strong> : Multipoint (plusieurs sites, any-to-any)</p>
+    <p><strong>E-Tree</strong> : Multipoint hiérarchique (hub → spokes, spokes ne communiquent pas entre eux)</p>
+
+    <h3>// Usage</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Relier bureaux d'une entreprise dans même ville</li>
+      <li>Connexion datacenter à bureaux locaux</li>
+      <li>Alternative moins chère que MPLS pour zones métro</li>
+    </ul>
+
+    <div class="callout ok">
+      <span class="callout-icon">✅</span>
+      <div class="callout-body">
+        <strong>Metro Ethernet = excellent choix multi-sites local</strong>
+        Entreprise avec 5 bureaux dans même ville → Metro Ethernet E-LAN = connexion any-to-any, débits élevés (1-10 Gbps), coût raisonnable. Standard moderne.
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. MPLS -->
+  <div class="section">
+    <div class="section-label">Label switching</div>
+    <h2>MPLS — Multi-Protocol Label Switching</h2>
+
+    <p><strong>MPLS</strong> = technologie routage basée sur <strong>labels</strong> (pas IP). Utilisée pour créer WANs privés haute performance entre sites distribués.</p>
+
+    <h3>// Fonctionnement</h3>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Trafic entre dans réseau MPLS → routeur edge (PE - Provider Edge) ajoute <strong>label</strong></li>
+      <li>Routeurs core (P - Provider) switchent basé sur label (PAS lookup IP → ultra rapide)</li>
+      <li>Routeur edge destination retire label, délivre paquet</li>
+    </ol>
+
+    <h3>// Avantages MPLS</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ <strong>QoS (Quality of Service)</strong> : Priorisation trafic (voix, vidéo prioritaires)</li>
+      <li>✅ <strong>Performances</strong> : Switching labels plus rapide que routage IP</li>
+      <li>✅ <strong>Any-to-any</strong> : Full mesh logique entre tous sites</li>
+      <li>✅ <strong>Sécurité</strong> : Réseau privé isolé (pas Internet public)</li>
+      <li>✅ <strong>SLA garantis</strong> : Latence, jitter, disponibilité</li>
+    </ul>
+
+    <h3>// Inconvénients MPLS</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>❌ <strong>Coût TRÈS élevé</strong> : Mensuel par site + bande passante</li>
+      <li>❌ <strong>Provisioning lent</strong> : 30-90 jours ajouter nouveau site</li>
+      <li>❌ <strong>Rigidité</strong> : Contrats longs, difficile changer</li>
+      <li>❌ <strong>Vendor lock-in</strong> : Dépendant d'un seul ISP</li>
+    </ul>
+
+    <h3>// Cas d'usage</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Entreprises multi-sites (10-100+ bureaux)</li>
+      <li>Applications critiques (VoIP, vidéoconférence, SAP/ERP)</li>
+      <li>Quand QoS et SLA stricts nécessaires</li>
+    </ul>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>MPLS = historiquement solution WAN entreprise #1</strong>
+        Avant SD-WAN, MPLS était LE standard pour WANs entreprise (performance, QoS, any-to-any). Aujourd'hui challengé par SD-WAN (moins cher, plus agile).
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. SD-WAN -->
+  <div class="section">
+    <div class="section-label">Overlay software moderne</div>
+    <h2>SD-WAN — Software-Defined WAN</h2>
+
+    <p><strong>SD-WAN</strong> = technologie overlay créant WAN virtuel au-dessus de multiples liens (Internet, MPLS, 4G/5G). Contrôlé par logiciel centralisé.</p>
+
+    <h3>// Architecture</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Orchestrateur centralisé</strong> : Console cloud gérant toutes politiques</li>
+      <li><strong>Appliances sites</strong> : Équipements physiques/virtuels par bureau</li>
+      <li><strong>Liens multiples</strong> : Combine Internet broadband + MPLS + 4G/5G</li>
+      <li><strong>Tunnels chiffrés</strong> : Overlay sécurisé site-to-site</li>
+    </ul>
+
+    <h3>// Fonctions clés</h3>
+    <p><strong>1. Agrégation liens</strong> : Utilise TOUS les liens simultanément (Internet + MPLS + LTE)</p>
+    <p><strong>2. Application-aware routing</strong> : Route intelligent par application (Office 365 → Internet, VoIP → MPLS)</p>
+    <p><strong>3. Zero-touch provisioning</strong> : Nouveau site online en minutes (plug & play)</p>
+    <p><strong>4. Centralized policy</strong> : Politiques déployées depuis cloud vers tous sites</p>
+    <p><strong>5. Path optimization</strong> : Bascule automatiquement si lien dégrade (failover)</p>
+
+    <h3>// Avantages SD-WAN</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ <strong>Coût 50-70% moins cher que MPLS</strong> (utilise Internet)</li>
+      <li>✅ <strong>Agilité</strong> : Nouveau site en heures (pas 90 jours)</li>
+      <li>✅ <strong>Bande passante élevée</strong> : Internet broadband >> MPLS</li>
+      <li>✅ <strong>Résilience</strong> : Multiples liens (failover auto)</li>
+      <li>✅ <strong>Cloud-ready</strong> : Optimisé pour SaaS (Office 365, Salesforce)</li>
+    </ul>
+
+    <h3>// SD-WAN vs MPLS</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>MPLS</th><th>SD-WAN</th></tr>
+        <tr><td><strong>Coût</strong></td><td>❌ Très élevé</td><td>✅ 50-70% moins cher</td></tr>
+        <tr><td><strong>Provisioning</strong></td><td>⚠️ 30-90 jours</td><td>✅ Heures/jours</td></tr>
+        <tr><td><strong>Bande passante</strong></td><td>⚠️ Limitée ($$)</td><td>✅ Élevée (Internet)</td></tr>
+        <tr><td><strong>QoS</strong></td><td>✅ Garanti (SLA)</td><td>⚠️ Best effort (sauf hybrid)</td></tr>
+        <tr><td><strong>Agilité</strong></td><td>❌ Rigide</td><td>✅ Très agile</td></tr>
+        <tr><td><strong>Transport</strong></td><td>Réseau privé</td><td>Internet + optionnel MPLS</td></tr>
+      </table>
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">🚀</span>
+      <div class="callout-body">
+        <strong>SD-WAN = révolution moderne WAN</strong>
+        2024 : Majorité entreprises migrent MPLS → SD-WAN. Hybrid (SD-WAN + MPLS) = transition courante : Applications critiques MPLS, reste Internet via SD-WAN.
+      </div>
+    </div>
+
+    <p><em>→ Détails complets dans Cours 18 (SD-WAN approfondi)</em></p>
+  </div>
+
+  <!-- 7. PIÈGES -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : SD-WAN remplace MPLS complètement</div>
+      <div class="trap-content">
+        <strong>PAS TOUJOURS</strong>. SD-WAN peut remplacer MPLS MAIS :<br><br>
+        Applications ultra-critiques (trading financier, santé temps réel) peuvent nécessiter SLA MPLS garantis.<br>
+        <strong>Solution hybrid SD-WAN + MPLS</strong> = courante (critique → MPLS, reste → Internet)
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : MPLS = VPN</div>
+      <div class="trap-content">
+        <strong>DIFFÉRENT</strong>.<br>
+        <strong>MPLS</strong> : Réseau privé Layer 3 avec labels, géré par ISP<br>
+        <strong>VPN</strong> : Tunnel chiffré sur Internet<br><br>
+        MPLS plus performant/fiable MAIS beaucoup plus cher
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : Metro Ethernet = Internet</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>.<br>
+        <strong>Metro Ethernet</strong> : Connexion privée point-à-point/multipoint via ISP (pas Internet public)<br>
+        <strong>Internet</strong> : Réseau public<br><br>
+        Metro Ethernet = sécurité + SLA, pas Internet
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Leased Line</strong> (T1/E1) : Circuit dédié obsolète (1.5Mbps, très cher)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>SONET/SDH</strong> : Fibre optique ISP (51Mbps-10Gbps), backbones télécoms</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Metro Ethernet</strong> : Ethernet MAN (10Mbps-100Gbps), multi-sites zone métro, coût raisonnable</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>MPLS</strong> : Label switching, QoS garanti, any-to-any, très cher, provisioning lent</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>SD-WAN</strong> : Overlay software, agrégation liens, 50-70% moins cher MPLS, agile, cloud-ready (standard moderne)</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 14 : Load Balancer & Proxy</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">I15 - Phase 2</span>
+    <a class="nav-btn next" href="#">Cours 16 : Accès Internet →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m2_i15_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+initMastery();
+</script>
+  <div style="margin-top:40px;text-align:center;">
+  <a class="nav-btn" href="index.html">← Accueil — Plan de cours</a>
+</body>
+</html>

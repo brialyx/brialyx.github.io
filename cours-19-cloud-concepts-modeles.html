@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I19 — Cloud : Concepts et modèles · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 2.0 — Implémentation</span> &nbsp;›&nbsp; Cours 19</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 2 · I19</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡☆ Moyen</span>
+  </div>
+
+  <h1><span>Cloud</span> — Concepts et modèles</h1>
+  <span class="tagline">// IaaS/PaaS/SaaS, cloud public/privé/hybride/multi-cloud, modèle de responsabilité partagée</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je différencie IaaS, PaaS, SaaS</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends cloud public/privé/hybride/multi-cloud</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise modèle responsabilité partagée</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais avantages/inconvénients cloud</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- CONCEPT CLOUD -->
+  <div class="section">
+    <div class="section-label">Définition</div>
+    <h2>Cloud Computing — Définition NIST</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">☁️</span>
+      <div class="callout-body">
+        <strong>Analogie — électricité</strong>
+        Cloud = comme électricité. Tu ne construis pas ta propre centrale électrique chez toi → tu consommes depuis réseau public (fournisseur). Pareil avec IT : pas besoin datacenter maison → consommes compute/storage depuis AWS/Azure/GCP.
+      </div>
+    </div>
+
+    <p><strong>Cloud Computing (NIST)</strong> = accès réseau ubiquitaire, pratique et à la demande à un pool partagé de ressources informatiques configurables (réseaux, serveurs, stockage, applications, services) pouvant être rapidement provisionnées et libérées avec effort minimal ou interaction fournisseur.</p>
+
+    <h3>// 5 caractéristiques essentielles NIST</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>On-demand self-service</strong> : Provisionner ressources automatiquement (sans appeler support)</li>
+      <li><strong>Broad network access</strong> : Accessible partout via réseau (Internet)</li>
+      <li><strong>Resource pooling</strong> : Ressources mutualisées multi-tenants (partage infrastructure)</li>
+      <li><strong>Rapid elasticity</strong> : Scaling up/down automatique selon demande</li>
+      <li><strong>Measured service</strong> : Facturation à l'usage (pay-as-you-go, pas CAPEX fixe)</li>
+    </ul>
+  </div>
+
+  <!-- IAAS PAAS SAAS -->
+  <div class="section">
+    <div class="section-label">Modèles de service</div>
+    <h2>IaaS / PaaS / SaaS — 3 niveaux abstraction</h2>
+
+    <h3>// IaaS (Infrastructure as a Service)</h3>
+    <p><strong>Loue infrastructure</strong> : Serveurs virtuels, stockage, réseau. Client gère OS, middleware, apps.</p>
+
+    <p><strong>Exemples :</strong> AWS EC2, Azure VMs, Google Compute Engine</p>
+
+    <p><strong>Responsabilité client :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>OS (Windows/Linux)</li>
+      <li>Middleware (runtime, database)</li>
+      <li>Applications</li>
+      <li>Données</li>
+      <li>Sécurité applicative</li>
+    </ul>
+
+    <p><strong>Responsabilité fournisseur :</strong> Hardware physique, virtualisation, réseau datacenter</p>
+
+    <p><strong>Cas d'usage :</strong> Héberger VMs custom, migrations lift-and-shift, contrôle total OS</p>
+
+    <h3>// PaaS (Platform as a Service)</h3>
+    <p><strong>Loue plateforme dev/déploiement</strong> : Runtime, middleware, OS gérés. Client code uniquement apps.</p>
+
+    <p><strong>Exemples :</strong> AWS Elastic Beanstalk, Azure App Service, Google App Engine, Heroku</p>
+
+    <p><strong>Responsabilité client :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Code application</li>
+      <li>Données</li>
+      <li>Config app</li>
+    </ul>
+
+    <p><strong>Responsabilité fournisseur :</strong> OS, runtime (Python, Node.js, Java), scaling, patching</p>
+
+    <p><strong>Cas d'usage :</strong> Développement rapide web apps, pas gérer infra, focus code business</p>
+
+    <h3>// SaaS (Software as a Service)</h3>
+    <p><strong>Loue application complète</strong> : Logiciel prêt à l'emploi, accessible via navigateur/API.</p>
+
+    <p><strong>Exemples :</strong> Office 365, Gmail, Salesforce, Dropbox, Slack, Zoom</p>
+
+    <p><strong>Responsabilité client :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Données utilisateur</li>
+      <li>Configuration utilisateur (permissions, settings)</li>
+    </ul>
+
+    <p><strong>Responsabilité fournisseur :</strong> TOUT (infrastructure, OS, middleware, app, sécurité, disponibilité)</p>
+
+    <p><strong>Cas d'usage :</strong> Utiliser logiciel sans installation, accès partout, zéro maintenance</p>
+
+    <h3>// Comparaison IaaS / PaaS / SaaS</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>IaaS</th><th>PaaS</th><th>SaaS</th></tr>
+        <tr><td><strong>Client gère</strong></td><td>OS, middleware, apps</td><td>Apps uniquement</td><td>Données utilisateur</td></tr>
+        <tr><td><strong>Fournisseur gère</strong></td><td>Hardware, virtualisation</td><td>OS, runtime, scaling</td><td>TOUT (infra + app)</td></tr>
+        <tr><td><strong>Contrôle</strong></td><td>✅ Élevé</td><td>⚠️ Moyen</td><td>❌ Faible</td></tr>
+        <tr><td><strong>Complexité</strong></td><td>⚠️ Élevée</td><td>✅ Moyenne</td><td>✅ Très simple</td></tr>
+        <tr><td><strong>Exemple</strong></td><td>AWS EC2</td><td>Heroku</td><td>Office 365</td></tr>
+      </table>
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Question TRÈS fréquente examen</strong>
+        "Entreprise veut déployer app web SANS gérer OS/middleware. Quel modèle ?"<br><br>
+        <strong>Réponse : PaaS</strong><br><br>
+        "Besoin VMs Windows custom avec contrôle total ?"<br>
+        <strong>Réponse : IaaS</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODÈLES DÉPLOIEMENT -->
+  <div class="section">
+    <div class="section-label">Modèles déploiement</div>
+    <h2>Public / Privé / Hybride / Multi-Cloud</h2>
+
+    <h3>// Cloud Public</h3>
+    <p><strong>Infrastructure partagée</strong> gérée par fournisseur tiers (AWS, Azure, GCP). Multi-tenants.</p>
+
+    <p><strong>Avantages :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ Coût faible (OPEX, pas CAPEX)</li>
+      <li>✅ Scaling illimité</li>
+      <li>✅ Pas maintenance hardware</li>
+      <li>✅ Disponibilité globale (datacenters worldwide)</li>
+    </ul>
+
+    <p><strong>Inconvénients :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>⚠️ Données hors site (compliance possibles)</li>
+      <li>⚠️ Moins contrôle infra physique</li>
+      <li>⚠️ Partage ressources (noisy neighbors possible)</li>
+    </ul>
+
+    <h3>// Cloud Privé</h3>
+    <p><strong>Infrastructure dédiée</strong> une seule organisation. Peut être on-premise ou hébergé.</p>
+
+    <p><strong>Avantages :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ Contrôle total (sécurité, compliance)</li>
+      <li>✅ Performances dédiées (pas noisy neighbors)</li>
+      <li>✅ Personnalisation complète</li>
+    </ul>
+
+    <p><strong>Inconvénients :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>❌ Coût TRÈS élevé (CAPEX hardware)</li>
+      <li>❌ Scaling limité (capacité fixe)</li>
+      <li>❌ Maintenance/gestion interne nécessaire</li>
+    </ul>
+
+    <p><strong>Technologies :</strong> VMware vSphere, OpenStack, Microsoft Azure Stack</p>
+
+    <h3>// Cloud Hybride</h3>
+    <p><strong>Combinaison public + privé</strong> interconnectés. Workloads peuvent bouger entre les deux.</p>
+
+    <p><strong>Exemple :</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      [Cloud Privé on-premise]<br>
+      - Données sensibles clients (PII, financier)<br>
+      - Apps legacy critiques<br><br>
+
+      [Cloud Public AWS]<br>
+      - Site web frontend public<br>
+      - Dev/Test environments<br>
+      - Big data analytics (scaling)<br><br>
+
+      → Interconnexion VPN/Direct Connect<br>
+      → Workloads peuvent burst vers public si pic demande
+    </div>
+
+    <p><strong>Cas d'usage :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Données sensibles on-premise (compliance) + workloads standard cloud public</li>
+      <li>Cloud bursting : Scaling temporaire vers public si privé saturé</li>
+      <li>Disaster recovery : Backup privé → public</li>
+    </ul>
+
+    <h3>// Multi-Cloud</h3>
+    <p><strong>Utilise PLUSIEURS fournisseurs cloud publics</strong> (AWS + Azure + GCP). Pas forcément interconnectés.</p>
+
+    <p><strong>Raisons multi-cloud :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ Éviter vendor lock-in</li>
+      <li>✅ Best-of-breed services (AWS Lambda + Azure AD + GCP BigQuery)</li>
+      <li>✅ Résilience (si AWS down → basculer Azure)</li>
+      <li>✅ Conformité géographique (data residency)</li>
+      <li>⚠️ Complexité gestion accrue</li>
+    </ul>
+
+    <h3>// Comparaison</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Modèle</th><th>Infrastructure</th><th>Coût</th><th>Contrôle</th><th>Usage</th></tr>
+        <tr><td><strong>Public</strong></td><td>Partagée multi-tenant</td><td>💰 Faible OPEX</td><td>⚠️ Limité</td><td>Standard entreprises</td></tr>
+        <tr><td><strong>Privé</strong></td><td>Dédiée single-tenant</td><td>💰💰💰 Élevé CAPEX</td><td>✅ Total</td><td>Haute sécurité/compliance</td></tr>
+        <tr><td><strong>Hybride</strong></td><td>Public + Privé</td><td>💰💰 Moyen</td><td>✅ Flexible</td><td>Mix sensible + standard</td></tr>
+        <tr><td><strong>Multi-Cloud</strong></td><td>Plusieurs publics</td><td>💰 Variable</td><td>✅ Flexible</td><td>Éviter lock-in, best-of-breed</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- RESPONSABILITÉ PARTAGÉE -->
+  <div class="section">
+    <div class="section-label">Sécurité</div>
+    <h2>Modèle de Responsabilité Partagée</h2>
+
+    <p><strong>Principe fondamental cloud</strong> : Sécurité = responsabilité PARTAGÉE entre fournisseur cloud et client.</p>
+
+    <h3>// Fournisseur Cloud (Security OF the Cloud)</h3>
+    <p>Responsable <strong>infrastructure physique/virtuelle</strong> :</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Hardware physique (serveurs, disques, réseau)</li>
+      <li>Datacenters (sécurité physique, climatisation, électricité)</li>
+      <li>Hyperviseur / virtualisation</li>
+      <li>Réseau backbone</li>
+      <li>Disponibilité infrastructure (SLA uptime)</li>
+    </ul>
+
+    <h3>// Client (Security IN the Cloud)</h3>
+    <p>Responsable <strong>données, applications, accès</strong> :</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Données (chiffrement, backup)</li>
+      <li>Gestion identités/accès (IAM, MFA)</li>
+      <li>OS (patching si IaaS)</li>
+      <li>Applications (sécurité code)</li>
+      <li>Configuration réseau (Security Groups, firewalls)</li>
+      <li>Compliance données</li>
+    </ul>
+
+    <h3>// Responsabilité selon modèle</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Couche</th><th>IaaS</th><th>PaaS</th><th>SaaS</th></tr>
+        <tr><td><strong>Données</strong></td><td>Client</td><td>Client</td><td>Client</td></tr>
+        <tr><td><strong>Applications</strong></td><td>Client</td><td>Client</td><td>Fournisseur</td></tr>
+        <tr><td><strong>Runtime/Middleware</strong></td><td>Client</td><td>Fournisseur</td><td>Fournisseur</td></tr>
+        <tr><td><strong>OS</strong></td><td>Client</td><td>Fournisseur</td><td>Fournisseur</td></tr>
+        <tr><td><strong>Virtualisation</strong></td><td>Fournisseur</td><td>Fournisseur</td><td>Fournisseur</td></tr>
+        <tr><td><strong>Hardware</strong></td><td>Fournisseur</td><td>Fournisseur</td><td>Fournisseur</td></tr>
+        <tr><td><strong>Datacenter</strong></td><td>Fournisseur</td><td>Fournisseur</td><td>Fournisseur</td></tr>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Client TOUJOURS responsable données</strong>
+        Même en SaaS, client responsable : données utilisateur, contrôle accès, compliance réglementaire (RGPD, HIPAA). Fournisseur NE PEUT PAS être responsable données métier client.
+      </div>
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Question piège examen</strong>
+        "Qui responsable patching OS sur AWS EC2 (IaaS) ?"<br><br>
+        <strong>Réponse : CLIENT</strong> (IaaS = client gère OS)<br><br>
+        "Qui responsable patching OS sur Heroku (PaaS) ?"<br>
+        <strong>Réponse : FOURNISSEUR</strong> (PaaS = fournisseur gère OS)
+      </div>
+    </div>
+  </div>
+
+  <!-- AVANTAGES CLOUD -->
+  <div class="section">
+    <div class="section-label">Bénéfices</div>
+    <h2>Avantages Cloud Computing</h2>
+
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ <strong>OPEX vs CAPEX</strong> : Pay-as-you-go (pas investissement hardware lourd)</li>
+      <li>✅ <strong>Elasticité</strong> : Scaling up/down automatique selon demande</li>
+      <li>✅ <strong>Agilité</strong> : Provisionner ressources en minutes (pas semaines)</li>
+      <li>✅ <strong>Global reach</strong> : Déployer apps worldwide (datacenters multiples)</li>
+      <li>✅ <strong>Disponibilité</strong> : SLA 99.9-99.99% (haute redondance)</li>
+      <li>✅ <strong>Disaster recovery</strong> : Backup automatisé multi-régions</li>
+      <li>✅ <strong>Innovation rapide</strong> : Accès services avancés (AI/ML, BigData)</li>
+      <li>✅ <strong>Pas maintenance</strong> : Fournisseur gère hardware/datacenter</li>
+    </ul>
+  </div>
+
+  <!-- PIÈGES -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : SaaS = client gère OS</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. SaaS = fournisseur gère TOUT (OS, middleware, app).<br><br>
+        Client gère uniquement données utilisateur.<br>
+        <strong>IaaS</strong> = client gère OS
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : Hybride = Multi-Cloud</div>
+      <div class="trap-content">
+        <strong>DIFFÉRENT</strong>.<br>
+        <strong>Hybride</strong> : Public + Privé (interconnectés)<br>
+        <strong>Multi-Cloud</strong> : Plusieurs publics (AWS + Azure + GCP)
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : Fournisseur responsable sécurité données client</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Client <strong>TOUJOURS</strong> responsable données (même SaaS).<br><br>
+        Fournisseur responsable infrastructure, PAS données métier client.
+      </div>
+    </div>
+  </div>
+
+  <!-- RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>IaaS</strong> : Loue VMs (client gère OS+apps). <strong>PaaS</strong> : Plateforme dev (client code apps). <strong>SaaS</strong> : App complète (client gère données)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Public</strong> : Partagé multi-tenant, OPEX faible. <strong>Privé</strong> : Dédié, CAPEX élevé, contrôle total. <strong>Hybride</strong> : Public+Privé interconnectés</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Multi-Cloud</strong> : Plusieurs fournisseurs publics (AWS+Azure+GCP), évite lock-in, complexité gestion</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Responsabilité partagée</strong> : Fournisseur = infra (OF cloud), Client = données/apps/accès (IN cloud). Client TOUJOURS responsable données</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 18 : SD-WAN</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">I19 - Phase 2</span>
+    <a class="nav-btn next" href="#">Cours 20 : Infrastructure Cloud →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m2_i19_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+initMastery();
+</script>
+  <div style="margin-top:40px;text-align:center;">
+  <a class="nav-btn" href="index.html">← Accueil — Plan de cours</a>
+</body>
+</html>
