@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I25 — Infrastructure as Code (IaC) · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 2.0 — Implémentation</span> &nbsp;›&nbsp; Cours 25</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 2 · I25</span>
+    <span class="pill pill-new">🆕 NEW</span>
+    <span class="pill pill-diff">⚡⚡⚡ Difficile</span>
+  </div>
+
+  <h1><span>Infrastructure as Code</span> (IaC)</h1>
+  <span class="tagline">// Ansible, Terraform — automatisation configuration réseau, reproductibilité</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends concept IaC</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je différencie Ansible vs Terraform</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais avantages IaC (reproductibilité, version control)</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise concepts declarative vs imperative</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- CONCEPT IAC -->
+  <div class="section">
+    <div class="section-label">Révolution ops</div>
+    <h2>IaC — Infrastructure as Code</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">📜</span>
+      <div class="callout-body">
+        <strong>Analogie — recette cuisine</strong>
+        <strong>Config manuelle</strong> = Chef impro (résultat varie, pas reproductible).<br>
+        <strong>IaC</strong> = Recette écrite précise (même résultat toujours, n'importe qui peut reproduire).
+      </div>
+    </div>
+
+    <p><strong>Infrastructure as Code (IaC)</strong> = Gérer infrastructure (réseaux, serveurs, configs) via <strong>fichiers code</strong> versionnés, plutôt que config manuelle GUI/CLI.</p>
+
+    <h3>// Problème config manuelle</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>❌ <strong>Pas reproductible</strong> : SSH switch 1, oublie commande switch 2 → incohérence</li>
+      <li>❌ <strong>Pas tracé</strong> : Qui a changé VLAN 10 hier ? Mystère</li>
+      <li>❌ <strong>Erreurs humaines</strong> : Typo IP → réseau cassé</li>
+      <li>❌ <strong>Lent</strong> : Configurer 50 switches = 50× SSH manuel</li>
+      <li>❌ <strong>Pas testable</strong> : Changement prod direct = risqué</li>
+    </ul>
+
+    <h3>// Solution IaC</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ <strong>Code source</strong> : Config = fichiers texte (YAML, HCL)</li>
+      <li>✅ <strong>Version control</strong> : Git → historique complet, rollback facile</li>
+      <li>✅ <strong>Reproductible</strong> : Même code → même résultat (idempotent)</li>
+      <li>✅ <strong>Automatisation</strong> : 1 commande → configure 1000 devices</li>
+      <li>✅ <strong>Testing</strong> : Test changements lab avant prod</li>
+      <li>✅ <strong>Documentation</strong> : Code = documentation infrastructure</li>
+    </ul>
+
+    <div class="callout ok">
+      <span class="callout-icon">🚀</span>
+      <div class="callout-body">
+        <strong>IaC = DevOps/NetDevOps standard</strong>
+        2024 : Entreprises modernes TOUTES utilisent IaC. Config manuelle = legacy/petites structures. IaC = agilité, fiabilité, scalabilité.
+      </div>
+    </div>
+  </div>
+
+  <!-- ANSIBLE -->
+  <div class="section">
+    <div class="section-label">Configuration management</div>
+    <h2>Ansible — Automatisation agentless</h2>
+
+    <p><strong>Ansible</strong> = outil IaC <strong>configuration management</strong>. Automatise configuration/déploiement serveurs, réseaux, apps.</p>
+
+    <h3>// Caractéristiques</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Agentless</strong> : Pas besoin installer agent devices cibles (SSH/WinRM)</li>
+      <li><strong>YAML</strong> : Syntaxe simple, human-readable</li>
+      <li><strong>Idempotent</strong> : Exécuter 10× = même résultat que 1×</li>
+      <li><strong>Push model</strong> : Contrôleur pousse configs vers devices</li>
+      <li><strong>Modules</strong> : +3000 modules (Cisco IOS, Juniper, AWS, Azure...)</li>
+    </ul>
+
+    <h3>// Composants Ansible</h3>
+    <p><strong>Inventory</strong> : Fichier listant devices à gérer (IPs, groupes)</p>
+    <p><strong>Playbook</strong> : Fichier YAML décrivant tâches à exécuter</p>
+    <p><strong>Module</strong> : Code exécutant action spécifique (ios_config, nxos_vlan...)</p>
+    <p><strong>Task</strong> : Unité travail (configurer VLAN, créer user...)</p>
+    <p><strong>Role</strong> : Ensemble playbooks réutilisable (ex: "firewall_hardening")</p>
+
+    <h3>// Exemple Playbook réseau</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;line-height:1.8;">
+      <strong style="color:var(--green)">configure_vlans.yml</strong><br><br>
+
+      ---<br>
+      - name: Configurer VLANs sur switches Cisco<br>
+        hosts: datacenter_switches<br>
+        gather_facts: no<br><br>
+
+        tasks:<br>
+          - name: Créer VLAN 10 (Data)<br>
+            cisco.ios.ios_vlans:<br>
+              config:<br>
+                - vlan_id: 10<br>
+                  name: Data_VLAN<br>
+              state: merged<br><br>
+
+          - name: Créer VLAN 20 (Voice)<br>
+            cisco.ios.ios_vlans:<br>
+              config:<br>
+                - vlan_id: 20<br>
+                  name: Voice_VLAN<br>
+              state: merged<br><br>
+
+          - name: Assigner ports au VLAN 10<br>
+            cisco.ios.ios_l2_interfaces:<br>
+              config:<br>
+                - name: GigabitEthernet0/1<br>
+                  mode: access<br>
+                  access:<br>
+                    vlan: 10<br>
+              state: merged
+    </div>
+
+    <p><strong>Exécution :</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      $ ansible-playbook configure_vlans.yml<br><br>
+
+      → Ansible SSH vers TOUS switches groupe "datacenter_switches"<br>
+      → Exécute tâches (créer VLANs, assigner ports)<br>
+      → Idempotent : Si VLAN 10 existe déjà → skip (pas erreur)
+    </div>
+
+    <h3>// Cas d'usage réseau</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Configuration initiale switches/routeurs (day-0)</li>
+      <li>Déploiement changements config (VLANs, ACLs, routes)</li>
+      <li>Backup configs automatisé (nightly)</li>
+      <li>Compliance checking (auditer configs vs baseline)</li>
+      <li>Rollback configs (restaurer version antérieure Git)</li>
+    </ul>
+
+    <div class="callout tip">
+      <span class="callout-icon">📚</span>
+      <div class="callout-body">
+        <strong>Ansible = parfait débutants IaC</strong>
+        YAML simple, agentless (juste SSH), courbe apprentissage douce. Standard automation réseau.
+      </div>
+    </div>
+  </div>
+
+  <!-- TERRAFORM -->
+  <div class="section">
+    <div class="section-label">Infrastructure provisioning</div>
+    <h2>Terraform — Infrastructure orchestration</h2>
+
+    <p><strong>Terraform</strong> = outil IaC <strong>provisioning infrastructure</strong>. Crée/gère ressources cloud (VPCs, VMs, réseaux) via code déclaratif.</p>
+
+    <h3>// Caractéristiques</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Declarative</strong> : Décris état final désiré (pas étapes)</li>
+      <li><strong>HCL</strong> : HashiCorp Configuration Language (ou JSON)</li>
+      <li><strong>Multi-cloud</strong> : AWS, Azure, GCP, VMware (1 outil → tous clouds)</li>
+      <li><strong>State management</strong> : Fichier state.tf suit ressources créées</li>
+      <li><strong>Plan/Apply</strong> : Preview changements avant exécution</li>
+    </ul>
+
+    <h3>// Workflow Terraform</h3>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Write</strong> : Écrire config .tf (VPC, subnets, instances...)</li>
+      <li><strong>Plan</strong> : <code>terraform plan</code> → preview changements</li>
+      <li><strong>Apply</strong> : <code>terraform apply</code> → créer ressources</li>
+      <li><strong>State</strong> : terraform.tfstate enregistre ressources créées</li>
+      <li><strong>Destroy</strong> : <code>terraform destroy</code> → supprimer tout</li>
+    </ol>
+
+    <h3>// Exemple Terraform réseau</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;line-height:1.8;">
+      <strong style="color:var(--green)">vpc.tf (AWS VPC + subnets)</strong><br><br>
+
+      provider "aws" {<br>
+        region = "us-east-1"<br>
+      }<br><br>
+
+      resource "aws_vpc" "main" {<br>
+        cidr_block = "10.0.0.0/16"<br>
+        tags = {<br>
+          Name = "Production-VPC"<br>
+        }<br>
+      }<br><br>
+
+      resource "aws_subnet" "public" {<br>
+        vpc_id     = aws_vpc.main.id<br>
+        cidr_block = "10.0.1.0/24"<br>
+        availability_zone = "us-east-1a"<br>
+        tags = {<br>
+          Name = "Public-Subnet"<br>
+        }<br>
+      }<br><br>
+
+      resource "aws_subnet" "private" {<br>
+        vpc_id     = aws_vpc.main.id<br>
+        cidr_block = "10.0.2.0/24"<br>
+        availability_zone = "us-east-1a"<br>
+        tags = {<br>
+          Name = "Private-Subnet"<br>
+        }<br>
+      }
+    </div>
+
+    <p><strong>Exécution :</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      $ terraform plan<br>
+      → Preview : Créer 1 VPC, 2 subnets<br><br>
+
+      $ terraform apply<br>
+      → Créer ressources AWS réelles<br>
+      → State sauvegardé terraform.tfstate<br><br>
+
+      $ terraform destroy<br>
+      → Supprimer VPC + subnets AWS
+    </div>
+
+    <h3>// Cas d'usage réseau</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Provisioning VPCs cloud (AWS, Azure, GCP)</li>
+      <li>Création subnets, Security Groups, route tables</li>
+      <li>Déploiement infrastructure multi-cloud reproductible</li>
+      <li>Disaster recovery (rebuild infra depuis code)</li>
+      <li>Environnements éphémères (dev/test)</li>
+    </ul>
+  </div>
+
+  <!-- ANSIBLE VS TERRAFORM -->
+  <div class="section">
+    <div class="section-label">Comparaison</div>
+    <h2>Ansible vs Terraform — Cas d'usage</h2>
+
+    <h3>// Différences clés</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>Ansible</th><th>Terraform</th></tr>
+        <tr><td><strong>Focus</strong></td><td>Configuration management</td><td>Infrastructure provisioning</td></tr>
+        <tr><td><strong>Type</strong></td><td>Imperative (tasks)</td><td>Declarative (state)</td></tr>
+        <tr><td><strong>State</strong></td><td>Pas de state file</td><td>State file (terraform.tfstate)</td></tr>
+        <tr><td><strong>Syntaxe</strong></td><td>YAML (simple)</td><td>HCL (spécialisé infra)</td></tr>
+        <tr><td><strong>Agent</strong></td><td>Agentless (SSH)</td><td>Agentless (APIs)</td></tr>
+        <tr><td><strong>Forte</strong></td><td>Config devices existants</td><td>Créer/détruire ressources</td></tr>
+        <tr><td><strong>Usage réseau</strong></td><td>Configs switches/routeurs</td><td>VPCs/subnets cloud</td></tr>
+      </table>
+    </div>
+
+    <h3>// Quand utiliser quoi ?</h3>
+
+    <p><strong>Ansible :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Configurer équipements réseau existants (switches, routeurs, firewalls)</li>
+      <li>Déployer apps sur serveurs</li>
+      <li>Orchestration tasks multi-étapes (backup → config → test)</li>
+      <li>Compliance checking configs</li>
+    </ul>
+
+    <p><strong>Terraform :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Créer infrastructure cloud (VPCs, VMs, Load Balancers)</li>
+      <li>Provisioning multi-cloud (AWS + Azure + GCP)</li>
+      <li>Infrastructure éphémère (créer → utiliser → destroy)</li>
+      <li>State management important (track ressources)</li>
+    </ul>
+
+    <p><strong>Combinaison (meilleure pratique) :</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      1. <strong style="color:var(--green)">Terraform</strong> : Créer VPC AWS + subnets + EC2 instances<br>
+      2. <strong style="color:var(--accent)">Ansible</strong> : Configurer instances EC2 (install apps, users, firewall)<br><br>
+
+      → Terraform = provisioning (créer)<br>
+      → Ansible = configuration (configurer)
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">🔧</span>
+      <div class="callout-body">
+        <strong>Terraform + Ansible = stack complet</strong>
+        Terraform provision infra, Ansible configure. Standard DevOps moderne. Pas opposés → complémentaires.
+      </div>
+    </div>
+  </div>
+
+  <!-- AVANTAGES IAC -->
+  <div class="section">
+    <div class="section-label">Bénéfices</div>
+    <h2>Avantages IaC — Reproductibilité et version control</h2>
+
+    <h3>// Reproductibilité</h3>
+    <p><strong>Idempotence</strong> : Exécuter code 10× = même résultat que 1×.</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ Environnements identiques (dev = prod)</li>
+      <li>✅ Disaster recovery rapide (rebuild depuis code)</li>
+      <li>✅ Scaling horizontal (50 serveurs identiques)</li>
+    </ul>
+
+    <h3>// Version Control (Git)</h3>
+    <p>Code IaC = fichiers texte → Git/GitHub.</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ <strong>Historique complet</strong> : Qui changé quoi quand</li>
+      <li>✅ <strong>Rollback facile</strong> : Revenir version antérieure (git revert)</li>
+      <li>✅ <strong>Collaboration</strong> : Pull requests, reviews, merge</li>
+      <li>✅ <strong>Branching</strong> : Test changements branch séparé</li>
+      <li>✅ <strong>Audit trail</strong> : Compliance (PCI-DSS, SOC2)</li>
+    </ul>
+
+    <h3>// Testing</h3>
+    <p>IaC = code → testable.</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ <strong>Dry-run</strong> : Ansible --check, Terraform plan (preview sans exécuter)</li>
+      <li>✅ <strong>Environnements test</strong> : Deploy lab avant prod</li>
+      <li>✅ <strong>CI/CD pipeline</strong> : Tests automatisés chaque commit</li>
+    </ul>
+
+    <h3>// Documentation vivante</h3>
+    <p>Code = documentation auto-updated.</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ Config actuelle = fichiers Git (toujours à jour)</li>
+      <li>✅ Pas doc Word obsolète</li>
+    </ul>
+
+    <h3>// Declarative vs Imperative</h3>
+    <p><strong>Imperative</strong> (Ansible) : Décris <strong>comment</strong> faire (étapes).</p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      tasks:<br>
+        - Créer VLAN 10<br>
+        - Nommer VLAN 10 "Data"<br>
+        - Assigner port Gi0/1 au VLAN 10
+    </div>
+
+    <p><strong>Declarative</strong> (Terraform) : Décris <strong>état final</strong> désiré.</p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      resource "aws_vpc" "main" {<br>
+        cidr_block = "10.0.0.0/16"<br>
+      }<br><br>
+
+      → Terraform calcule steps nécessaires automatiquement
+    </div>
+  </div>
+
+  <!-- PIÈGES -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : IaC = uniquement cloud</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. IaC applicable <strong>partout</strong> : cloud, on-premise, réseaux physiques, VMs.<br><br>
+        Ansible configure switches Cisco on-premise.<br>
+        Terraform provision VMware vSphere.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : Terraform = configuration management</div>
+      <div class="trap-content">
+        <strong>NON</strong>. Terraform = <strong>provisioning</strong> (créer ressources).<br><br>
+        Ansible = configuration management (configurer devices).<br>
+        Terraform créer VPC, Ansible configure apps dedans
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : Ansible nécessite agents sur devices</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Ansible = <strong>agentless</strong>.<br><br>
+        SSH (Linux/réseau) ou WinRM (Windows) → pas installation agent.<br>
+        Puppet/Chef = agents requis (différent)
+      </div>
+    </div>
+  </div>
+
+  <!-- RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>IaC</strong> : Infra = code (YAML/HCL), version control Git, reproductible, testable, automatisé (vs config manuelle)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Ansible</strong> : Configuration management, agentless (SSH), YAML, imperative, config devices existants (switches, serveurs)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Terraform</strong> : Infrastructure provisioning, HCL, declarative, state file, créer/détruire ressources (VPCs cloud, VMs)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Avantages</strong> : Reproductibilité (idempotent), version control (Git historique/rollback), testing (dry-run), documentation vivante</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Combinaison</strong> : Terraform provision (créer), Ansible configure (configurer) → stack complet DevOps</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 24 : Installation physique MDF/IDF</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">I25 - Phase 2</span>
+    <a class="nav-btn next" href="#">Cours 26 : ... →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m2_i25_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+initMastery();
+</script>
+  <div style="margin-top:40px;text-align:center;">
+  <a class="nav-btn" href="index.html">← Accueil — Plan de cours</a>
+</body>
+</html>
