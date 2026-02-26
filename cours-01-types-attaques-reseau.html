@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S01 — Types d'attaques réseau : Vue d'ensemble · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 4.0 — Sécurité réseau</span> &nbsp;›&nbsp; Cours 01</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 4 · S01</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡☆ Moyen</span>
+  </div>
+
+  <h1><span>Types d'attaques réseau</span> : Vue d'ensemble</h1>
+  <span class="tagline">// Reconnaissance, scanning, exploitation, post-exploitation — kill chain réseau</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends cyber kill chain</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise phase reconnaissance</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais techniques scanning</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je différencie exploitation vs post-exploitation</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- KILL CHAIN -->
+  <div class="section">
+    <div class="section-label">Attack lifecycle</div>
+    <h2>Cyber Kill Chain — Cycle de vie attaque</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Analogie — cambriolage maison</strong>
+        Attaquant ne débarque pas directement. D'abord : observe quartier (reconnaissance), teste portes/fenêtres (scanning), trouve fenêtre ouverte (exploitation), entre maison (post-exploitation). Cyber kill chain = même logique méthodique.
+      </div>
+    </div>
+
+    <p><strong>Cyber Kill Chain</strong> = Framework Lockheed Martin décrivant étapes attaque cyber. Comprendre kill chain = anticiper/bloquer attaques AVANT dommages.</p>
+
+    <h3>// 7 phases kill chain (version originale)</h3>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Reconnaissance</strong> : Collecter infos cible (réseaux, employees, technologies)</li>
+      <li><strong>Weaponization</strong> : Créer payload malveillant (exploit + backdoor)</li>
+      <li><strong>Delivery</strong> : Livrer payload (email phishing, USB, exploit kit)</li>
+      <li><strong>Exploitation</strong> : Exécuter payload, exploiter vulnérabilité</li>
+      <li><strong>Installation</strong> : Installer backdoor/malware persistant</li>
+      <li><strong>Command & Control (C2)</strong> : Établir communication attaquant ↔ système compromis</li>
+      <li><strong>Actions on Objectives</strong> : Exfiltration data, destruction, ransomware</li>
+    </ol>
+
+    <h3>// Kill chain réseau (simplifié 4 phases)</h3>
+    <p>Network+ focus 4 phases essentielles :</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--purple)">1. RECONNAISSANCE</strong><br>
+      → Collecter infos cible (OSINT, DNS, WHOIS)<br>
+      → Passive (pas contact direct) ou Active (scans)<br><br>
+
+      <strong style="color:var(--cyan)">2. SCANNING</strong><br>
+      → Identifier services actifs (ports ouverts)<br>
+      → Détecter vulnérabilités (OS, versions software)<br><br>
+
+      <strong style="color:var(--amber)">3. EXPLOITATION</strong><br>
+      → Exploiter vulnérabilité détectée<br>
+      → Gain accès initial système/réseau<br><br>
+
+      <strong style="color:var(--red)">4. POST-EXPLOITATION</strong><br>
+      → Maintenir accès (backdoors, persistence)<br>
+      → Lateral movement (propagation réseau)<br>
+      → Exfiltration data, objectifs finaux
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">🛡️</span>
+      <div class="callout-body">
+        <strong>Défense = casser kill chain</strong>
+        Attaque réussie nécessite TOUTES phases. Bloquer 1 phase = attaque échoue. Défense proactive : bloquer reconnaissance/scanning (early phases) = empêche exploitation.
+      </div>
+    </div>
+  </div>
+
+  <!-- RECONNAISSANCE -->
+  <div class="section">
+    <div class="section-label">Phase 1</div>
+    <h2>Reconnaissance — Collecte d'informations</h2>
+
+    <p><strong>Reconnaissance</strong> = Collecter maximum informations cible AVANT attaque. Objectif : comprendre infrastructure, identifier cibles vulnérables.</p>
+
+    <h3>// Passive Reconnaissance</h3>
+    <p><strong>Définition</strong> : Collecter infos SANS contact direct cible (pas détectable).</p>
+
+    <p><strong>Techniques passives :</strong></p>
+
+    <p><strong>OSINT (Open Source Intelligence)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Moteurs recherche (Google dorking : <code>site:company.com filetype:pdf</code>)</li>
+      <li>Réseaux sociaux (LinkedIn employees, organigramme)</li>
+      <li>Job postings (technologies utilisées mentionnées offres emploi)</li>
+      <li>Nouvelles/presse (acquisitions, projets publics)</li>
+    </ul>
+
+    <p><strong>WHOIS</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Base données registrars domaines</li>
+      <li>Infos : Nom propriétaire, email contact, nameservers, plages IP</li>
+      <li>Commande : <code>whois company.com</code></li>
+    </ul>
+
+    <p><strong>DNS Interrogation</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><code>nslookup company.com</code> : IPs serveurs</li>
+      <li><code>dig company.com ANY</code> : Records DNS (A, MX, TXT)</li>
+      <li>MX records → Serveurs mail (cibles phishing)</li>
+      <li>TXT records → Infos SPF, DKIM (tech email)</li>
+    </ul>
+
+    <p><strong>Shodan / Censys</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Moteurs recherche devices Internet-exposed</li>
+      <li>Cherche : IPs, ports ouverts, services, versions software</li>
+      <li>Ex: <code>Shodan: org:"Company Inc" port:22</code> → SSH servers exposés</li>
+    </ul>
+
+    <h3>// Active Reconnaissance</h3>
+    <p><strong>Définition</strong> : Contact DIRECT cible (détectable IDS/IPS).</p>
+
+    <p><strong>Techniques actives :</strong></p>
+
+    <p><strong>Ping sweeps</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Identifier hosts actifs subnet</li>
+      <li><code>nmap -sn 192.168.1.0/24</code> (ping scan, pas ports)</li>
+    </ul>
+
+    <p><strong>DNS Zone Transfer</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Tenter télécharger TOUTE zone DNS (mal configuré)</li>
+      <li><code>dig @nameserver company.com AXFR</code></li>
+      <li>Si réussit → Liste complète subdomains/IPs (jackpot attaquant)</li>
+    </ul>
+
+    <p><strong>Traceroute</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Mapper chemin réseau vers cible</li>
+      <li><code>traceroute company.com</code></li>
+      <li>Révèle routers intermédiaires, topologie réseau</li>
+    </ul>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Question fréquente examen</strong>
+        "Technique collecte infos cible SANS contact direct ?"<br><br>
+        <strong>Réponse : Passive reconnaissance (OSINT, WHOIS, recherche publique)</strong><br><br>
+        "Technique révèle TOUS subdomains DNS si mal configuré ?"<br>
+        <strong>Réponse : DNS Zone Transfer (AXFR)</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCANNING -->
+  <div class="section">
+    <div class="section-label">Phase 2</div>
+    <h2>Scanning — Identification vulnérabilités</h2>
+
+    <p><strong>Scanning</strong> = Identifier services actifs, ports ouverts, OS, vulnérabilités. Prépare exploitation.</p>
+
+    <h3>// Port Scanning</h3>
+    <p><strong>Objectif</strong> : Détecter ports ouverts (services disponibles).</p>
+
+    <p><strong>Types scans Nmap :</strong></p>
+
+    <p><strong>TCP Connect Scan</strong> : <code>nmap -sT target</code></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>3-way handshake complet (SYN → SYN-ACK → ACK)</li>
+      <li>✅ Fiable (completion handshake)</li>
+      <li>⚠️ Bruyant (logs connexions)</li>
+    </ul>
+
+    <p><strong>SYN Stealth Scan</strong> : <code>nmap -sS target</code></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Half-open scan (SYN → SYN-ACK → RST, pas ACK final)</li>
+      <li>✅ Furtif (pas completion handshake, moins logs)</li>
+      <li>Scan préféré attaquants</li>
+    </ul>
+
+    <p><strong>UDP Scan</strong> : <code>nmap -sU target</code></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Scanne ports UDP (DNS 53, SNMP 161, NTP 123)</li>
+      <li>⚠️ Lent (UDP = pas réponse si fermé)</li>
+    </ul>
+
+    <p><strong>FIN/NULL/Xmas Scans</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Envoie paquets TCP anormaux (FIN seul, aucun flag, tous flags)</li>
+      <li>Bypass certains firewalls basiques</li>
+      <li>✅ Très furtif</li>
+    </ul>
+
+    <h3>// OS Fingerprinting</h3>
+    <p><strong>Objectif</strong> : Identifier OS/version cible.</p>
+
+    <p><strong>Passive</strong> : Analyser TTL, window size paquets (pas scan actif).</p>
+    <p><strong>Active</strong> : <code>nmap -O target</code> (envoie probes spécifiques, analyse réponses).</p>
+
+    <h3>// Service Version Detection</h3>
+    <p><strong>Objectif</strong> : Identifier service exact + version (ex: Apache 2.4.41).</p>
+
+    <p><code>nmap -sV target</code> : Interroge services ports ouverts, détecte versions.</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Exemple scan complet :</strong><br><br>
+
+      $ nmap -sS -sV -O -p- 192.168.1.100<br><br>
+
+      PORT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STATE&nbsp;&nbsp;SERVICE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VERSION<br>
+      22/tcp&nbsp;&nbsp;&nbsp;open&nbsp;&nbsp;&nbsp;ssh&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OpenSSH 7.4 (Ubuntu)<br>
+      80/tcp&nbsp;&nbsp;&nbsp;open&nbsp;&nbsp;&nbsp;http&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Apache 2.4.41<br>
+      3306/tcp&nbsp;open&nbsp;&nbsp;&nbsp;mysql&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MySQL 5.7.30<br><br>
+
+      OS: Linux 4.15 (Ubuntu 18.04)<br><br>
+
+      → Attaquant sait maintenant :<br>
+      &nbsp;&nbsp;- SSH ouvert (brute-force possible)<br>
+      &nbsp;&nbsp;- Apache 2.4.41 (chercher CVE vulnérabilités)<br>
+      &nbsp;&nbsp;- MySQL exposé (tentative login default creds)
+    </div>
+
+    <h3>// Vulnerability Scanning</h3>
+    <p><strong>Outils</strong> : Nessus, OpenVAS, Qualys.</p>
+    <p><strong>Fonction</strong> : Scan automatique vulnérabilités connues (CVE database).</p>
+    <p><strong>Output</strong> : Liste vulns + sévérité CVSS + exploits disponibles.</p>
+
+    <div class="callout warn">
+      <span class="callout-icon">🚨</span>
+      <div class="callout-body">
+        <strong>Scanning = activité détectable</strong>
+        IDS/IPS détectent scans ports (patterns suspects : 1000 connexions 10 secondes). Attaquants sophistiqués : slow scans (1 port/heure), randomize IPs sources, fragmentent paquets.
+      </div>
+    </div>
+  </div>
+
+  <!-- EXPLOITATION -->
+  <div class="section">
+    <div class="section-label">Phase 3</div>
+    <h2>Exploitation — Compromission initiale</h2>
+
+    <p><strong>Exploitation</strong> = Exploiter vulnérabilité détectée → gain accès système/réseau.</p>
+
+    <h3>// Types exploits</h3>
+
+    <p><strong>Remote Code Execution (RCE)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Exécuter code arbitraire serveur distant</li>
+      <li>Exemple : CVE-2021-44228 (Log4Shell Java)</li>
+      <li>Impact : Contrôle total serveur</li>
+    </ul>
+
+    <p><strong>SQL Injection</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Injecter SQL malveillant input web app</li>
+      <li>Exemple : <code>admin' OR '1'='1</code> (bypass login)</li>
+      <li>Impact : Dump database, authentification bypass</li>
+    </ul>
+
+    <p><strong>Buffer Overflow</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Écrire au-delà buffer mémoire → crash ou code execution</li>
+      <li>Exemple : Exploit vulnérabilité C/C++ (pas bounds checking)</li>
+    </ul>
+
+    <p><strong>Privilege Escalation</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Élever privilèges (user → root/admin)</li>
+      <li>Exemple : Exploit kernel Linux (local privilege escalation)</li>
+    </ul>
+
+    <p><strong>Password Attacks</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Brute-force</strong> : Tester toutes combinaisons (lent)</li>
+      <li><strong>Dictionary attack</strong> : Wordlist passwords communs</li>
+      <li><strong>Credential stuffing</strong> : Réutiliser leaks passwords (breach databases)</li>
+      <li><strong>Pass-the-hash</strong> : Utiliser hash password (pas besoin plaintext)</li>
+    </ul>
+
+    <h3>// Frameworks exploitation</h3>
+    <p><strong>Metasploit</strong> : Framework exploitation le plus connu (database exploits + payloads).</p>
+    <p><strong>Exploit-DB</strong> : Repository exploits publics (CVE-based).</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Workflow exploitation typique :</strong><br><br>
+
+      1. Scan identifie : Apache 2.4.41 (port 80)<br>
+      2. Recherche CVE : CVE-2021-41773 (path traversal RCE)<br>
+      3. Exploit disponible Metasploit<br>
+      4. Lancer exploit → Gain shell reverse (accès serveur)<br>
+      5. Vérifier accès : <code>whoami</code> → www-data (user web)<br>
+      6. Prochaine étape : Post-exploitation (privilege escalation)
+    </div>
+  </div>
+
+  <!-- POST-EXPLOITATION -->
+  <div class="section">
+    <div class="section-label">Phase 4</div>
+    <h2>Post-Exploitation — Maintien accès & objectifs</h2>
+
+    <p><strong>Post-exploitation</strong> = Actions APRÈS compromission initiale. Objectifs : maintenir accès, étendre contrôle, atteindre objectifs finaux.</p>
+
+    <h3>// 1. Persistence (Maintien accès)</h3>
+    <p><strong>Objectif</strong> : Survivre reboots, updates, détections.</p>
+
+    <p><strong>Techniques persistence :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Backdoors</strong> : Installer shell permanent (netcat listener, SSH key)</li>
+      <li><strong>Scheduled tasks</strong> : Cron jobs (Linux), Task Scheduler (Windows) exécutant malware boot</li>
+      <li><strong>Rootkits</strong> : Modifier kernel OS (très furtif, hard detect)</li>
+      <li><strong>Compromised accounts</strong> : Créer user admin caché</li>
+    </ul>
+
+    <h3>// 2. Privilege Escalation</h3>
+    <p><strong>Objectif</strong> : User standard → Admin/Root.</p>
+
+    <p><strong>Techniques :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Exploiter vuln locale (kernel exploits)</li>
+      <li>Misconfiguration (sudo permissions trop larges)</li>
+      <li>SUID binaries (Linux files exécutent root)</li>
+    </ul>
+
+    <h3>// 3. Lateral Movement</h3>
+    <p><strong>Objectif</strong> : Propager réseau (host initial → autres systems).</p>
+
+    <p><strong>Techniques :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Pass-the-hash</strong> : Réutiliser hashes NTLM capturés (Windows)</li>
+      <li><strong>Pivoting</strong> : Host compromis = proxy accès réseau interne</li>
+      <li><strong>Credential harvesting</strong> : Dumper passwords mémoire (Mimikatz)</li>
+      <li><strong>SMB exploitation</strong> : EternalBlue (WannaCry), spreads via SMB</li>
+    </ul>
+
+    <h3>// 4. Data Exfiltration</h3>
+    <p><strong>Objectif</strong> : Voler données sensibles.</p>
+
+    <p><strong>Méthodes :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>FTP/SCP</strong> : Upload data serveur attaquant</li>
+      <li><strong>DNS tunneling</strong> : Encoder data requêtes DNS (bypass firewall)</li>
+      <li><strong>HTTPS exfil</strong> : POST data via HTTPS (looks legitimate traffic)</li>
+      <li><strong>Cloud storage</strong> : Upload Dropbox/Google Drive (blend normal usage)</li>
+    </ul>
+
+    <h3>// 5. Covering Tracks</h3>
+    <p><strong>Objectif</strong> : Effacer preuves intrusion.</p>
+
+    <p><strong>Techniques :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Clear logs (<code>/var/log/auth.log</code>, Windows Event Logs)</li>
+      <li>Timestamps manipulation (fichiers malware = dates légitimes)</li>
+      <li>Disable monitoring (arrêter syslog, AV)</li>
+    </ul>
+
+    <div class="callout warn">
+      <span class="callout-icon">🔴</span>
+      <div class="callout-body">
+        <strong>Dwell time moyen : 200+ jours</strong>
+        Stat industry : Attaquants restent réseaux compromis moyenne 6+ mois AVANT détection. Post-exploitation = phase longue, discrète. Detection = challenge majeur défenseurs.
+      </div>
+    </div>
+  </div>
+
+  <!-- PIÈGES -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : Reconnaissance = toujours passive</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Reconnaissance peut être <strong>passive OU active</strong>.<br><br>
+        <strong>Passive</strong> : OSINT, WHOIS (pas contact direct)<br>
+        <strong>Active</strong> : Ping sweeps, DNS zone transfer, traceroute (contact direct, détectable)<br><br>
+        Passive = furtif, Active = détectable IDS
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : Post-exploitation = après exfiltration data</div>
+      <div class="trap-content">
+        <strong>INCOMPLET</strong>. Post-exploitation = <strong>TOUT après compromission initiale</strong>.<br><br>
+        Inclut : Persistence, privilege escalation, lateral movement, exfiltration, covering tracks.<br><br>
+        Exfiltration = 1 action post-exploitation (pas définition complète)
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : SYN scan = 3-way handshake complet</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. SYN scan = <strong>half-open</strong> (SYN → SYN-ACK → RST).<br><br>
+        <strong>TCP Connect scan</strong> = 3-way complet (SYN → SYN-ACK → ACK)<br>
+        <strong>SYN scan</strong> = half-open (pas ACK final, plus furtif)<br><br>
+        SYN scan = préféré attaquants (stealth)
+      </div>
+    </div>
+  </div>
+
+  <!-- RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Kill Chain</strong> : 4 phases réseau : Reconnaissance (collecter infos), Scanning (ports/vulns), Exploitation (gain accès), Post-exploitation (persistence/exfil). Bloquer 1 phase = attaque échoue</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Reconnaissance</strong> : Passive (OSINT, WHOIS, DNS, pas contact) vs Active (ping sweeps, zone transfer, traceroute, détectable). Shodan/Censys = moteurs recherche devices exposés</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Scanning</strong> : Port scan (nmap -sS stealth, -sT connect, -sU UDP), OS fingerprinting (-O), service version (-sV). Vulnerability scanners (Nessus, OpenVAS)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Exploitation</strong> : RCE (remote code exec), SQL injection, buffer overflow, privilege escalation, password attacks (brute-force, dictionary, pass-the-hash). Metasploit framework</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Post-exploitation</strong> : Persistence (backdoors, rootkits), privilege escalation, lateral movement (pivoting, pass-the-hash), data exfiltration (DNS tunneling, HTTPS), covering tracks</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Module 3 completed</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">S01 - Phase 4</span>
+    <a class="nav-btn next" href="#">Cours 02 : Attaques DoS/DDoS →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m4_s01_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+initMastery();
+</script>
+  <div style="margin-top:40px;text-align:center;">
+  <a class="nav-btn" href="index.html">← Accueil — Plan de cours</a>
+</body>
+</html>
