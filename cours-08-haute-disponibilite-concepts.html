@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>O08 — Haute disponibilité : Concepts · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 3.0 — Opérations & Surveillance</span> &nbsp;›&nbsp; Cours 08</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 3 · O08</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡⚡ Difficile</span>
+  </div>
+
+  <h1><span>Haute disponibilité</span> : Concepts</h1>
+  <span class="tagline">// MTTR, MTBF, RTO, RPO, SLA, uptime 99.999% — calculs et définitions</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise MTTR et MTBF</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends RTO et RPO</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je sais calculer uptime (99.9%, 99.99%, 99.999%)</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais concepts SLA et redondance</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- CONCEPT HA -->
+  <div class="section">
+    <div class="section-label">High Availability</div>
+    <h2>Haute disponibilité — Qu'est-ce que c'est ?</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🏥</span>
+      <div class="callout-body">
+        <strong>Analogie — hôpital vs cabinet médecin</strong>
+        Cabinet médecin : Ouvert 9h-17h, 1 médecin. Médecin malade = cabinet fermé (pas HA). Hôpital : Ouvert 24/7, équipes multiples, équipements redondants. 1 médecin malade = hôpital fonctionne quand même (HA).
+      </div>
+    </div>
+
+    <p><strong>Haute disponibilité (HA - High Availability)</strong> = Architecture système minimisant downtime, maximisant uptime. Service accessible TOUJOURS (ou presque).</p>
+
+    <h3>// Principes HA</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Redondance</strong> : Composants multiples (2 routeurs, 2 liens WAN, 2 alimentations)</li>
+      <li><strong>Élimination SPOF</strong> : Single Point of Failure (1 routeur = SPOF, 2 routeurs = pas SPOF)</li>
+      <li><strong>Failover automatique</strong> : Basculement automatique si panne (secondes-minutes)</li>
+      <li><strong>Monitoring</strong> : Détection pannes rapide</li>
+      <li><strong>Maintenance sans downtime</strong> : Upgrade/patch sans arrêter service</li>
+    </ul>
+
+    <h3>// Niveaux disponibilité</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Uptime</th><th>Downtime/an</th><th>Downtime/mois</th><th>Niveau</th></tr>
+        <tr><td>90%</td><td>36.5 jours</td><td>3 jours</td><td>Inacceptable</td></tr>
+        <tr><td>99%</td><td>3.65 jours</td><td>7.2 heures</td><td>Basique</td></tr>
+        <tr><td>99.9%</td><td>8.76 heures</td><td>43 minutes</td><td>Standard</td></tr>
+        <tr><td>99.99%</td><td>52 minutes</td><td>4.3 minutes</td><td>Haute disponibilité</td></tr>
+        <tr><td>99.999%</td><td>5.26 minutes</td><td>26 secondes</td><td>"Five nines" — Critique</td></tr>
+        <tr><td>99.9999%</td><td>31 secondes</td><td>2.6 secondes</td><td>"Six nines" — Extrême</td></tr>
+      </table>
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Question TRÈS fréquente examen</strong>
+        "Uptime 99.99% = combien downtime maximum par an ?"<br><br>
+        <strong>Réponse : 52 minutes/an</strong><br><br>
+        Mémo "five nines" 99.999% : <strong>~5 minutes/an</strong> downtime
+      </div>
+    </div>
+  </div>
+
+  <!-- MTBF MTTR -->
+  <div class="section">
+    <div class="section-label">Métriques fiabilité</div>
+    <h2>MTBF et MTTR</h2>
+
+    <h3>// MTBF (Mean Time Between Failures)</h3>
+    <p><strong>Temps MOYEN entre pannes</strong>. Mesure fiabilité composant.</p>
+
+    <p><strong>Formule :</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.85rem;line-height:1.8;">
+      MTBF = Temps total opérationnel / Nombre pannes<br><br>
+
+      <strong>Exemple :</strong><br>
+      Disque dur fonctionne 50,000 heures avant panne<br>
+      MTBF = 50,000 heures (≈ 5.7 ans)<br><br>
+
+      → Plus MTBF élevé = Plus fiable
+    </div>
+
+    <p><strong>Usage :</strong> Fabricants spécifient MTBF produits (disques, switches, alimentations).</p>
+    <p><strong>Exemple :</strong> Switch Cisco MTBF 200,000 heures = Panne attendue tous les 22 ans (statistiquement).</p>
+
+    <h3>// MTTR (Mean Time To Repair)</h3>
+    <p><strong>Temps MOYEN réparation</strong>. Combien temps restaurer service après panne ?</p>
+
+    <p><strong>Formule :</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.85rem;line-height:1.8;">
+      MTTR = Temps total downtime / Nombre pannes<br><br>
+
+      <strong>Exemple :</strong><br>
+      3 pannes année :<br>
+      - Panne 1 : Réparation 2 heures<br>
+      - Panne 2 : Réparation 4 heures<br>
+      - Panne 3 : Réparation 1 heure<br><br>
+
+      MTTR = (2 + 4 + 1) / 3 = 2.33 heures<br><br>
+
+      → Plus MTTR faible = Meilleur (réparation rapide)
+    </div>
+
+    <p><strong>Facteurs MTTR :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Temps détection panne (monitoring)</li>
+      <li>Temps diagnostic (troubleshooting)</li>
+      <li>Disponibilité pièces rechange (stock)</li>
+      <li>Compétence techniciens</li>
+      <li>Documentation/procédures</li>
+    </ul>
+
+    <h3>// Disponibilité calculée</h3>
+    <p><strong>Availability = MTBF / (MTBF + MTTR)</strong></p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.85rem;line-height:1.8;">
+      <strong>Exemple calcul :</strong><br><br>
+
+      Serveur :<br>
+      MTBF = 8,760 heures (1 an)<br>
+      MTTR = 2 heures<br><br>
+
+      Availability = 8760 / (8760 + 2)<br>
+                   = 8760 / 8762<br>
+                   = 0.9997 = <strong>99.97%</strong><br><br>
+
+      → Uptime attendu : 99.97%
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">📈</span>
+      <div class="callout-body">
+        <strong>Améliorer disponibilité</strong>
+        <strong>Augmenter MTBF</strong> : Équipements qualité, maintenance préventive<br>
+        <strong>Réduire MTTR</strong> : Monitoring proactif, pièces rechange stock, procédures claires, failover automatique
+      </div>
+    </div>
+  </div>
+
+  <!-- RTO RPO -->
+  <div class="section">
+    <div class="section-label">Disaster Recovery</div>
+    <h2>RTO et RPO</h2>
+
+    <h3>// RTO (Recovery Time Objective)</h3>
+    <p><strong>Temps MAXIMUM tolérable avant restauration service</strong>. Combien temps downtime acceptable ?</p>
+
+    <p><strong>Exemple :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>E-commerce : RTO = 1 heure (perte revenus énorme si down >1h)</li>
+      <li>Système comptabilité interne : RTO = 24 heures (moins critique)</li>
+      <li>Site web vitrine : RTO = 4 heures (impact modéré)</li>
+    </ul>
+
+    <p><strong>RTO dicte architecture :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>RTO 1 heure → Failover automatique requis (HSRP, cluster actif/passif)</li>
+      <li>RTO 24 heures → Backup/restore manuel acceptable</li>
+    </ul>
+
+    <h3>// RPO (Recovery Point Objective)</h3>
+    <p><strong>Perte données MAXIMUM tolérable</strong>. Combien données perdues acceptable ?</p>
+
+    <p><strong>Exemple :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Base données financières : RPO = 0 (zéro perte données acceptable)</li>
+      <li>CRM : RPO = 1 heure (perte 1h données transactions OK)</li>
+      <li>Logs système : RPO = 24 heures (perte 1 jour logs acceptable)</li>
+    </ul>
+
+    <p><strong>RPO dicte stratégie backup :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>RPO 0 → Réplication synchrone temps réel (coûteux)</li>
+      <li>RPO 1 heure → Backup incrémental toutes les heures</li>
+      <li>RPO 24 heures → Backup quotidien suffisant</li>
+    </ul>
+
+    <h3>// RTO vs RPO — Différence</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Timeline incident :</strong><br><br>
+
+      [12:00] Dernier backup<br>
+      [14:00] ← <strong style="color:var(--red)">INCIDENT</strong> (serveur crash)<br>
+          ↓<br>
+      [Downtime...]<br>
+          ↓<br>
+      [16:00] Service restauré<br><br>
+
+      <strong style="color:var(--accent)">RTO = 2 heures</strong> (14:00→16:00 downtime)<br>
+      <strong style="color:var(--amber)">RPO = 2 heures</strong> (12:00→14:00 données perdues)<br><br>
+
+      → RTO = Combien temps down ?<br>
+      → RPO = Combien données perdues ?
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">💰</span>
+      <div class="callout-body">
+        <strong>RTO/RPO faibles = coûts élevés</strong>
+        RTO 5 min + RPO 0 = Architecture redondante complexe + réplication temps réel = $$$$<br>
+        RTO 24h + RPO 24h = Backup daily simple = $<br><br>
+        Balance : Exigences business vs budget
+      </div>
+    </div>
+  </div>
+
+  <!-- SLA -->
+  <div class="section">
+    <div class="section-label">Service Level</div>
+    <h2>SLA — Service Level Agreement</h2>
+
+    <p><strong>SLA (Service Level Agreement)</strong> = Contrat garantissant niveau service minimum. ISP, cloud providers, fournisseurs services garantissent uptime.</p>
+
+    <h3>// Contenu SLA typique</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Uptime garanti</strong> : 99.9%, 99.99%, 99.999%</li>
+      <li><strong>Pénalités</strong> : Remboursement si SLA non respecté</li>
+      <li><strong>Fenêtres maintenance</strong> : Downtime planifié exclu SLA</li>
+      <li><strong>Support</strong> : Temps réponse incidents (4h, 24h, etc.)</li>
+      <li><strong>Exclusions</strong> : Force majeure, attaques DDoS, etc.</li>
+    </ul>
+
+    <h3>// Exemple SLA cloud (AWS EC2)</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>AWS EC2 SLA :</strong><br><br>
+
+      Uptime garanti région : <strong>99.99%</strong><br><br>
+
+      <strong>Pénalités :</strong><br>
+      - Uptime 99.0-99.99% : Crédit 10%<br>
+      - Uptime 95.0-99.0% : Crédit 25%<br>
+      - Uptime <95% : Crédit 100%<br><br>
+
+      → Si AWS downtime >52 min/mois → Client reçoit crédit service
+    </div>
+
+    <h3>// SLO vs SLA vs SLI</h3>
+    <p><strong>SLA (Service Level Agreement)</strong> : Contrat avec pénalités.</p>
+    <p><strong>SLO (Service Level Objective)</strong> : Objectif interne équipe (plus strict que SLA).</p>
+    <p><strong>SLI (Service Level Indicator)</strong> : Métrique mesurée (uptime réel, latence...).</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Exemple :</strong><br><br>
+
+      SLA : Garantie client 99.9% uptime<br>
+      SLO : Objectif équipe interne 99.95% uptime (buffer)<br>
+      SLI : Mesure réelle mois dernier 99.97% uptime<br><br>
+
+      → SLI > SLO > SLA = OK (marge sécurité)
+    </div>
+  </div>
+
+  <!-- CALCULS UPTIME -->
+  <div class="section">
+    <div class="section-label">Calculs pratiques</div>
+    <h2>Calculs uptime — Formules examen</h2>
+
+    <h3>// Calcul downtime autorisé</h3>
+    <p><strong>Formule :</strong> Downtime = Période × (1 - Uptime%)</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.85rem;line-height:1.8;">
+      <strong>Exemple 1 : SLA 99.9% annuel</strong><br><br>
+
+      Downtime max/an = 365 jours × (1 - 0.999)<br>
+                      = 365 × 0.001<br>
+                      = 0.365 jours<br>
+                      = <strong>8.76 heures/an</strong><br><br>
+
+      <strong>Exemple 2 : SLA 99.99% mensuel</strong><br><br>
+
+      Downtime max/mois = 30 jours × (1 - 0.9999)<br>
+                        = 30 × 0.0001<br>
+                        = 0.003 jours<br>
+                        = <strong>4.32 minutes/mois</strong>
+    </div>
+
+    <h3>// Calcul uptime depuis pannes</h3>
+    <p><strong>Formule :</strong> Uptime% = (Temps total - Downtime) / Temps total × 100</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.85rem;line-height:1.8;">
+      <strong>Exemple : Service down 10 heures sur année</strong><br><br>
+
+      Temps total = 365 × 24 = 8760 heures/an<br>
+      Downtime = 10 heures<br><br>
+
+      Uptime% = (8760 - 10) / 8760 × 100<br>
+              = 8750 / 8760 × 100<br>
+              = <strong>99.886%</strong>
+    </div>
+
+    <h3>// Tableau référence rapide</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Uptime</th><th>Downtime/jour</th><th>Downtime/semaine</th><th>Downtime/mois</th><th>Downtime/an</th></tr>
+        <tr><td>99%</td><td>14.4 min</td><td>1.68 heures</td><td>7.2 heures</td><td>3.65 jours</td></tr>
+        <tr><td>99.9%</td><td>1.44 min</td><td>10 min</td><td>43 min</td><td>8.76 heures</td></tr>
+        <tr><td>99.99%</td><td>8.6 sec</td><td>1 min</td><td>4.3 min</td><td>52 min</td></tr>
+        <tr><td>99.999%</td><td>0.86 sec</td><td>6 sec</td><td>26 sec</td><td>5.26 min</td></tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">🧮</span>
+      <div class="callout-body">
+        <strong>Mémo calcul rapide examen</strong>
+        99.9% = "three nines" ≈ <strong>9 heures/an</strong><br>
+        99.99% = "four nines" ≈ <strong>1 heure/an</strong><br>
+        99.999% = "five nines" ≈ <strong>5 minutes/an</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- PIÈGES -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : MTBF plus élevé = pire</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. MTBF élevé = <strong>MEILLEUR</strong>.<br><br>
+        MTBF 10,000h = Panne tous les 10,000h (médiocre)<br>
+        MTBF 100,000h = Panne tous les 100,000h (excellent)<br><br>
+        Plus MTBF grand = Plus fiable
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : RTO = perte données</div>
+      <div class="trap-content">
+        <strong>CONFUSION</strong>. RTO ≠ perte données.<br><br>
+        <strong>RTO</strong> : Temps downtime maximum tolérable<br>
+        <strong>RPO</strong> : Perte données maximum tolérable<br><br>
+        RTO = Time to recover, RPO = Point in time recover
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : 99% uptime = bon SLA</div>
+      <div class="trap-content">
+        <strong>MÉDIOCRE</strong>. 99% uptime = <strong>3.65 jours downtime/an</strong>.<br><br>
+        Services critiques : 99.9% minimum (9h/an)<br>
+        Haute dispo : 99.99% ("four nines", 1h/an)<br>
+        Mission-critical : 99.999% ("five nines", 5 min/an)<br><br>
+        99% inacceptable production moderne
+      </div>
+    </div>
+  </div>
+
+  <!-- RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>MTBF</strong> : Mean Time Between Failures (temps moyen entre pannes). Plus MTBF élevé = Plus fiable. <strong>MTTR</strong> : Mean Time To Repair (temps moyen réparation). Plus MTTR faible = Meilleur</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>RTO</strong> : Recovery Time Objective (downtime max tolérable). Dicte architecture failover. <strong>RPO</strong> : Recovery Point Objective (perte données max). Dicte fréquence backup</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Uptime</strong> : 99.9% = 8.76h/an, 99.99% = 52 min/an, 99.999% ("five nines") = 5.26 min/an. Calcul : Downtime = Période × (1 - Uptime%)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>SLA</strong> : Service Level Agreement (contrat uptime + pénalités). <strong>SLO</strong> : Objectif interne (>SLA). <strong>SLI</strong> : Mesure réelle</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>HA principes</strong> : Redondance composants, élimination SPOF, failover automatique, monitoring proactif. Availability = MTBF / (MTBF + MTTR)</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 07 : SIEM</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">O08 - Phase 3</span>
+    <a class="nav-btn next" href="#">Cours 09 : HA FHRP →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m3_o08_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+initMastery();
+</script>
+  <div style="margin-top:40px;text-align:center;">
+  <a class="nav-btn" href="index.html">← Accueil — Plan de cours</a>
+</body>
+</html>

@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>O07 — SIEM · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 3.0 — Opérations & Surveillance</span> &nbsp;›&nbsp; Cours 07</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 3 · O07</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-new">🆕 NEW</span>
+    <span class="pill pill-diff">⚡⚡⚡ Difficile</span>
+  </div>
+
+  <h1><span>SIEM</span></h1>
+  <span class="tagline">// Security Information & Event Management — corrélation événements, alertes, forensics</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends concept SIEM</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise corrélation événements</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais use cases SIEM (threat detection, compliance)</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je différencie SIEM vs syslog vs monitoring</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- CONCEPT SIEM -->
+  <div class="section">
+    <div class="section-label">Security platform</div>
+    <h2>SIEM — Security Information & Event Management</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🕵️</span>
+      <div class="callout-body">
+        <strong>Analogie — détective analysant indices</strong>
+        SIEM = détective enquêtant crime. Syslog = témoins individuels (chacun voit 1 indice). SIEM interroge TOUS témoins (firewall, switch, serveurs), corrèle indices → reconstruit attaque complète.
+      </div>
+    </div>
+
+    <p><strong>SIEM (Security Information & Event Management)</strong> = Plateforme centralisée collectant logs multiples sources, corrélant événements, détectant menaces, générant alertes temps réel.</p>
+
+    <h3>// SIEM = SIM + SEM</h3>
+    <p><strong>SIM (Security Information Management)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Collecte/stockage long-terme logs</li>
+      <li>Compliance reporting</li>
+      <li>Forensics historique</li>
+    </ul>
+
+    <p><strong>SEM (Security Event Management)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Analyse temps réel</li>
+      <li>Corrélation événements</li>
+      <li>Alerting immédiat</li>
+    </ul>
+
+    <p><strong>SIEM = SIM + SEM</strong> = Stockage long-terme + Analyse temps réel</p>
+
+    <h3>// SIEM vs Syslog simple</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>Syslog server</th><th>SIEM</th></tr>
+        <tr><td><strong>Fonction</strong></td><td>Collecter/stocker logs</td><td>Collecte + Analyse + Corrélation</td></tr>
+        <tr><td><strong>Corrélation</strong></td><td>❌ Aucune</td><td>✅ Multi-sources</td></tr>
+        <tr><td><strong>Alerting</strong></td><td>❌ Basique/manuel</td><td>✅ Automatique intelligent</td></tr>
+        <tr><td><strong>Threat detection</strong></td><td>❌ Non</td><td>✅ ML/règles avancées</td></tr>
+        <tr><td><strong>Dashboards</strong></td><td>⚠️ Basiques</td><td>✅ Riches (temps réel)</td></tr>
+        <tr><td><strong>Compliance</strong></td><td>⚠️ Reports manuels</td><td>✅ Automatisés</td></tr>
+        <tr><td><strong>Coût</strong></td><td>Gratuit (rsyslog)</td><td>$$$ (Splunk, QRadar)</td></tr>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>SIEM = syslog server "dopé" aux stéroïdes</strong>
+        Syslog = collecte passive logs. SIEM = collecte + analyse intelligente + corrélation + threat hunting + compliance automation. SIEM indispensable SOC (Security Operations Center).
+      </div>
+    </div>
+  </div>
+
+  <!-- CORRÉLATION -->
+  <div class="section">
+    <div class="section-label">Event correlation</div>
+    <h2>Corrélation d'événements — Détecter patterns</h2>
+
+    <p><strong>Corrélation</strong> = Relier événements multiples sources → identifier patterns suspects invisibles isolément.</p>
+
+    <h3>// Exemple corrélation : Détection brute-force</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;line-height:1.8;">
+      <strong style="color:var(--red)">Logs individuels (syslog) :</strong><br><br>
+
+      14:05:10 Firewall: Login failed user 'admin' from 185.x.x.x<br>
+      14:05:12 Firewall: Login failed user 'admin' from 185.x.x.x<br>
+      14:05:15 Firewall: Login failed user 'admin' from 185.x.x.x<br>
+      14:05:18 Firewall: Login failed user 'root' from 185.x.x.x<br>
+      14:05:20 Firewall: Login failed user 'root' from 185.x.x.x<br>
+      ...<br>
+      (100 tentatives 5 minutes)<br><br>
+
+      <strong style="color:var(--green)">SIEM corrélation :</strong><br><br>
+
+      → Pattern détecté : 100+ login failures même IP 5 min<br>
+      → Règle : Brute-force attack detected<br>
+      → Action : Alerte SOC + Bloquer IP 185.x.x.x automatiquement<br><br>
+
+      → Syslog seul = juste logs brut (humain manque pattern)<br>
+      → SIEM = détecte pattern automatiquement
+    </div>
+
+    <h3>// Exemple corrélation : Attaque multi-étapes</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;line-height:1.8;">
+      <strong>Scénario attaque APT (Advanced Persistent Threat) :</strong><br><br>
+
+      <strong style="color:var(--amber)">10:00 AM — Firewall logs :</strong><br>
+      Connexion VPN user 'jdoe' depuis Russie (anormal, user USA normalement)<br><br>
+
+      <strong style="color:var(--amber)">10:05 AM — AD logs :</strong><br>
+      User 'jdoe' accès serveur fichiers sensibles (Finance folder, jamais accédé avant)<br><br>
+
+      <strong style="color:var(--amber)">10:10 AM — Proxy logs :</strong><br>
+      Upload 500 MB vers Dropbox IP suspect<br><br>
+
+      <strong style="color:var(--red)">SIEM corrélation :</strong><br><br>
+
+      → Pattern : VPN anormal + Accès fichiers sensibles + Upload massif externe<br>
+      → Règle : Compromised account + Data exfiltration<br>
+      → Alerte : CRITIQUE — Incident response team notifié immédiatement
+    </div>
+
+    <p><strong>Corrélation impossible sans SIEM</strong> : Logs isolés (firewall, AD, proxy) différents admins → personne voit pattern global. SIEM corrèle automatiquement.</p>
+
+    <h3>// Types corrélation</h3>
+    <p><strong>Temporal (temporelle)</strong> : Événements liés temps (ex: 100 login failures 5 minutes).</p>
+    <p><strong>Spatial (sources multiples)</strong> : Même IP attaque firewall + IDS + serveur web simultanément.</p>
+    <p><strong>Behavioral (comportemental)</strong> : Déviation baseline (user accède serveur jamais utilisé avant).</p>
+    <p><strong>Threat intelligence</strong> : IP connue malveillante (blacklist) + connexion détectée → alerte.</p>
+  </div>
+
+  <!-- WORKFLOW SIEM -->
+  <div class="section">
+    <div class="section-label">Architecture</div>
+    <h2>Workflow SIEM</h2>
+
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Collecte</strong> : SIEM ingère logs multiples sources (syslog, NetFlow, SNMP traps, APIs)</li>
+      <li><strong>Normalisation</strong> : Parse/transforme logs formats différents → schéma unifié</li>
+      <li><strong>Enrichissement</strong> : Ajoute contexte (GeoIP, threat intelligence, asset info)</li>
+      <li><strong>Corrélation</strong> : Moteur règles analyse patterns multi-événements</li>
+      <li><strong>Alerting</strong> : Génère alertes incidents critiques (email, SMS, ticketing)</li>
+      <li><strong>Dashboards</strong> : Visualisation temps réel (SOC analysts)</li>
+      <li><strong>Forensics</strong> : Stockage long-terme investigation incidents passés</li>
+    </ol>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Architecture SIEM typique :</strong><br><br>
+
+      [Sources logs]<br>
+      - Firewalls (100+ devices)<br>
+      - Switches/Routers (500+ devices)<br>
+      - Serveurs Windows/Linux (1000+ servers)<br>
+      - IDS/IPS<br>
+      - Cloud APIs (AWS CloudTrail, Azure AD)<br>
+          ↓ Syslog/APIs<br>
+      [SIEM Platform — Splunk/QRadar]<br>
+      - Collecteurs (agents/syslog receivers)<br>
+      - Normalisation/Parsing<br>
+      - Corrélation engine (règles + ML)<br>
+      - Stockage (TB-PB logs)<br>
+          ↓<br>
+      [SOC Analysts]<br>
+      - Dashboards temps réel<br>
+      - Alertes critiques<br>
+      - Investigation forensics
+    </div>
+  </div>
+
+  <!-- USE CASES -->
+  <div class="section">
+    <div class="section-label">Applications</div>
+    <h2>Cas d'usage SIEM</h2>
+
+    <h3>// 1. Threat Detection (Détection menaces)</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Brute-force attacks</strong> : Login failures répétés</li>
+      <li><strong>DDoS</strong> : Spike connexions simultanées</li>
+      <li><strong>Malware C2</strong> : Beacon régulier vers IP suspect</li>
+      <li><strong>Data exfiltration</strong> : Upload massif anormal</li>
+      <li><strong>Privilege escalation</strong> : User standard devient admin soudainement</li>
+      <li><strong>Lateral movement</strong> : Compromission PC → accès multiples serveurs rapide</li>
+    </ul>
+
+    <h3>// 2. Compliance Reporting</h3>
+    <p>Réglementations exigent preuves contrôles sécurité.</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>PCI-DSS</strong> : Logs accès cardholder data, changements firewall</li>
+      <li><strong>HIPAA</strong> : Accès dossiers médicaux, qui vu quoi quand</li>
+      <li><strong>SOX</strong> : Changements systèmes financiers</li>
+      <li><strong>GDPR</strong> : Accès données personnelles EU</li>
+    </ul>
+
+    <p>SIEM génère reports automatisés compliance → audits simplifiés.</p>
+
+    <h3>// 3. Incident Response & Forensics</h3>
+    <p><strong>Incident détecté</strong> : SIEM timeline reconstruction.</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Qui : Attaquant IP, user compromis</li>
+      <li>Quand : Timeline précise attaque (première compromission → exfiltration)</li>
+      <li>Quoi : Fichiers accédés, commandes exécutées, data volée</li>
+      <li>Comment : Vecteur initial (phishing email, vuln exploitée)</li>
+    </ul>
+
+    <h3>// 4. User Behavior Analytics (UBA)</h3>
+    <p>Détection anomalies comportement utilisateurs.</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>User login 03:00 AM (jamais fait avant)</li>
+      <li>Download 10 GB données (baseline 10 MB/jour)</li>
+      <li>Accès serveurs jamais utilisés auparavant</li>
+    </ul>
+
+    <p>SIEM + ML apprend baseline comportement → alerte déviations.</p>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Question fréquente examen</strong>
+        "Outil corrélant événements multiples sources détection menaces ?"<br><br>
+        <strong>Réponse : SIEM (Security Information & Event Management)</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOLUTIONS SIEM -->
+  <div class="section">
+    <div class="section-label">Produits</div>
+    <h2>Solutions SIEM marché</h2>
+
+    <h3>// Splunk</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Leader marché</strong></li>
+      <li>Très puissant, scalable (PB data)</li>
+      <li>Search language SPL flexible</li>
+      <li>Apps/add-ons riches</li>
+      <li>⚠️ TRÈS cher (licence volumétrie GB/jour)</li>
+    </ul>
+
+    <h3>// IBM QRadar</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Enterprise SIEM puissant</li>
+      <li>Corrélation avancée</li>
+      <li>Threat intelligence intégré</li>
+      <li>Cher, complexe déploiement</li>
+    </ul>
+
+    <h3>// Elastic SIEM (ELK Stack)</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Open-source (gratuit core)</li>
+      <li>Elasticsearch + Logstash + Kibana</li>
+      <li>Moderne, scalable</li>
+      <li>Communauté active</li>
+      <li>⚠️ Setup complexe, maintenance</li>
+    </ul>
+
+    <h3>// Microsoft Sentinel</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Cloud-native (Azure)</li>
+      <li>Intégration Microsoft 365, Azure AD</li>
+      <li>Pay-as-you-go (GB ingested)</li>
+      <li>Best environnements Microsoft-centric</li>
+    </ul>
+
+    <h3>// ArcSight (OpenText)</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Legacy SIEM (ancien leader)</li>
+      <li>Encore utilisé grandes entreprises</li>
+      <li>Complexe, coût élevé</li>
+    </ul>
+
+    <h3>// Comparaison</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Solution</th><th>Type</th><th>Coût</th><th>Complexité</th><th>Usage</th></tr>
+        <tr><td><strong>Splunk</strong></td><td>Commercial</td><td>Très cher</td><td>Moyenne</td><td>Leader marché</td></tr>
+        <tr><td><strong>QRadar</strong></td><td>Commercial</td><td>Cher</td><td>Élevée</td><td>Entreprise (IBM shops)</td></tr>
+        <tr><td><strong>Elastic SIEM</strong></td><td>Open-source</td><td>Gratuit (core)</td><td>Élevée</td><td>Tech-savvy, budget limité</td></tr>
+        <tr><td><strong>Sentinel</strong></td><td>Cloud SaaS</td><td>Pay-per-GB</td><td>Faible</td><td>Environnements Microsoft/Azure</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- PIÈGES -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : SIEM = firewall avancé</div>
+      <div class="trap-content">
+        <strong>NON</strong>. SIEM = <strong>analyse logs</strong>, PAS firewall.<br><br>
+        Firewall : Bloque trafic malveillant (prévention)<br>
+        SIEM : Analyse logs, détecte menaces, alerte (détection)<br><br>
+        SIEM ≠ protection active, c'est monitoring intelligent
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : SIEM remplace syslog server</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. SIEM <strong>complète</strong> syslog (pas remplace).<br><br>
+        Syslog : Collecte basique logs<br>
+        SIEM : Syslog + Corrélation + Threat detection + Alerting<br><br>
+        Architecture typique : Syslog collecte → SIEM analyse
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : SIEM détecte 100% attaques</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. SIEM = outil puissant MAIS <strong>pas magique</strong>.<br><br>
+        Limitations :<br>
+        - Détecte patterns connus (règles/signatures)<br>
+        - Zero-days sophistiqués peuvent bypasser<br>
+        - False positives possibles<br>
+        - Qualité règles = critique<br><br>
+        SIEM améliore détection drastiquement MAIS pas infaillible
+      </div>
+    </div>
+  </div>
+
+  <!-- RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>SIEM</strong> : Security Information & Event Management. Collecte logs multi-sources, corrèle événements, détecte menaces, alerte temps réel. SIM (stockage long-terme) + SEM (analyse temps réel)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Corrélation</strong> : Relier événements multiples sources → patterns invisibles isolément. Types : temporelle (time), spatiale (multi-sources), comportementale (baseline), threat intel (blacklists)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Use cases</strong> : Threat detection (brute-force, DDoS, malware C2, exfiltration), Compliance reporting (PCI-DSS, HIPAA), Incident response/forensics, User behavior analytics</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Workflow</strong> : Collecte → Normalisation → Enrichissement → Corrélation (règles + ML) → Alerting → Dashboards → Forensics stockage long-terme</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Solutions</strong> : Splunk (leader cher), QRadar (enterprise IBM), Elastic SIEM (open-source), Sentinel (cloud Azure). SIEM vs syslog : SIEM = syslog + intelligence</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 06 : Logging & Syslog</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">O07 - Phase 3</span>
+    <a class="nav-btn next" href="#">Cours 08 : HA Concepts →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m3_o07_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+initMastery();
+</script>
+  <div style="margin-top:40px;text-align:center;">
+  <a class="nav-btn" href="index.html">← Accueil — Plan de cours</a>
+</body>
+</html>
