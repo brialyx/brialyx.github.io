@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S07 — PKI : Infrastructure à clés publiques · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 4.0 — Sécurité réseau</span> &nbsp;›&nbsp; Cours 07</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 4 · S07</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡⚡ Difficile</span>
+  </div>
+
+  <h1><span>PKI</span> : Infrastructure à clés publiques</h1>
+  <span class="tagline">// Public Key Infrastructure — Certificats X.509, CA racine/intermédiaire, CRL, OCSP, CSR, chaîne confiance</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends PKI et certificats X.509</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise CA racine vs intermédiaire</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je différencie CRL vs OCSP</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais CSR et chaîne de confiance</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- PKI CONCEPT -->
+  <div class="section">
+    <div class="section-label">Public Key Infrastructure</div>
+    <h2>PKI — Fondations infrastructure</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🏛️</span>
+      <div class="callout-body">
+        <strong>Analogie — passeports gouvernement</strong>
+        PKI = système gouvernemental délivrant passeports. <strong>CA (Certificate Authority)</strong> = gouvernement émet passeports. <strong>Certificat</strong> = passeport prouve identité. <strong>Trust</strong> = monde entier accepte passeports gouvernement légitime.
+      </div>
+    </div>
+
+    <p><strong>PKI (Public Key Infrastructure)</strong> = Framework gérant création, distribution, stockage, révocation certificats numériques. Permet chiffrement asymétrique + authentification échelle Internet.</p>
+
+    <h3>// Problème résolu par PKI</h3>
+    <p><strong>Question</strong> : Comment vérifier public key légitime (pas attaquant MitM) ?</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Sans PKI (vulnerable) :</strong><br>
+      Browser → "Quelle public key google.com ?"<br>
+      Attacker MitM → "Voici MY public key (fake)"<br>
+      Browser → Chiffre données avec fake key → Attacker déchiffre<br><br>
+
+      <strong>Avec PKI (secure) :</strong><br>
+      Browser → "Quelle public key google.com ?"<br>
+      Server → "Voici certificat signé CA trusted (Let's Encrypt)"<br>
+      Browser → Vérifie signature CA → Accepte public key légitime<br>
+      Attacker → Pas certificat signé CA → Browser rejette
+    </div>
+
+    <h3>// Composants PKI</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>CA (Certificate Authority)</strong> : Entité émet/signe certificats (DigiCert, Let's Encrypt)</li>
+      <li><strong>RA (Registration Authority)</strong> : Vérifie identité demandeurs (optionnel, proxy CA)</li>
+      <li><strong>Certificats</strong> : Documents numériques liant public key → identité (X.509 format)</li>
+      <li><strong>CRL/OCSP</strong> : Mécanismes révocation certificats compromis</li>
+      <li><strong>Certificate store</strong> : Stockage certificats trusted (OS, browser)</li>
+    </ul>
+
+    <div class="callout ok">
+      <span class="callout-icon">🔐</span>
+      <div class="callout-body">
+        <strong>PKI = fondation trust Internet</strong>
+        HTTPS, email signé (S/MIME), code signing, VPN certificates → TOUT repose PKI.<br>
+        Sans PKI : Impossible vérifier identités échelle globale.<br>
+        PKI = infrastructure invisible MAIS critique sécurité moderne.
+      </div>
+    </div>
+  </div>
+
+  <!-- CERTIFICATS X.509 -->
+  <div class="section">
+    <div class="section-label">Digital certificates</div>
+    <h2>Certificats X.509 — Format standard</h2>
+
+    <p><strong>Certificat X.509</strong> = Standard ITU-T définissant format certificats numériques. Utilisé SSL/TLS, S/MIME, code signing, 802.1X.</p>
+
+    <h3>// Contenu certificat X.509</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Certificate:</strong><br>
+      &nbsp;&nbsp;Version: 3<br>
+      &nbsp;&nbsp;Serial Number: 04:d2:ac:7f:9e:...<br>
+      &nbsp;&nbsp;<strong style="color:var(--green)">Subject: CN=www.google.com</strong> (identité titulaire)<br>
+      &nbsp;&nbsp;<strong style="color:var(--cyan)">Issuer: CN=GTS CA 1C3</strong> (CA émetteur)<br>
+      &nbsp;&nbsp;<strong style="color:var(--purple)">Public Key: RSA 2048 bits</strong><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;Modulus: 00:c4:7a:...<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;Exponent: 65537<br>
+      &nbsp;&nbsp;Validity:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;Not Before: Jan 15 08:21:00 2024<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;Not After: Apr 08 08:20:59 2024 (90 jours)<br>
+      &nbsp;&nbsp;<strong style="color:var(--amber)">Signature Algorithm: SHA256-RSA</strong><br>
+      &nbsp;&nbsp;<strong style="color:var(--red)">Signature: 5a:3f:9c:...</strong> (CA private key signé)<br>
+      &nbsp;&nbsp;Extensions:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;Subject Alternative Name: *.google.com, *.youtube.com
+    </div>
+
+    <h3>// Champs critiques</h3>
+    <p><strong>Subject (CN - Common Name)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Identité titulaire certificat (domain, organization, person)</li>
+      <li>Ex: <code>CN=www.example.com</code></li>
+    </ul>
+
+    <p><strong>Issuer</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>CA ayant émis/signé certificat</li>
+      <li>Ex: <code>CN=Let's Encrypt Authority X3</code></li>
+    </ul>
+
+    <p><strong>Public Key</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Clé publique titulaire (RSA 2048/4096, ECC 256)</li>
+      <li>Usage : Chiffrement, vérification signatures</li>
+    </ul>
+
+    <p><strong>Validity Period</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Durée validité (Not Before → Not After)</li>
+      <li>Moderne : 90 jours (Let's Encrypt), 1-2 ans max (commercial)</li>
+      <li>Certificat expiré = browser warning</li>
+    </ul>
+
+    <p><strong>Signature</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>CA hash certificat → signe avec CA private key</li>
+      <li>Verification : Hash certificat → déchiffre signature CA public key → compare</li>
+    </ul>
+
+    <p><strong>Extensions (v3)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>SAN (Subject Alternative Name)</strong> : Multiple domains (*.example.com, example.com)</li>
+      <li><strong>Key Usage</strong> : Restrictions usage clé (digitalSignature, keyEncipherment)</li>
+      <li><strong>Extended Key Usage</strong> : Server Authentication, Client Authentication, Code Signing</li>
+    </ul>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Question fréquente examen</strong>
+        "Champ certificat X.509 identifiant CA émetteur ?"<br>
+        <strong>Réponse : Issuer</strong><br><br>
+        "Champ certificat contenant clé publique titulaire ?"<br>
+        <strong>Réponse : Public Key</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- CA HIERARCHY -->
+  <div class="section">
+    <div class="section-label">Certificate Authority</div>
+    <h2>CA racine vs CA intermédiaire — Hiérarchie</h2>
+
+    <p><strong>Certificate Authority (CA)</strong> = Entité trusted émettant/signant certificats numériques.</p>
+
+    <h3>// CA Racine (Root CA)</h3>
+    <p><strong>Définition</strong> : CA sommet hiérarchie, auto-signée (self-signed), trustée implicitement OS/browsers.</p>
+
+    <p><strong>Caractéristiques Root CA :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Auto-signé</strong> : Issuer = Subject (signe propre certificat)</li>
+      <li><strong>Trust anchor</strong> : Pré-installée OS (Windows, macOS, Linux), browsers (Chrome, Firefox)</li>
+      <li><strong>Long-lived</strong> : Validité 20-30 ans (rarement renouvelée)</li>
+      <li><strong>Offline storage</strong> : Private key gardée OFFLINE (HSM - Hardware Security Module)</li>
+      <li><strong>Rarement utilisée direct</strong> : Signe CA intermédiaires (pas certificats end-entity)</li>
+    </ul>
+
+    <p><strong>Exemples Root CAs publiques :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>DigiCert Global Root CA</li>
+      <li>Let's Encrypt Root CA (ISRG Root X1)</li>
+      <li>GlobalSign Root CA</li>
+      <li>Sectigo (Comodo) Root CA</li>
+    </ul>
+
+    <h3>// CA Intermédiaire (Intermediate CA)</h3>
+    <p><strong>Définition</strong> : CA milieu hiérarchie, signée par Root CA, émet certificats end-entity (serveurs, users).</p>
+
+    <p><strong>Caractéristiques Intermediate CA :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Signée Root CA</strong> : Issuer = Root CA, Subject = Intermediate CA</li>
+      <li><strong>Operational</strong> : Utilisée quotidiennement signer certificats</li>
+      <li><strong>Shorter-lived</strong> : Validité 5-10 ans</li>
+      <li><strong>Online</strong> : Private key accessible (automated signing)</li>
+      <li><strong>Compromission limitée</strong> : Si compromised → révoquer intermediate, Root intact</li>
+    </ul>
+
+    <h3>// Hiérarchie PKI (3 niveaux)</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;line-height:1.8;">
+      <strong style="color:var(--purple)">Root CA</strong> (ISRG Root X1)<br>
+      &nbsp;&nbsp;│ Validité: 2035 (20 ans)<br>
+      &nbsp;&nbsp;│ Storage: Offline HSM<br>
+      &nbsp;&nbsp;│ Signs: Intermediate CAs uniquement<br>
+      &nbsp;&nbsp;└─> <strong style="color:var(--cyan)">Intermediate CA</strong> (Let's Encrypt Authority X3)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│ Validité: 2025 (5 ans)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│ Storage: Online (automated)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│ Signs: End-entity certificates<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─> <strong style="color:var(--green)">End-Entity Certificate</strong> (www.example.com)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Validité: 90 jours<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Usage: SSL/TLS server<br><br>
+
+      <strong style="color:var(--accent)">→ Chain of Trust : Root → Intermediate → End-Entity</strong>
+    </div>
+
+    <h3>// Pourquoi CA intermédiaire ?</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Sécurité Root CA</strong> : Root offline → si compromised = catastrophe (tout PKI invalidé)</li>
+      <li><strong>Compartmentalization</strong> : Intermediate compromised → révoquer, Root intact</li>
+      <li><strong>Scaling</strong> : Multiples intermediates (géographie, business units)</li>
+      <li><strong>Operational flexibility</strong> : Renouveler intermediate sans toucher root</li>
+    </ul>
+  </div>
+
+  <!-- CHAIN OF TRUST -->
+  <div class="section">
+    <div class="section-label">Trust model</div>
+    <h2>Chaîne de confiance — Certificate Chain</h2>
+
+    <p><strong>Chaîne de confiance (Certificate Chain)</strong> = Séquence certificats Root CA → Intermediate CA(s) → End-Entity validant authenticité.</p>
+
+    <h3>// Workflow validation chaîne</h3>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Browser reçoit certificat server</strong> (www.example.com)</li>
+      <li><strong>Browser vérifie signature certificat</strong> :<br>
+        - Hash certificat<br>
+        - Déchiffre signature avec Issuer public key (Intermediate CA)<br>
+        - Compare hash → Match = signature valide
+      </li>
+      <li><strong>Browser vérifie certificat Intermediate CA</strong> :<br>
+        - Signature Intermediate signée par Root CA ?<br>
+        - Hash + déchiffre signature Root public key → Valid
+      </li>
+      <li><strong>Browser vérifie Root CA</strong> :<br>
+        - Root CA présente trust store OS/browser ?<br>
+        - Yes → Chaîne trusted, connexion proceed<br>
+        - No → Warning "Certificate not trusted"
+      </li>
+    </ol>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Certificate chain example :</strong><br><br>
+
+      [0] End-Entity: www.example.com<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;Issuer: Let's Encrypt Authority X3<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;Signature: [signed by X3 private key]<br><br>
+
+      [1] Intermediate: Let's Encrypt Authority X3<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;Issuer: ISRG Root X1<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;Signature: [signed by Root private key]<br><br>
+
+      [2] Root: ISRG Root X1<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;Issuer: ISRG Root X1 (self-signed)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;Trusted: Yes (pre-installed OS)<br><br>
+
+      → Browser validates [0] → [1] → [2] → Trust established
+    </div>
+
+    <h3>// Certificate chain envoi</h3>
+    <p><strong>Server responsabilité</strong> : Envoyer certificate chain COMPLET (end-entity + intermediates).</p>
+
+    <p><strong>Problème configuration courante</strong> : Server envoie end-entity certificate uniquement (pas intermediates) → Browser error "Incomplete chain".</p>
+
+    <div class="callout warn">
+      <span class="callout-icon">🔗</span>
+      <div class="callout-body">
+        <strong>Incomplete chain = erreur SSL fréquente</strong>
+        Server DOIT envoyer : [End-entity] + [Intermediate(s)]<br>
+        Root CA PAS envoyée (déjà trust store client)<br><br>
+        Test : <code>openssl s_client -connect example.com:443 -showcerts</code><br>
+        → Vérifier 2-3 certificates retournés (pas 1 seul)
+      </div>
+    </div>
+  </div>
+
+  <!-- CSR -->
+  <div class="section">
+    <div class="section-label">Certificate request</div>
+    <h2>CSR — Certificate Signing Request</h2>
+
+    <p><strong>CSR (Certificate Signing Request)</strong> = Fichier demande signature certificat envoyé CA. Contient public key + infos identité.</p>
+
+    <h3>// Workflow obtention certificat</h3>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Server génère paire clés</strong> : Private key + Public key (RSA/ECC)</li>
+      <li><strong>Server créé CSR</strong> :<br>
+        - Inclut : Public key, domain name (CN), organization, country<br>
+        - Signe CSR avec private key (prouve possession clé)
+      </li>
+      <li><strong>Admin soumet CSR → CA</strong> (Let's Encrypt, DigiCert)</li>
+      <li><strong>CA valide demande</strong> :<br>
+        - Domain ownership (HTTP challenge, DNS TXT record)<br>
+        - Organization validation (business documents, phone verification)
+      </li>
+      <li><strong>CA signe CSR → émet certificat</strong></li>
+      <li><strong>Server installe certificat</strong> (+ private key existante)</li>
+    </ol>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Génération CSR (OpenSSL) :</strong><br><br>
+
+      $ openssl req -new -newkey rsa:2048 -nodes \<br>
+      &nbsp;&nbsp;-keyout server.key -out server.csr<br><br>
+
+      → Prompts :<br>
+      Country: US<br>
+      State: California<br>
+      Organization: Example Inc<br>
+      Common Name: www.example.com<br><br>
+
+      → Output :<br>
+      server.key (private key - KEEP SECRET)<br>
+      server.csr (send to CA)
+    </div>
+
+    <h3>// Contenu CSR</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Subject</strong> : CN=www.example.com, O=Example Inc, C=US</li>
+      <li><strong>Public Key</strong> : RSA 2048 bits modulus + exponent</li>
+      <li><strong>Signature</strong> : CSR signé private key requester (proof of possession)</li>
+    </ul>
+
+    <p><strong>⚠️ IMPORTANT</strong> : CSR contient public key uniquement. Private key JAMAIS envoyée CA (reste serveur).</p>
+  </div>
+
+  <!-- CRL OCSP -->
+  <div class="section">
+    <div class="section-label">Certificate revocation</div>
+    <h2>CRL vs OCSP — Révocation certificats</h2>
+
+    <p><strong>Révocation</strong> = Invalider certificat AVANT expiration (private key compromised, organization change, erreur émission).</p>
+
+    <h3>// CRL (Certificate Revocation List)</h3>
+    <p><strong>Définition</strong> : Liste signée CA contenant serial numbers certificats révoqués.</p>
+
+    <p><strong>Workflow CRL :</strong></p>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>CA publie CRL (URL dans certificat extension)</li>
+      <li>Client télécharge CRL périodiquement (ex: daily)</li>
+      <li>Client vérifie : Serial number certificat présent CRL ?<br>
+        - Yes → Certificat révoqué (reject)<br>
+        - No → Valid (proceed)
+      </li>
+    </ol>
+
+    <p><strong>Problèmes CRL :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>❌ <strong>Taille</strong> : CRL grossit (millions certificats = MB)</li>
+      <li>❌ <strong>Latency</strong> : Updates périodiques (certificat révoqué aujourd'hui, client update demain = window vulnerability)</li>
+      <li>❌ <strong>Bandwidth</strong> : Télécharger CRL complet chaque check (inefficient)</li>
+    </ul>
+
+    <h3>// OCSP (Online Certificate Status Protocol)</h3>
+    <p><strong>Définition</strong> : Protocole real-time vérification statut certificat individuel (RFC 6960).</p>
+
+    <p><strong>Workflow OCSP :</strong></p>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Client query OCSP responder : "Serial 0x123abc révoqué ?"</li>
+      <li>OCSP responder répond signed response :<br>
+        - <strong>Good</strong> : Certificat valid<br>
+        - <strong>Revoked</strong> : Certificat révoqué (date, raison)<br>
+        - <strong>Unknown</strong> : OCSP ne connaît pas certificat
+      </li>
+      <li>Client vérifie signature response (OCSP responder certificate)</li>
+    </ol>
+
+    <p><strong>Avantages OCSP :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ <strong>Real-time</strong> : Statut current (pas stale CRL)</li>
+      <li>✅ <strong>Efficient</strong> : Query 1 certificat (pas télécharger CRL complet)</li>
+      <li>✅ <strong>Scalable</strong> : Bandwidth minimal</li>
+    </ul>
+
+    <p><strong>Problème OCSP :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>⚠️ <strong>Privacy</strong> : OCSP responder voit quels sites user visite (query leak)</li>
+      <li>⚠️ <strong>Availability</strong> : OCSP responder down = connexions bloquées</li>
+    </ul>
+
+    <h3>// OCSP Stapling</h3>
+    <p><strong>Solution</strong> : Server query OCSP, cache response, envoie (staple) clients avec certificat.</p>
+
+    <p><strong>Avantages stapling :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ Privacy (client pas contact OCSP directly)</li>
+      <li>✅ Performance (server cache, clients pas query chaque fois)</li>
+    </ul>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>CRL</th><th>OCSP</th></tr>
+        <tr><td><strong>Type</strong></td><td>Liste complète</td><td>Query individuelle</td></tr>
+        <tr><td><strong>Taille</strong></td><td>❌ Large (MB)</td><td>✅ Petite (KB)</td></tr>
+        <tr><td><strong>Latency</strong></td><td>❌ Périodique (stale)</td><td>✅ Real-time</td></tr>
+        <tr><td><strong>Bandwidth</strong></td><td>❌ Élevé</td><td>✅ Minimal</td></tr>
+        <tr><td><strong>Privacy</strong></td><td>✅ Pas leak</td><td>⚠️ Leak browsing</td></tr>
+        <tr><td><strong>Modern usage</strong></td><td>Legacy</td><td>Standard (+ stapling)</td></tr>
+      </table>
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Question fréquente examen</strong>
+        "Protocole real-time vérification statut certificat ?"<br>
+        <strong>Réponse : OCSP (Online Certificate Status Protocol)</strong><br><br>
+        "Liste certificats révoqués publiée CA ?"<br>
+        <strong>Réponse : CRL (Certificate Revocation List)</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- PIÈGES -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : CA racine signe certificats end-entity directement</div>
+      <div class="trap-content">
+        <strong>FAUX (best practice)</strong>. Root CA signe <strong>CA intermédiaires</strong> (pas end-entity).<br><br>
+        Root CA offline → signe intermediates uniquement<br>
+        Intermediate CA online → signe end-entity certificates<br><br>
+        Pourquoi : Sécurité root (compromission intermediate ≠ catastrophe)
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : CSR contient private key</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. CSR contient <strong>PUBLIC key uniquement</strong>.<br><br>
+        CSR = Certificate Signing Request (public key + identity info)<br>
+        Private key reste serveur (JAMAIS envoyée CA)<br><br>
+        CA signe CSR → retourne certificat (public key + signature)
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : OCSP remplace complètement CRL</div>
+      <div class="trap-content">
+        <strong>NUANCE</strong>. OCSP moderne standard MAIS CRL <strong>toujours utilisé fallback</strong>.<br><br>
+        Browsers : Essaient OCSP first, fallback CRL si OCSP unavailable<br>
+        Certificats : Contiennent souvent BOTH CRL + OCSP URLs<br><br>
+        OCSP preferred, CRL legacy backup
+      </div>
+    </div>
+  </div>
+
+  <!-- RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>PKI</strong> : Infrastructure gérant certificats numériques. Résout problème vérification public keys (MitM). Composants : CA, certificats X.509, CRL/OCSP, trust stores</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Certificats X.509</strong> : Subject (titulaire), Issuer (CA), Public Key, Validity, Signature (CA private key), Extensions (SAN, Key Usage). Standard SSL/TLS</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Root CA</strong> : Self-signed, trust anchor (OS pre-installed), offline, 20-30 ans. <strong>Intermediate CA</strong> : Signée Root, operational, online, 5-10 ans. Hiérarchie 3 niveaux</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Chain of Trust</strong> : Root → Intermediate(s) → End-Entity. Browser validate chaque maillon (hash + decrypt signature). Server envoie end-entity + intermediates (pas root)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>CSR</strong> : Certificate Signing Request (public key + identity). Server génère, soumet CA, reçoit certificat signé. Private key JAMAIS envoyée</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>CRL</strong> : Liste certificats révoqués (large, stale, legacy). <strong>OCSP</strong> : Real-time query (efficient, privacy issue). OCSP Stapling = server cache response</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 06 : Chiffrement</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">S07 - Phase 4</span>
+    <a class="nav-btn next" href="#">Cours 08 : TLS/SSL →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m4_s07_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+initMastery();
+</script>
+  <div style="margin-top:40px;text-align:center;">
+  <a class="nav-btn" href="index.html">← Accueil — Plan de cours</a>
+</body>
+</html>

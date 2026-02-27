@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S05 — Social Engineering · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 4.0 — Sécurité réseau</span> &nbsp;›&nbsp; Cours 05</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 4 · S05</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡☆ Moyen</span>
+  </div>
+
+  <h1><span>Social Engineering</span></h1>
+  <span class="tagline">// Manipulation psychologique — Phishing/Spear/Whaling, Vishing, Smishing, Tailgating, Impersonation, Pretexting</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends concept Social Engineering</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je différencie Phishing/Spear phishing/Whaling</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise Vishing et Smishing</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais Tailgating, Impersonation, Pretexting</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- CONCEPT -->
+  <div class="section">
+    <div class="section-label">Human hacking</div>
+    <h2>Social Engineering — Manipulation psychologique</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🎭</span>
+      <div class="callout-body">
+        <strong>Analogie — pickpocket vs cambrioleur</strong>
+        Hacker technique = cambrioleur (force serrures, casse fenêtres). Social engineer = pickpocket (manipulation, distraction, persuasion). Résultat identique (vol) MAIS méthode différente (humains vs systèmes).
+      </div>
+    </div>
+
+    <p><strong>Social Engineering</strong> = Manipulation psychologique humains → obtenir informations confidentielles ou accès non autorisé. Exploite confiance, peur, urgence, curiosité.</p>
+
+    <h3>// Principe fondamental</h3>
+    <p><strong>"Humans = maillon faible sécurité"</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Firewall parfait, chiffrement fort → inutile si user donne password</li>
+      <li>95%+ breaches impliquent erreur humaine (Verizon DBIR)</li>
+      <li>Social engineering = souvent plus facile que exploit technique</li>
+    </ul>
+
+    <h3>// Techniques psychologiques</h3>
+    <p><strong>Authority (Autorité)</strong> : Attaquant prétend être patron, IT, police → victim obéit.</p>
+    <p><strong>Urgency (Urgence)</strong> : "Compte bloqué dans 1h !" → victim panique, pas réfléchit.</p>
+    <p><strong>Scarcity (Rareté)</strong> : "Offre limitée 10 min !" → FOMO (fear of missing out).</p>
+    <p><strong>Trust (Confiance)</strong> : Attaquant construit relation → victim baisse garde.</p>
+    <p><strong>Fear (Peur)</strong> : "Virus détecté !" "IRS lawsuit !" → victim réagit émotionnellement.</p>
+
+    <div class="callout warn">
+      <span class="callout-icon">🧠</span>
+      <div class="callout-body">
+        <strong>Social engineering = attaque humains, pas machines</strong>
+        Défense technique (firewall, antivirus) = inefficace.<br>
+        Défense = awareness training + policy + culture sécurité.<br>
+        User éduqué = meilleure défense social engineering.
+      </div>
+    </div>
+  </div>
+
+  <!-- PHISHING -->
+  <div class="section">
+    <div class="section-label">Email attacks</div>
+    <h2>Phishing / Spear Phishing / Whaling</h2>
+
+    <h3>// Phishing (Hameçonnage)</h3>
+    <p><strong>Définition</strong> : Email frauduleux MASSE non ciblée → voler credentials ou installer malware.</p>
+
+    <p><strong>Caractéristiques :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Volume</strong> : Millions emails envoyés (spam campaign)</li>
+      <li><strong>Generic</strong> : "Dear Customer" (pas personnalisé)</li>
+      <li><strong>Urgence</strong> : "Account suspended ! Click now !"</li>
+      <li><strong>Fake sender</strong> : Spoof email (from: security@paypa1.com vs paypal.com)</li>
+      <li><strong>Malicious link</strong> : URL fake login page (http://paypal-verify.tk)</li>
+    </ul>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Exemple phishing email :</strong><br><br>
+
+      From: security@paypa1.com (fake 'l' = 1)<br>
+      Subject: URGENT: Account Suspended<br><br>
+
+      Dear Customer,<br><br>
+
+      Your PayPal account has been suspended due to suspicious activity.<br>
+      Click below to verify identity within 24h or account deleted.<br><br>
+
+      [Verify Account Now] → http://paypal-secure-login.tk<br><br>
+
+      PayPal Security Team<br><br>
+
+      <strong style="color:var(--red)">Red flags :</strong><br>
+      - Generic greeting<br>
+      - Urgency (24h deadline)<br>
+      - Suspicious URL domain (.tk, not .com)<br>
+      - Typo sender (paypa1 vs paypal)
+    </div>
+
+    <h3>// Spear Phishing (Hameçonnage ciblé)</h3>
+    <p><strong>Définition</strong> : Phishing CIBLÉ individu/organisation spécifique (personnalisé, recherche préalable).</p>
+
+    <p><strong>Différences vs phishing :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Ciblé</strong> : 10-100 victims (vs millions phishing)</li>
+      <li><strong>Personnalisé</strong> : "Hi John," (nom réel, poste, projets)</li>
+      <li><strong>Contexte</strong> : Référence infos vraies (collègues, deals en cours)</li>
+      <li><strong>Crédibilité</strong> : Très convaincant (OSINT research approfondie)</li>
+    </ul>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Exemple spear phishing :</strong><br><br>
+
+      From: sarah.jones@company.com (spoofed CEO)<br>
+      To: john.smith@company.com (CFO)<br>
+      Subject: Re: Q4 Merger Confidential<br><br>
+
+      Hi John,<br><br>
+
+      Per our discussion yesterday re: Acme acquisition,<br>
+      legal needs updated financials ASAP for Friday board meeting.<br><br>
+
+      Please review attached NDA and return signed by EOD.<br>
+      Attachment: Acme_NDA_Final.pdf.exe (malware)<br><br>
+
+      Thanks,<br>
+      Sarah<br><br>
+
+      <strong style="color:var(--red)">Attacker research :</strong><br>
+      - LinkedIn: John = CFO, Sarah = CEO<br>
+      - Press release: Acme merger public knowledge<br>
+      - Calendar leak: Board meeting Friday<br>
+      → Highly credible (John likely clicks)
+    </div>
+
+    <h3>// Whaling (Chasse baleine)</h3>
+    <p><strong>Définition</strong> : Spear phishing ciblant EXECUTIVES (C-level : CEO, CFO, CTO).</p>
+
+    <p><strong>Caractéristiques :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>High-value targets</strong> : Accès maximum (financier, strategic)</li>
+      <li><strong>Sophistication maximale</strong> : Recherche extensive, contexte parfait</li>
+      <li><strong>Business Email Compromise (BEC)</strong> : Fraud wire transfer ($M)</li>
+    </ul>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Différences clés examen</strong>
+        <strong>Phishing</strong> : Mass email, generic, millions victims<br>
+        <strong>Spear phishing</strong> : Targeted, personalized, 10-100 victims<br>
+        <strong>Whaling</strong> : Spear phishing ciblant executives (CEO/CFO/CTO)
+      </div>
+    </div>
+  </div>
+
+  <!-- VISHING SMISHING -->
+  <div class="section">
+    <div class="section-label">Voice & SMS attacks</div>
+    <h2>Vishing et Smishing</h2>
+
+    <h3>// Vishing (Voice Phishing)</h3>
+    <p><strong>Définition</strong> : Phishing via appel téléphonique (voice call social engineering).</p>
+
+    <p><strong>Techniques vishing :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Caller ID spoofing</strong> : Affiche numéro légitime (banque, IRS, tech support)</li>
+      <li><strong>VoIP</strong> : Appels gratuits, anonymes (difficile tracer)</li>
+      <li><strong>Automated (robocalls)</strong> : IVR automatique ("Press 1 verify account")</li>
+      <li><strong>Live attacker</strong> : Script persuasif, manipulation temps réel</li>
+    </ul>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Scénario vishing typique :</strong><br><br>
+
+      [Phone rings, Caller ID shows "IRS Official"]<br><br>
+
+      Attacker: "IRS Tax Department. You owe $5,000 back taxes.<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Warrant issued arrest unless pay TODAY.<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Provide credit card settle immediately."<br><br>
+
+      Victim: [panics, fear authority] → Gives CC number<br><br>
+
+      <strong style="color:var(--red)">Red flags :</strong><br>
+      - Urgency extreme (arrest TODAY)<br>
+      - Fear tactic (warrant)<br>
+      - Payment unusual (IRS never demands phone payment)<br>
+      - No written notice (IRS always mails first)
+    </div>
+
+    <h3>// Smishing (SMS Phishing)</h3>
+    <p><strong>Définition</strong> : Phishing via SMS text message.</p>
+
+    <p><strong>Caractéristiques smishing :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Mobile-specific</strong> : Exploite petits écrans (URLs tronquées)</li>
+      <li><strong>High open rate</strong> : SMS taux lecture >90% (vs email ~20%)</li>
+      <li><strong>Urgency</strong> : Messages courts, action immédiate</li>
+      <li><strong>Malicious links</strong> : Shortened URLs (bit.ly) cachent destination</li>
+    </ul>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Exemple smishing SMS :</strong><br><br>
+
+      From: "USPS"<br>
+      Message:<br>
+      "Package delivery failed. Reconfirm address:<br>
+      http://bit.ly/usps-track-3x7k"<br><br>
+
+      → User clicks → Fake USPS site → Enter personal info<br><br>
+
+      <strong>Variantes :</strong><br>
+      - "Bank fraud alert! Verify: [link]"<br>
+      - "Prize won! Claim: [link]"<br>
+      - "Missed call voicemail: [link]" (installs malware)
+    </div>
+  </div>
+
+  <!-- TAILGATING -->
+  <div class="section">
+    <div class="section-label">Physical security</div>
+    <h2>Tailgating et Piggybacking</h2>
+
+    <p><strong>Tailgating</strong> = Suivre employee autorisé passage porte sécurisée SANS autorisation (physical social engineering).</p>
+
+    <h3>// Tailgating (non consensuel)</h3>
+    <p><strong>Scénario :</strong></p>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Employee badge porte accès datacenter</li>
+      <li>Attaquant suit juste derrière (pretend forgot badge)</li>
+      <li>Porte ferme trop lentement → attaquant entre</li>
+      <li>Employee pas challenge (politesse, assume légitime)</li>
+    </ol>
+
+    <h3>// Piggybacking (consensuel)</h3>
+    <p><strong>Différence</strong> : Victim AIDE attaquant intentionnellement.</p>
+
+    <p><strong>Scénario :</strong></p>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Attaquant mains pleines (café, laptop, boxes)</li>
+      <li>"Excuse me, can you hold door ? Forgot badge car."</li>
+      <li>Employee OUVRE porte intentionnellement (helpful)</li>
+      <li>Attaquant entre (victim complice involontaire)</li>
+    </ol>
+
+    <h3>// Techniques tailgating</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Timing</strong> : Suivre rush hours (nombreux employees, moins vigilance)</li>
+      <li><strong>Props</strong> : Uniforme delivery, laptop bag, téléphone (air occupied/légitime)</li>
+      <li><strong>Confidence</strong> : Marcher confiant (assume belongs)</li>
+      <li><strong>Distraction</strong> : Fausse urgence ("Bathroom emergency !")</li>
+    </ul>
+
+    <h3>// Mitigation tailgating</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Mantraps</strong> : Sas 2 portes (1 seule personne à la fois)</li>
+      <li><strong>Turnstiles</strong> : Tourniquets physiques</li>
+      <li><strong>Security guards</strong> : Vérification visuelle chaque personne</li>
+      <li><strong>Policy + training</strong> : Challenge unknown persons, pas hold doors</li>
+      <li><strong>Badges visible</strong> : Tous employees badge apparent</li>
+    </ul>
+
+    <div class="callout tip">
+      <span class="callout-icon">🚪</span>
+      <div class="callout-body">
+        <strong>Culture sécurité vs politesse</strong>
+        Employees hésite challenge (peur impoli).<br>
+        Training doit normaliser : "Excuse me, badge please ?" = acceptable, pas rude.<br>
+        Mantra : "Friendly but firm."
+      </div>
+    </div>
+  </div>
+
+  <!-- IMPERSONATION -->
+  <div class="section">
+    <div class="section-label">Identity fraud</div>
+    <h2>Impersonation — Usurpation d'identité</h2>
+
+    <p><strong>Impersonation</strong> = Attaquant prétend être quelqu'un d'autre (employee, vendor, authority) → gain accès/infos.</p>
+
+    <h3>// Types impersonation</h3>
+
+    <p><strong>1. Authority Impersonation</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Prétend être : Police, FBI, IRS, auditor, manager</li>
+      <li>Exploite : Authority bias (humans obey authority figures)</li>
+      <li>Demande : Passwords, access, documents confidentiels</li>
+    </ul>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Attacker calls reception:<br>
+      "FBI Agent Johnson. Cybercrime investigation your company.<br>
+      Need CEO email logs past 6 months. Send secure-fbi-portal.tk"<br><br>
+
+      Receptionist: [intimidated] → Forwards request IT<br>
+      IT: [assume legitimate FBI] → Provides data
+    </div>
+
+    <p><strong>2. Third-Party Vendor</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Prétend être : IT support, HVAC repair, delivery, cleaner</li>
+      <li>Uniforme : Fake badge, branded clothing</li>
+      <li>Access : Wander building, plant devices, shoulder surfing</li>
+    </ul>
+
+    <p><strong>3. Trusted Insider</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Prétend être : Colleague, IT helpdesk, HR</li>
+      <li>Contexte : "Remember me ? We met last conference."</li>
+      <li>Request : "Can you reset my password ? Locked out."</li>
+    </ul>
+
+    <h3>// Mitigation impersonation</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Verification procedures</strong> : Callback known numbers (not provided attacker)</li>
+      <li><strong>Badge systems</strong> : Visual verification (photo ID, expiration)</li>
+      <li><strong>Escort policy</strong> : Vendors ALWAYS escorted employee</li>
+      <li><strong>Challenge culture</strong> : "May I see credentials ?" = normal</li>
+      <li><strong>Out-of-band confirmation</strong> : CEO email request → call CEO verify</li>
+    </ul>
+  </div>
+
+  <!-- PRETEXTING -->
+  <div class="section">
+    <div class="section-label">Fabricated scenario</div>
+    <h2>Pretexting — Scénario fabriqué</h2>
+
+    <p><strong>Pretexting</strong> = Créer scénario fabriqué (pretext) gagner confiance → victim révèle infos volontairement.</p>
+
+    <h3>// Principe pretexting</h3>
+    <p><strong>Différence vs autres attaques :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Phishing : Email simple, peu interaction</li>
+      <li>Pretexting : <strong>Relation construite</strong>, scénario élaboré, interaction prolongée</li>
+    </ul>
+
+    <p><strong>Étapes pretexting :</strong></p>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Research</strong> : OSINT cible (job, hobbies, contacts)</li>
+      <li><strong>Develop pretext</strong> : Inventer identité/raison crédible</li>
+      <li><strong>Build rapport</strong> : Conversations multiples, gagner confiance</li>
+      <li><strong>Extract info</strong> : Demandes subtiles, progressives</li>
+    </ol>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Exemple pretexting IT support :</strong><br><br>
+
+      <strong>Call 1 (establish pretext) :</strong><br>
+      "Hi, John from IT. New security audit.<br>
+      Need inventory all software versions.<br>
+      What OS you running ?"<br>
+      → Victim: "Windows 10 Pro"<br><br>
+
+      <strong>Call 2 (build trust, next day) :</strong><br>
+      "John again. Thanks yesterday.<br>
+      Found vulnerability your department.<br>
+      Need verify patch levels. What antivirus ?"<br>
+      → Victim: [trusts John now] "McAfee 2020"<br><br>
+
+      <strong>Call 3 (extract credentials) :</strong><br>
+      "Critical patch tonight. Need test account verify.<br>
+      Can you create temp admin account 'Patch_Test' ?<br>
+      Password 'SecureTemp123' ?"<br>
+      → Victim: [believes ongoing audit] Creates account<br><br>
+
+      → Attacker gains admin access
+    </div>
+
+    <h3>// Contextes pretexting courants</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>IT Support</strong> : "Password reset", "Software audit", "Patch deployment"</li>
+      <li><strong>HR</strong> : "Benefits verification", "Background check update"</li>
+      <li><strong>Survey/Research</strong> : "Academic study", "Industry survey" (extract company info)</li>
+      <li><strong>Vendor</strong> : "Contract renewal", "Invoice discrepancy" (wire transfer fraud)</li>
+    </ul>
+
+    <h3>// Mitigation pretexting</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Verification policy</strong> : Callback official numbers AVANT share infos</li>
+      <li><strong>Compartmentalization</strong> : Employees connaissent only need-to-know</li>
+      <li><strong>Suspicious requests</strong> : Escalate manager (password reset calls, urgent wire transfers)</li>
+      <li><strong>Awareness training</strong> : Recognize pretexting red flags (urgency, unusual requests)</li>
+    </ul>
+  </div>
+
+  <!-- PIÈGES -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : Whaling = phishing emails nombreux executives</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Whaling = <strong>spear phishing ciblant 1 executive</strong> (CEO/CFO/CTO).<br><br>
+        Pas "nombreux executives" → 1 seul high-value target.<br>
+        Whaling = sous-catégorie spear phishing (executives uniquement).
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : Vishing = email avec lien malveillant</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Vishing = <strong>Voice phishing (téléphone)</strong>.<br><br>
+        Email phishing = Phishing (email)<br>
+        Voice call = Vishing<br>
+        SMS = Smishing<br><br>
+        Mémo : Vishing = Voice + Phishing
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : Tailgating = piggybacking (synonymes)</div>
+      <div class="trap-content">
+        <strong>NUANCE</strong>. <strong>Tailgating</strong> = suivre SANS permission (furtif).<br>
+        <strong>Piggybacking</strong> = victim AIDE attaquant (hold door).<br><br>
+        Tailgating : Non consensuel<br>
+        Piggybacking : Consensuel (victim complice involontaire)<br><br>
+        Résultat identique (accès non autorisé) MAIS méthode différente
+      </div>
+    </div>
+  </div>
+
+  <!-- RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Social Engineering</strong> : Manipulation psychologique humains. Exploite autorité, urgence, peur, confiance. 95%+ breaches = erreur humaine. Défense = awareness training</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Phishing</strong> : Mass email generic. <strong>Spear phishing</strong> : Ciblé personnalisé (10-100 victims). <strong>Whaling</strong> : Spear phishing executives (CEO/CFO). BEC wire fraud</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Vishing</strong> : Voice phishing (phone call, caller ID spoof, IRS scams). <strong>Smishing</strong> : SMS phishing (high open rate >90%, shortened URLs, mobile-specific)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Tailgating</strong> : Suivre employee passage porte (non consensuel). <strong>Piggybacking</strong> : Victim aide attaquant (consensuel). Mitigation : Mantraps, guards, challenge culture</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Impersonation</strong> : Prétend être authority/vendor/insider (FBI, IT, delivery). Uniforme, badge fake. Mitigation : Verification callback, escort vendors</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Pretexting</strong> : Scénario fabriqué élaboré, relation construite (multiple calls), confiance gagnée progressivement. IT support pretext courant. Mitigation : Verification policy</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 04 : Attaques sans-fil</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">S05 - Phase 4</span>
+    <a class="nav-btn next" href="#">Cours 06 : Chiffrement →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m4_s05_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+initMastery();
+</script>
+  <div style="margin-top:40px;text-align:center;">
+  <a class="nav-btn" href="index.html">← Accueil — Plan de cours</a>
+</body>
+</html>

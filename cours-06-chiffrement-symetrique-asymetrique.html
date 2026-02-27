@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S06 — Chiffrement symétrique / asymétrique · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 4.0 — Sécurité réseau</span> &nbsp;›&nbsp; Cours 06</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 4 · S06</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-proto">🔵 PROTO</span>
+    <span class="pill pill-diff">⚡⚡⚡ Difficile</span>
+  </div>
+
+  <h1><span>Chiffrement symétrique</span> / asymétrique</h1>
+  <span class="tagline">// Cryptography — Symétrique (AES, DES, 3DES) vs Asymétrique (RSA, ECC), clés publiques/privées</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends différence symétrique vs asymétrique</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais AES, DES, 3DES</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise RSA et ECC</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je différencie clés publiques/privées</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- CONCEPT CHIFFREMENT -->
+  <div class="section">
+    <div class="section-label">Cryptography basics</div>
+    <h2>Chiffrement — Concepts fondamentaux</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🔐</span>
+      <div class="callout-body">
+        <strong>Analogie — coffre-fort</strong>
+        Message clair = argent visible. Chiffrement = mettre argent coffre-fort verrouillé. Ciphertext = coffre fermé (personne voit contenu). Clé = seule façon ouvrir coffre récupérer argent original.
+      </div>
+    </div>
+
+    <p><strong>Chiffrement (Encryption)</strong> = Transformer données lisibles (plaintext) → données illisibles (ciphertext) via algorithme mathématique + clé.</p>
+
+    <h3>// Terminologie</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Plaintext</strong> : Données originales lisibles (ex: "Hello World")</li>
+      <li><strong>Ciphertext</strong> : Données chiffrées illisibles (ex: "4f9a2c8e...")</li>
+      <li><strong>Encryption</strong> : Plaintext → Ciphertext (chiffrer)</li>
+      <li><strong>Decryption</strong> : Ciphertext → Plaintext (déchiffrer)</li>
+      <li><strong>Key</strong> : Secret utilisé algorithme (chiffrer/déchiffrer)</li>
+      <li><strong>Algorithm</strong> : Méthode mathématique (AES, RSA, etc.)</li>
+    </ul>
+
+    <h3>// Objectifs chiffrement</h3>
+    <p><strong>Confidentiality</strong> : Seules personnes autorisées lisent données.</p>
+    <p><strong>Integrity</strong> : Détecte modifications données (tampering).</p>
+    <p><strong>Authentication</strong> : Vérifie identité sender/receiver.</p>
+    <p><strong>Non-repudiation</strong> : Sender pas nier avoir envoyé (signatures numériques).</p>
+
+    <h3>// 2 types chiffrement</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Type</th><th>Clés</th><th>Vitesse</th><th>Usage</th></tr>
+        <tr><td><strong>Symétrique</strong></td><td>1 clé (shared secret)</td><td>✅ Rapide</td><td>Données bulk (fichiers, disques)</td></tr>
+        <tr><td><strong>Asymétrique</strong></td><td>2 clés (public + private)</td><td>⚠️ Lent</td><td>Key exchange, signatures, SSL/TLS</td></tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">🔑</span>
+      <div class="callout-body">
+        <strong>Hybrid cryptography (real world)</strong>
+        Production utilise COMBINAISON symétrique + asymétrique :<br>
+        1. Asymétrique échange clé symétrique (RSA)<br>
+        2. Symétrique chiffre données bulk (AES)<br>
+        → Balance sécurité (asymétrique) + performance (symétrique)
+      </div>
+    </div>
+  </div>
+
+  <!-- SYMÉTRIQUE -->
+  <div class="section">
+    <div class="section-label">Symmetric encryption</div>
+    <h2>Chiffrement symétrique — Clé partagée</h2>
+
+    <p><strong>Chiffrement symétrique</strong> = Même clé chiffre ET déchiffre données (shared secret key).</p>
+
+    <h3>// Principe symétrique</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Alice veut envoyer message Bob :<br><br>
+
+      1. Alice et Bob partagent clé secrète (K = "MySecret123")<br>
+      2. Alice chiffre : Plaintext + K → Ciphertext<br>
+      3. Alice envoie Ciphertext → Bob<br>
+      4. Bob déchiffre : Ciphertext + K → Plaintext<br><br>
+
+      <strong style="color:var(--accent)">MÊME clé (K) utilisée encrypt ET decrypt</strong>
+    </div>
+
+    <h3>// Avantages symétrique</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ <strong>Rapide</strong> : Algorithmes légers (hardware acceleration AES)</li>
+      <li>✅ <strong>Efficient</strong> : Chiffre GB données rapidement (disques, VPN)</li>
+      <li>✅ <strong>Simple</strong> : 1 clé gérer (vs 2 asymétrique)</li>
+    </ul>
+
+    <h3>// Problème clé symétrique</h3>
+    <p><strong>Key distribution problem</strong> : Comment Alice et Bob partagent clé secrète AVANT communication ?</p>
+
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>❌ Email clé = insécure (interceptée)</li>
+      <li>❌ Meeting physique = impraticable (Alice Tokyo, Bob Paris)</li>
+      <li>❌ N personnes = N×(N-1)/2 clés (scaling nightmare : 100 personnes = 4950 clés)</li>
+    </ul>
+
+    <p><strong>Solution</strong> : Asymétrique échange clé symétrique (Diffie-Hellman, RSA key exchange).</p>
+
+    <h3>// Algorithmes symétriques</h3>
+
+    <p><strong>DES (Data Encryption Standard)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Clé : 56 bits (trop court)</li>
+      <li>Block size : 64 bits</li>
+      <li>⚠️ <strong>Obsolète</strong> : Brute-force 56 bits = 24h (1998)</li>
+      <li>Legacy systems uniquement</li>
+    </ul>
+
+    <p><strong>3DES (Triple DES)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Applique DES 3× (encrypt-decrypt-encrypt)</li>
+      <li>Clé : 168 bits effective (3 × 56)</li>
+      <li>⚠️ <strong>Deprecated</strong> : Lent, remplacé AES</li>
+      <li>NIST retire 2023</li>
+    </ul>
+
+    <p><strong>AES (Advanced Encryption Standard)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Clés : 128, 192, 256 bits</li>
+      <li>Block size : 128 bits</li>
+      <li>✅ <strong>Standard actuel</strong> : Fort, rapide, widespread</li>
+      <li>Usage : WiFi WPA2/WPA3, VPN, disk encryption, HTTPS</li>
+      <li>Hardware acceleration : AES-NI (Intel/AMD CPUs)</li>
+    </ul>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Questions TRÈS fréquentes examen</strong>
+        "Algorithme chiffrement symétrique moderne recommandé ?"<br>
+        <strong>Réponse : AES (AES-128, AES-256)</strong><br><br>
+        "DES obsolète pourquoi ?"<br>
+        <strong>Réponse : Clé 56 bits trop courte (brute-force facile)</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- ASYMÉTRIQUE -->
+  <div class="section">
+    <div class="section-label">Asymmetric encryption</div>
+    <h2>Chiffrement asymétrique — Clés publique/privée</h2>
+
+    <p><strong>Chiffrement asymétrique</strong> = 2 clés mathématiquement liées : <strong>publique</strong> (public key) chiffre, <strong>privée</strong> (private key) déchiffre.</p>
+
+    <h3>// Principe asymétrique</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Bob génère paire clés :<br>
+      - <strong style="color:var(--green)">Public key</strong> : Partagée TOUT LE MONDE (annuaire public)<br>
+      - <strong style="color:var(--red)">Private key</strong> : Secrète, JAMAIS partagée (Bob seul)<br><br>
+
+      <strong>Alice veut envoyer message secret Bob :</strong><br>
+      1. Alice récupère public key Bob (annuaire)<br>
+      2. Alice chiffre message : Plaintext + Bob_Public → Ciphertext<br>
+      3. Alice envoie Ciphertext → Bob<br>
+      4. Bob déchiffre : Ciphertext + Bob_Private → Plaintext<br><br>
+
+      <strong style="color:var(--accent)">→ SEUL Bob (private key) peut déchiffrer</strong><br>
+      <strong style="color:var(--accent)">→ Alice pas besoin clé Bob (utilise public)</strong>
+    </div>
+
+    <h3>// Propriétés clés asymétriques</h3>
+    <p><strong>1. Chiffrement (Confidentiality)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Public key chiffre → Private key déchiffre</li>
+      <li>Usage : Envoyer message secret (SSL/TLS, PGP email)</li>
+    </ul>
+
+    <p><strong>2. Signature numérique (Authentication)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Private key signe → Public key vérifie signature</li>
+      <li>Usage : Prouver authenticité sender (non-repudiation)</li>
+    </ul>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Signature numérique workflow :</strong><br><br>
+
+      Alice signe document :<br>
+      1. Alice hash document → Hash (SHA-256)<br>
+      2. Alice chiffre hash : Hash + Alice_Private → Signature<br>
+      3. Alice envoie : Document + Signature → Bob<br><br>
+
+      Bob vérifie :<br>
+      4. Bob hash document reçu → Hash_computed<br>
+      5. Bob déchiffre signature : Signature + Alice_Public → Hash_original<br>
+      6. Compare : Hash_computed == Hash_original ?<br>
+      &nbsp;&nbsp;&nbsp;→ Yes : Document authentique, pas modifié<br>
+      &nbsp;&nbsp;&nbsp;→ No : Document falsifié ou corrompu
+    </div>
+
+    <h3>// Avantages asymétrique</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ <strong>Pas key distribution problem</strong> : Public key partagée librement</li>
+      <li>✅ <strong>Scaling</strong> : N personnes = N paires clés (vs N² symétrique)</li>
+      <li>✅ <strong>Signatures numériques</strong> : Non-repudiation possible</li>
+      <li>✅ <strong>Key exchange</strong> : Établir shared secret canal insécure</li>
+    </ul>
+
+    <h3>// Inconvénients asymétrique</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>⚠️ <strong>Lent</strong> : 100-1000× plus lent symétrique (math complexe)</li>
+      <li>⚠️ <strong>Clés grandes</strong> : RSA 2048-4096 bits (vs AES 256 bits)</li>
+      <li>⚠️ <strong>Pas pratique bulk data</strong> : Chiffrer 1 GB = heures</li>
+    </ul>
+
+    <h3>// Algorithmes asymétriques</h3>
+
+    <p><strong>RSA (Rivest-Shamir-Adleman)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Clés : 2048 bits (minimum), 4096 bits (recommandé 2024+)</li>
+      <li>Basé : Factorisation nombres premiers (math problème difficile)</li>
+      <li>Usage : SSL/TLS, SSH, PGP, signatures code</li>
+      <li>✅ Standard industry, widely supported</li>
+      <li>⚠️ Quantum computers future = threat (Shor's algorithm)</li>
+    </ul>
+
+    <p><strong>ECC (Elliptic Curve Cryptography)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Clés : 256 bits (équivalent sécurité RSA 3072 bits)</li>
+      <li>Basé : Courbes elliptiques (math avancée)</li>
+      <li>✅ <strong>Plus efficient RSA</strong> : Clés courtes, calculs rapides</li>
+      <li>Usage : Mobile (moins CPU), IoT, Bitcoin, modern TLS</li>
+      <li>Variantes : ECDSA (signatures), ECDH (key exchange)</li>
+    </ul>
+
+    <div class="callout ok">
+      <span class="callout-icon">⚡</span>
+      <div class="callout-body">
+        <strong>ECC = futur cryptographie</strong>
+        256-bit ECC = même sécurité 3072-bit RSA MAIS :<br>
+        - Clés 12× plus petites<br>
+        - Calculs 10× plus rapides<br>
+        - Moins batterie (mobile/IoT)<br>
+        Adoption croissante (Apple, Google, Bitcoin).
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPARAISON -->
+  <div class="section">
+    <div class="section-label">Comparison</div>
+    <h2>Symétrique vs Asymétrique — Tableau comparatif</h2>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>Symétrique</th><th>Asymétrique</th></tr>
+        <tr><td><strong>Clés</strong></td><td>1 clé (shared secret)</td><td>2 clés (public + private)</td></tr>
+        <tr><td><strong>Vitesse</strong></td><td>✅ Rapide (1000× asymétrique)</td><td>⚠️ Lent (math complexe)</td></tr>
+        <tr><td><strong>Taille clé</strong></td><td>128-256 bits (AES)</td><td>2048-4096 bits (RSA), 256 bits (ECC)</td></tr>
+        <tr><td><strong>Key distribution</strong></td><td>❌ Problème (comment partager ?)</td><td>✅ Facile (public key partagée)</td></tr>
+        <tr><td><strong>Scaling</strong></td><td>❌ N² clés (N personnes)</td><td>✅ N paires clés</td></tr>
+        <tr><td><strong>Signatures</strong></td><td>❌ Pas possible (shared key)</td><td>✅ Oui (private key signe)</td></tr>
+        <tr><td><strong>Usage</strong></td><td>Bulk data (fichiers, disques, VPN)</td><td>Key exchange, signatures, SSL/TLS handshake</td></tr>
+        <tr><td><strong>Exemples</strong></td><td>AES, 3DES, DES</td><td>RSA, ECC, Diffie-Hellman</td></tr>
+      </table>
+    </div>
+
+    <h3>// Usage hybride (Real World)</h3>
+    <p><strong>HTTPS (SSL/TLS) exemple :</strong></p>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Handshake (Asymétrique)</strong> :<br>
+        - Client vérifie certificat server (RSA/ECC public key)<br>
+        - Client génère session key symétrique random<br>
+        - Client chiffre session key : SessionKey + Server_Public → Encrypted_SessionKey<br>
+        - Client envoie Encrypted_SessionKey → Server<br>
+        - Server déchiffre : Encrypted_SessionKey + Server_Private → SessionKey<br>
+        → <strong>DEUX parties ont maintenant SessionKey partagée</strong>
+      </li>
+      <li><strong>Data transfer (Symétrique)</strong> :<br>
+        - Tout trafic HTTPS chiffré AES avec SessionKey<br>
+        - Rapide (GB données encrypted efficiently)
+      </li>
+    </ol>
+
+    <p><strong>→ Balance : Asymétrique sécurise échange clé, Symétrique chiffre données bulk</strong></p>
+  </div>
+
+  <!-- PIÈGES -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : AES = chiffrement asymétrique</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. AES = <strong>chiffrement SYMÉTRIQUE</strong>.<br><br>
+        Symétrique : AES, DES, 3DES (1 clé)<br>
+        Asymétrique : RSA, ECC, Diffie-Hellman (2 clés)<br><br>
+        Mémo : AES = Advanced Encryption Standard (symmetric)
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : Public key = gardée secrète</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Public key = <strong>PARTAGÉE publiquement</strong>.<br><br>
+        <strong>Public key</strong> : Partagée tout le monde (annuaire, certificat)<br>
+        <strong>Private key</strong> : Secrète, JAMAIS partagée<br><br>
+        Public ≠ privé (names hint usage)
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : RSA plus sécurisé AES (clés plus grandes)</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Taille clé ≠ comparaison directe symétrique vs asymétrique.<br><br>
+        AES-256 (256 bits) ≈ RSA-15360 bits sécurité équivalente<br>
+        RSA-2048 ≈ AES-112 sécurité<br><br>
+        Math différente → tailles incomparables directement
+      </div>
+    </div>
+  </div>
+
+  <!-- RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Chiffrement</strong> : Plaintext → Ciphertext (encrypt), reverse (decrypt). Objectifs : Confidentiality, Integrity, Authentication, Non-repudiation</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Symétrique</strong> : 1 clé (shared secret). Rapide, efficient bulk data. Problème key distribution. AES (standard actuel 128/256 bits), DES/3DES (obsolète). Usage : VPN, disk encryption</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Asymétrique</strong> : 2 clés (public partagée, private secrète). Lent MAIS résout key distribution. Public chiffre, private déchiffre. Signatures : private signe, public vérifie</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>RSA</strong> : 2048-4096 bits, factorisation nombres premiers, standard SSL/TLS. ECC : 256 bits = RSA 3072 sécurité, plus efficient (mobile/IoT), futur crypto</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Hybrid crypto</strong> : Real world combine. Asymétrique échange session key (RSA/ECC), Symétrique chiffre données (AES). HTTPS exemple : TLS handshake (RSA) + data transfer (AES)</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 05 : Social Engineering</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">S06 - Phase 4</span>
+    <a class="nav-btn next" href="#">Cours 07 : ... →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m4_s06_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+initMastery();
+</script>
+  <div style="margin-top:40px;text-align:center;">
+  <a class="nav-btn" href="index.html">← Accueil — Plan de cours</a>
+</body>
+</html>
