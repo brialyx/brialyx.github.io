@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S10 — Access Control Lists (ACL) · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 4.0 — Sécurité réseau</span> &nbsp;›&nbsp; Cours 10</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 4 · S10</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-lab">🧪 LAB</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡⚡ Difficile</span>
+  </div>
+
+  <h1><span>Access Control Lists</span> (ACL)</h1>
+  <span class="tagline">// Filtrage trafic — Standard vs Extended, ordre règles, implicit deny, wildcard masks</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je différencie ACL Standard vs Extended</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise wildcard masks</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends ordre des règles</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais implicit deny</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- ACL CONCEPT -->
+  <div class="section">
+    <div class="section-label">Packet filtering</div>
+    <h2>ACL — Access Control List</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🚪</span>
+      <div class="callout-body">
+        <strong>Analogie — videur boîte de nuit</strong>
+        ACL = videur avec liste invités. Règles : "Ami du patron → enter", "Moins 18 ans → deny", "Pas dress code → deny". Chaque personne (packet) vérifiée contre liste séquentiellement. Premier match = décision finale.
+      </div>
+    </div>
+
+    <p><strong>ACL (Access Control List)</strong> = Liste séquentielle règles filtrant trafic réseau basé critères (IP source/destination, protocole, port). Appliquée interfaces routers/firewalls.</p>
+
+    <h3>// Principe ACL</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Chaque paquet examine contre ACL règles séquentiellement (top → bottom)</li>
+      <li>Premier match = action appliquée (permit/deny)</li>
+      <li>Si aucun match = <strong>implicit deny</strong> (deny all à fin liste)</li>
+      <li>Pas processing après match (stop immediately)</li>
+    </ul>
+
+    <h3>// Objectifs ACL</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Security</strong> : Bloquer trafic malveillant (source IP untrusted, ports dangereux)</li>
+      <li><strong>Traffic control</strong> : Filtrer protocols (block P2P, FTP, Telnet)</li>
+      <li><strong>QoS</strong> : Classifier trafic (priority voice, limit video)</li>
+      <li><strong>NAT</strong> : Définir trafic NATé</li>
+    </ul>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Exemple ACL simple :</strong><br><br>
+
+      access-list 10 permit 192.168.1.0 0.0.0.255<br>
+      access-list 10 deny 192.168.2.50 0.0.0.0<br>
+      access-list 10 permit any<br><br>
+
+      → Règle 1 : Permit subnet 192.168.1.0/24<br>
+      → Règle 2 : Deny host 192.168.2.50<br>
+      → Règle 3 : Permit tout le reste<br>
+      → Implicit deny (jamais atteint car règle 3 = any)
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>ACL = ordre CRITIQUE</strong>
+        Règles évaluées séquentiellement top → bottom.<br>
+        Ordre incorrect = bypass security (règle "permit any" avant deny = inutile).<br>
+        Best practice : Spécifique → Générale (deny hosts → deny subnets → permit any).
+      </div>
+    </div>
+  </div>
+
+  <!-- STANDARD ACL -->
+  <div class="section">
+    <div class="section-label">IP source filtering</div>
+    <h2>ACL Standard — Filtrage source IP uniquement</h2>
+
+    <p><strong>Standard ACL</strong> = Filtre trafic basé <strong>source IP UNIQUEMENT</strong>. Simple, limité. Numéros 1-99, 1300-1999.</p>
+
+    <h3>// Caractéristiques Standard ACL</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Critère : <strong>Source IP address</strong> uniquement</li>
+      <li>Pas : Destination IP, protocol, port</li>
+      <li>Numéros : 1-99 (legacy), 1300-1999 (expanded)</li>
+      <li>Placement : <strong>Proche destination</strong> (éviter bloquer trafic légitime early)</li>
+    </ul>
+
+    <h3>// Syntaxe Standard ACL</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      access-list <strong style="color:var(--cyan)">NUMBER</strong> <strong style="color:var(--green)">ACTION</strong> <strong style="color:var(--purple)">SOURCE</strong> <strong style="color:var(--amber)">WILDCARD</strong><br><br>
+
+      <strong>NUMBER</strong> : 1-99 ou 1300-1999<br>
+      <strong>ACTION</strong> : permit | deny<br>
+      <strong>SOURCE</strong> : Source IP address<br>
+      <strong>WILDCARD</strong> : Wildcard mask (inverse subnet mask)
+    </div>
+
+    <h3>// Exemples Standard ACL</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--green)">Bloquer host spécifique :</strong><br>
+      access-list 10 deny 192.168.1.100 0.0.0.0<br>
+      access-list 10 permit any<br><br>
+
+      → Deny host 192.168.1.100<br>
+      → Permit tous autres<br><br>
+
+      <strong style="color:var(--cyan)">Permettre subnet uniquement :</strong><br>
+      access-list 20 permit 10.1.1.0 0.0.0.255<br>
+      (implicit deny all à fin)<br><br>
+
+      → Permit 10.1.1.0/24<br>
+      → Deny tout le reste (implicit)<br><br>
+
+      <strong style="color:var(--purple)">Application interface :</strong><br>
+      interface GigabitEthernet0/0<br>
+      &nbsp;&nbsp;ip access-group 10 in<br><br>
+
+      → Apply ACL 10 trafic ENTRANT (inbound) interface
+    </div>
+
+    <h3>// Limitation Standard ACL</h3>
+    <p><strong>Problème</strong> : Bloque TOUT trafic source IP (pas granulaire protocol/port).</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--red)">Scénario problème :</strong><br><br>
+
+      Besoin : Bloquer Telnet (port 23) depuis 192.168.1.100<br>
+      MAIS : Permettre HTTP (port 80) depuis 192.168.1.100<br><br>
+
+      Standard ACL :<br>
+      access-list 10 deny 192.168.1.100 0.0.0.0<br>
+      → Bloque TOUT trafic 192.168.1.100 (Telnet + HTTP + ICMP + ...)<br><br>
+
+      → Pas granulaire → Besoin Extended ACL
+    </div>
+  </div>
+
+  <!-- EXTENDED ACL -->
+  <div class="section">
+    <div class="section-label">Advanced filtering</div>
+    <h2>ACL Extended — Filtrage granulaire</h2>
+
+    <p><strong>Extended ACL</strong> = Filtre trafic basé <strong>source + destination IP, protocol, port</strong>. Granularité maximale. Numéros 100-199, 2000-2699.</p>
+
+    <h3>// Caractéristiques Extended ACL</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Critères : Source IP, Destination IP, Protocol (TCP/UDP/ICMP), Port source/destination</li>
+      <li>Numéros : 100-199 (legacy), 2000-2699 (expanded)</li>
+      <li>Placement : <strong>Proche source</strong> (bloquer trafic early, économise bandwidth)</li>
+    </ul>
+
+    <h3>// Syntaxe Extended ACL</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;line-height:1.8;">
+      access-list <strong style="color:var(--cyan)">NUMBER</strong> <strong style="color:var(--green)">ACTION</strong> <strong style="color:var(--purple)">PROTOCOL</strong> <strong style="color:var(--amber)">SOURCE</strong> <strong style="color:var(--red)">DEST</strong> [<strong>PORT</strong>]<br><br>
+
+      <strong>NUMBER</strong> : 100-199 ou 2000-2699<br>
+      <strong>ACTION</strong> : permit | deny<br>
+      <strong>PROTOCOL</strong> : ip | tcp | udp | icmp | ...<br>
+      <strong>SOURCE</strong> : Source IP + wildcard<br>
+      <strong>DEST</strong> : Destination IP + wildcard<br>
+      <strong>PORT</strong> : eq (equal), gt (greater than), lt (less than), range
+    </div>
+
+    <h3>// Exemples Extended ACL</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;line-height:1.8;">
+      <strong style="color:var(--green)">Bloquer Telnet (port 23) subnet spécifique :</strong><br>
+      access-list 100 deny tcp 192.168.1.0 0.0.0.255 any eq 23<br>
+      access-list 100 permit ip any any<br><br>
+
+      → Deny TCP port 23 (Telnet) source 192.168.1.0/24 → any dest<br>
+      → Permit tout le reste<br><br>
+
+      <strong style="color:var(--cyan)">Permettre HTTP/HTTPS uniquement vers web server :</strong><br>
+      access-list 110 permit tcp any host 203.0.113.10 eq 80<br>
+      access-list 110 permit tcp any host 203.0.113.10 eq 443<br>
+      access-list 110 deny ip any any<br><br>
+
+      → Permit HTTP (80) → 203.0.113.10<br>
+      → Permit HTTPS (443) → 203.0.113.10<br>
+      → Deny tout le reste (explicit deny)<br><br>
+
+      <strong style="color:var(--purple)">Bloquer ICMP ping :</strong><br>
+      access-list 120 deny icmp any any echo<br>
+      access-list 120 permit ip any any<br><br>
+
+      → Deny ICMP echo (ping request)<br>
+      → Permit tout le reste
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Question TRÈS fréquente examen</strong>
+        "ACL filtrant source IP uniquement ?"<br>
+        <strong>Réponse : Standard ACL (1-99)</strong><br><br>
+        "ACL filtrant source, destination, protocol, port ?"<br>
+        <strong>Réponse : Extended ACL (100-199)</strong><br><br>
+        "Placement Standard ACL ?"<br>
+        <strong>Réponse : Proche DESTINATION</strong><br><br>
+        "Placement Extended ACL ?"<br>
+        <strong>Réponse : Proche SOURCE</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- WILDCARD MASKS -->
+  <div class="section">
+    <div class="section-label">Masking</div>
+    <h2>Wildcard Masks — Inverse subnet mask</h2>
+
+    <p><strong>Wildcard mask</strong> = Inverse subnet mask. Indique quels bits IP adresse vérifier (0 = check, 1 = ignore).</p>
+
+    <h3>// Principe wildcard mask</h3>
+    <p><strong>Subnet mask</strong> : 1 = network, 0 = host<br>
+    <strong>Wildcard mask</strong> : 0 = must match, 1 = don't care (any)</p>
+
+    <h3>// Calcul wildcard mask</h3>
+    <p><strong>Formule</strong> : <code>Wildcard = 255.255.255.255 - Subnet Mask</code></p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Exemples calcul :</strong><br><br>
+
+      Subnet mask /24 (255.255.255.0) :<br>
+      255.255.255.255 - 255.255.255.0 = <strong style="color:var(--green)">0.0.0.255</strong><br>
+      → Match 3 premiers octets, ignore dernier<br><br>
+
+      Subnet mask /16 (255.255.0.0) :<br>
+      255.255.255.255 - 255.255.0.0 = <strong style="color:var(--cyan)">0.0.255.255</strong><br>
+      → Match 2 premiers octets, ignore 2 derniers<br><br>
+
+      Subnet mask /32 (255.255.255.255) :<br>
+      255.255.255.255 - 255.255.255.255 = <strong style="color:var(--purple)">0.0.0.0</strong><br>
+      → Match TOUS bits (host exact)
+    </div>
+
+    <h3>// Exemples wildcard ACL</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--green)">Host exact (192.168.1.100) :</strong><br>
+      access-list 10 deny 192.168.1.100 <strong>0.0.0.0</strong><br>
+      → Wildcard 0.0.0.0 = match ALL bits (exact host)<br>
+      → Alias : <code>host 192.168.1.100</code><br><br>
+
+      <strong style="color:var(--cyan)">Subnet /24 (192.168.1.0/24) :</strong><br>
+      access-list 10 permit 192.168.1.0 <strong>0.0.0.255</strong><br>
+      → Match 192.168.1.x (x = 0-255 any)<br><br>
+
+      <strong style="color:var(--purple)">Subnet /16 (10.1.0.0/16) :</strong><br>
+      access-list 10 permit 10.1.0.0 <strong>0.0.255.255</strong><br>
+      → Match 10.1.x.x<br><br>
+
+      <strong style="color:var(--amber)">Tout trafic (any) :</strong><br>
+      access-list 10 permit 0.0.0.0 <strong>255.255.255.255</strong><br>
+      → Ignore ALL bits (match everything)<br>
+      → Alias : <code>any</code>
+    </div>
+
+    <h3>// Wildcard avancé (non-contiguous)</h3>
+    <p><strong>Exemple</strong> : Matcher hosts pairs uniquement (192.168.1.0, .2, .4, .6, ...)</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      192.168.1.0&nbsp;&nbsp;&nbsp;&nbsp;0.0.0.254<br><br>
+
+      Binary last octet wildcard : 11111110<br>
+      → Bit 0 (LSB) = 0 (must match → even)<br>
+      → Bits 1-7 = 1 (don't care)<br><br>
+
+      → Matches : .0, .2, .4, .6, .8, ..., .254 (pairs uniquement)
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>Raccourcis wildcard</strong>
+        <code>host X.X.X.X</code> = X.X.X.X 0.0.0.0 (exact host)<br>
+        <code>any</code> = 0.0.0.0 255.255.255.255 (tout trafic)<br><br>
+        Exemples :<br>
+        <code>access-list 10 permit host 192.168.1.1</code><br>
+        <code>access-list 10 deny any</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- ORDRE REGLES -->
+  <div class="section">
+    <div class="section-label">Rule processing</div>
+    <h2>Ordre des règles — First match wins</h2>
+
+    <p><strong>Principe fondamental ACL</strong> : Règles évaluées séquentiellement top → bottom. <strong>Premier match</strong> = action appliquée (stop processing).</p>
+
+    <h3>// Exemple ordre CORRECT</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--green)">✅ Ordre spécifique → générale :</strong><br><br>
+
+      access-list 100 deny tcp host 192.168.1.100 any eq 23<br>
+      access-list 100 deny tcp 192.168.1.0 0.0.0.255 any eq 23<br>
+      access-list 100 permit ip any any<br><br>
+
+      Paquet : 192.168.1.100 → 10.1.1.1 Telnet (23)<br>
+      → Règle 1 match : DENY (host 192.168.1.100 Telnet)<br>
+      → Stop processing<br><br>
+
+      Paquet : 192.168.1.50 → 10.1.1.1 Telnet (23)<br>
+      → Règle 1 no match<br>
+      → Règle 2 match : DENY (subnet 192.168.1.0/24 Telnet)<br>
+      → Stop processing<br><br>
+
+      Paquet : 192.168.2.10 → 10.1.1.1 HTTP (80)<br>
+      → Règle 1 no match<br>
+      → Règle 2 no match<br>
+      → Règle 3 match : PERMIT (any any)<br>
+      → Allow traffic
+    </div>
+
+    <h3>// Exemple ordre INCORRECT</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--red)">❌ Ordre générale → spécifique (ERREUR) :</strong><br><br>
+
+      access-list 100 permit ip any any<br>
+      access-list 100 deny tcp host 192.168.1.100 any eq 23<br><br>
+
+      Paquet : 192.168.1.100 → 10.1.1.1 Telnet (23)<br>
+      → Règle 1 match : <strong style="color:var(--red)">PERMIT</strong> (any any → matches everything)<br>
+      → Stop processing<br>
+      → Règle 2 JAMAIS évaluée (unreachable code)<br><br>
+
+      → Security bypassed ! Telnet autorisé malgré deny rule.
+    </div>
+
+    <h3>// Best practices ordre</h3>
+    <ol style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Spécifique avant générale</strong> : Hosts → Subnets → Any</li>
+      <li><strong>Deny avant permit</strong> : Block exceptions → Allow general</li>
+      <li><strong>Fréquent en premier</strong> : Rules matchant souvent top (performance)</li>
+      <li><strong>Explicit permit any</strong> : Éviter implicit deny si besoin audit logs</li>
+    </ol>
+  </div>
+
+  <!-- IMPLICIT DENY -->
+  <div class="section">
+    <div class="section-label">Default action</div>
+    <h2>Implicit Deny — Deny all final</h2>
+
+    <p><strong>Implicit Deny</strong> = Règle invisible fin TOUTE ACL : <code>deny ip any any</code>. Bloque tout trafic pas explicitly permitted.</p>
+
+    <h3>// Principe implicit deny</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>ACL visible :</strong><br>
+      access-list 10 permit 192.168.1.0 0.0.0.255<br><br>
+
+      <strong>ACL réelle (implicit deny ajouté automatiquement) :</strong><br>
+      access-list 10 permit 192.168.1.0 0.0.0.255<br>
+      <strong style="color:var(--red)">access-list 10 deny ip any any (IMPLICIT)</strong><br><br>
+
+      → Tout trafic PAS 192.168.1.0/24 = DENIED
+    </div>
+
+    <h3>// Conséquences implicit deny</h3>
+    <p><strong>ACL vide</strong> = deny everything (implicit deny seule règle).</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--red)">ERREUR commune :</strong><br><br>
+
+      access-list 100 deny tcp any any eq 23<br>
+      (pas permit rule)<br><br>
+
+      → Règle 1 : Deny Telnet<br>
+      → Implicit deny : Deny TOUT le reste<br><br>
+
+      → Résultat : TOUT trafic bloqué (Telnet + HTTP + ICMP + ...)<br>
+      → Besoin : <code>access-list 100 permit ip any any</code> à fin
+    </div>
+
+    <h3>// Explicit vs Implicit deny</h3>
+    <p><strong>Explicit deny</strong> : Règle deny visible (logging possible).</p>
+    <p><strong>Implicit deny</strong> : Invisible (pas logs par défaut).</p>
+
+    <p><strong>Best practice</strong> : Ajouter explicit deny final si besoin logs.</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      access-list 100 permit tcp any any eq 80<br>
+      access-list 100 permit tcp any any eq 443<br>
+      access-list 100 deny ip any any <strong style="color:var(--amber)">log</strong><br><br>
+
+      → Permit HTTP/HTTPS<br>
+      → Explicit deny all + logging<br>
+      → Logs montrent quel trafic bloqué (audit/troubleshooting)
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">🔴</span>
+      <div class="callout-body">
+        <strong>Implicit deny = cause #1 ACL bugs</strong>
+        Oubli permit statement → Tout trafic bloqué.<br>
+        Symptôme : "ACL applied, réseau down completely".<br>
+        Fix : Toujours terminer ACL <code>permit ip any any</code> (sauf si deny all voulu).
+      </div>
+    </div>
+  </div>
+
+  <!-- PIÈGES -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : Wildcard mask = subnet mask</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Wildcard mask = <strong>INVERSE subnet mask</strong>.<br><br>
+        Subnet /24 (255.255.255.0) → Wildcard <strong>0.0.0.255</strong><br>
+        Calcul : 255.255.255.255 - subnet mask<br><br>
+        0 = must match, 1 = don't care (opposite subnet mask logic)
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : Extended ACL placement proche destination</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Extended ACL = <strong>proche SOURCE</strong>.<br><br>
+        <strong>Standard ACL</strong> : Proche destination (évite bloquer trafic légitime early)<br>
+        <strong>Extended ACL</strong> : Proche source (block early, économise bandwidth)<br><br>
+        Mémo : Extended = granulaire → peut bloquer specifiquement → safe block early
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : Ordre ACL pas important si rules différentes</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Ordre = <strong>TOUJOURS critique</strong>.<br><br>
+        First match wins → Processing stops.<br>
+        Permit any AVANT deny specific → deny JAMAIS évaluée.<br><br>
+        TOUJOURS : Spécifique → Générale (hosts → subnets → any)
+      </div>
+    </div>
+  </div>
+
+  <!-- RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>ACL</strong> : Liste séquentielle filtrant trafic. Premier match = action (permit/deny). Implicit deny final. Standard (1-99) source IP only. Extended (100-199) src/dst/proto/port</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Standard ACL</strong> : Source IP uniquement. Numéros 1-99. Placement proche DESTINATION. Limité (block all traffic from IP, no granularity)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Extended ACL</strong> : Source, destination, protocol, port. Numéros 100-199. Placement proche SOURCE. Granulaire (block specific protocol/port)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Wildcard masks</strong> : Inverse subnet mask. 0 = must match, 1 = don't care. Calcul : 255.255.255.255 - subnet. Host exact = 0.0.0.0. Any = 255.255.255.255</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Ordre règles</strong> : Spécifique → Générale. First match wins. Permit any AVANT deny = deny jamais hit. Deny AVANT permit exceptions</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Implicit deny</strong> : Deny ip any any final invisible. ACL vide = deny all. Best practice : explicit permit any final (sauf deny all voulu) + log deny rule</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 09 : AAA</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">S10 - Phase 4</span>
+    <a class="nav-btn next" href="#">Cours 11 : Architecture sécurité →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m4_s10_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+initMastery();
+</script>
+  <div style="margin-top:40px;text-align:center;">
+  <a class="nav-btn" href="index.html">← Accueil — Plan de cours</a>
+</body>
+</html>

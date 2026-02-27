@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S11 — Architecture de sécurité réseau · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;909&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 4.0 — Sécurité réseau</span> &nbsp;›&nbsp; Cours 11</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 4 · S11</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡☆ Moyen</span>
+  </div>
+
+  <h1><span>Architecture</span> de sécurité réseau</h1>
+  <span class="tagline">// Security design — DMZ, segmentation, zones de confiance, moindre privilège, defense in depth</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends DMZ et segmentation</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise zones de confiance</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais principe moindre privilège</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je différencie defense in depth</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- DMZ -->
+  <div class="section">
+    <div class="section-label">Demilitarized Zone</div>
+    <h2>DMZ — Zone démilitarisée</h2>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🏰</span>
+      <div class="callout-body">
+        <strong>Analogie — château médiéval</strong>
+        Internet = wilderness (danger). Internal network = château (précieux, protégé). DMZ = marché village entre murailles externes/internes. Public accède marché (web server) MAIS pas château (database interne).
+      </div>
+    </div>
+
+    <p><strong>DMZ (Demilitarized Zone)</strong> = Sous-réseau isolé hébergeant services publics (web, email, DNS) accessible Internet MAIS séparé réseau interne.</p>
+
+    <h3>// Principe DMZ</h3>
+    <p><strong>Problème résolu</strong> : Services publics (web server) doivent être accessibles Internet MAIS pas exposer réseau interne.</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;line-height:1.8;">
+      <strong>Architecture DMZ (3 zones) :</strong><br><br>
+
+      [Internet] ──> <strong style="color:var(--red)">[Firewall External]</strong> ──> <strong style="color:var(--amber)">[DMZ]</strong><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Web Server (203.0.113.10)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Mail Server (203.0.113.11)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DNS Server (203.0.113.12)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong style="color:var(--cyan)">[Firewall Internal]</strong><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong style="color:var(--green)">[Internal Network]</strong><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Database (10.0.1.50)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;File Server (10.0.1.51)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Employees (10.0.1.0/24)
+    </div>
+
+    <h3>// Règles firewall DMZ</h3>
+    <p><strong>External Firewall (Internet → DMZ)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Permit HTTP/HTTPS (80/443) → Web Server DMZ</li>
+      <li>Permit SMTP (25) → Mail Server DMZ</li>
+      <li>Permit DNS (53) → DNS Server DMZ</li>
+      <li>Deny all else</li>
+    </ul>
+
+    <p><strong>Internal Firewall (DMZ → Internal)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Permit Web Server → Database (specific queries only, port 3306)</li>
+      <li>Deny DMZ → Internal (default, très restrictif)</li>
+    </ul>
+
+    <p><strong>Internal → DMZ</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Permit Internal → DMZ (admin access SSH, updates)</li>
+    </ul>
+
+    <h3>// Avantages DMZ</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ <strong>Isolation</strong> : Web server compromis ≠ accès internal network</li>
+      <li>✅ <strong>Exposition contrôlée</strong> : Services publics Internet accessible, internal protégé</li>
+      <li>✅ <strong>Defense in depth</strong> : 2 firewalls (external + internal)</li>
+      <li>✅ <strong>Compliance</strong> : PCI-DSS exige DMZ web servers (cardholder data separated)</li>
+    </ul>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Question fréquente examen</strong>
+        "Sous-réseau isolé hébergeant services publics (web, email) accessible Internet ?"<br>
+        <strong>Réponse : DMZ (Demilitarized Zone)</strong><br><br>
+        "Nombre firewalls minimum architecture DMZ ?"<br>
+        <strong>Réponse : 2 (external + internal)</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEGMENTATION -->
+  <div class="section">
+    <div class="section-label">Network isolation</div>
+    <h2>Segmentation réseau — Divide and conquer</h2>
+
+    <p><strong>Segmentation</strong> = Diviser réseau en zones isolées (subnets, VLANs) → limiter propagation attaques, appliquer policies différentes.</p>
+
+    <h3>// Objectifs segmentation</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Isolation</strong> : Malware VLAN Finance ≠ propagation VLAN HR</li>
+      <li><strong>Least privilege</strong> : Accès minimum nécessaire (guests pas accès servers)</li>
+      <li><strong>Performance</strong> : Broadcast domains séparés (moins collisions)</li>
+      <li><strong>Compliance</strong> : PCI-DSS exige cardholder data isolated</li>
+    </ul>
+
+    <h3>// Types segmentation</h3>
+
+    <p><strong>1. Segmentation physique</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Réseaux séparés physiquement (câbles, switches différents)</li>
+      <li>✅ Isolation maximale (air gap)</li>
+      <li>⚠️ Coût élevé, complexité management</li>
+    </ul>
+
+    <p><strong>2. Segmentation logique (VLANs)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>VLANs séparent broadcast domains (Layer 2)</li>
+      <li>✅ Flexibilité, économique (1 switch physique, multiples VLANs)</li>
+      <li>Exemple : VLAN 10 Data, VLAN 20 Voice, VLAN 99 Management</li>
+    </ul>
+
+    <p><strong>3. Segmentation subnets (Layer 3)</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Subnets IP différents (10.1.0.0/24, 10.2.0.0/24)</li>
+      <li>Routage entre subnets = firewall/ACL control point</li>
+    </ul>
+
+    <h3>// Exemple segmentation enterprise</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--green)">VLAN 10 (Data) :</strong> 10.0.10.0/24<br>
+      → Employees workstations, printers<br>
+      → Access : Internal resources, Internet<br><br>
+
+      <strong style="color:var(--cyan)">VLAN 20 (Voice) :</strong> 10.0.20.0/24<br>
+      → VoIP phones<br>
+      → QoS priority, isolated traffic<br><br>
+
+      <strong style="color:var(--purple)">VLAN 30 (Servers) :</strong> 10.0.30.0/24<br>
+      → File servers, app servers, databases<br>
+      → Access : VLAN 10 → VLAN 30 (permit specific ports)<br><br>
+
+      <strong style="color:var(--amber)">VLAN 40 (Guest) :</strong> 192.168.1.0/24<br>
+      → Visitors WiFi<br>
+      → Access : Internet only (deny internal)<br><br>
+
+      <strong style="color:var(--red)">VLAN 99 (Management) :</strong> 10.0.99.0/24<br>
+      → Switch/router management interfaces<br>
+      → Access : Admin workstations only (highly restricted)
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">🔒</span>
+      <div class="callout-body">
+        <strong>Segmentation = défense essentielle</strong>
+        Flat network (tout même subnet) = malware spread instant.<br>
+        Segmented network = attaquant bloqué firewall entre VLANs.<br>
+        Modern standard : Microsegmentation (Zero Trust, chaque workload isolé).
+      </div>
+    </div>
+  </div>
+
+  <!-- ZONES CONFIANCE -->
+  <div class="section">
+    <div class="section-label">Trust boundaries</div>
+    <h2>Zones de confiance — Trust zones</h2>
+
+    <p><strong>Zones de confiance</strong> = Classifier réseau en zones trust levels (Internet untrusted, Internal trusted, DMZ semi-trusted). Policies différentes chaque zone.</p>
+
+    <h3>// Hiérarchie trust zones (typique)</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Zone</th><th>Trust level</th><th>Exemples</th><th>Policies</th></tr>
+        <tr>
+          <td><strong>Internet (Untrusted)</strong></td>
+          <td>❌ Zero trust</td>
+          <td>Public Internet</td>
+          <td>Deny all (sauf permit explicit services DMZ)</td>
+        </tr>
+        <tr>
+          <td><strong>DMZ (Semi-trusted)</strong></td>
+          <td>⚠️ Low trust</td>
+          <td>Web servers, mail servers</td>
+          <td>Permit public access, deny internal access</td>
+        </tr>
+        <tr>
+          <td><strong>Internal (Trusted)</strong></td>
+          <td>✅ Medium trust</td>
+          <td>Employee workstations, printers</td>
+          <td>Permit internal communication, Internet filtered</td>
+        </tr>
+        <tr>
+          <td><strong>Secure (High trust)</strong></td>
+          <td>✅ High trust</td>
+          <td>Databases, financial systems, HR data</td>
+          <td>Highly restricted (MFA, logging, encryption)</td>
+        </tr>
+        <tr>
+          <td><strong>Management (Critical)</strong></td>
+          <td>✅ Maximum trust</td>
+          <td>Admin workstations, jump servers</td>
+          <td>Admin-only, 2FA, session recording</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>// Règles trafic entre zones</h3>
+    <p><strong>Principe général</strong> : Trafic lower trust → higher trust = <strong>deny default</strong>. Higher trust → lower trust = permit contrôlé.</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--red)">Internet → Internal :</strong> DENY ALL<br>
+      <strong style="color:var(--amber)">Internet → DMZ :</strong> PERMIT (HTTP/HTTPS, SMTP, DNS)<br>
+      <strong style="color:var(--red)">DMZ → Internal :</strong> DENY (sauf specific DB queries web server)<br>
+      <strong style="color:var(--green)">Internal → Internet :</strong> PERMIT (filtered, proxy, IDS)<br>
+      <strong style="color:var(--cyan)">Internal → DMZ :</strong> PERMIT (admin SSH, updates)<br>
+      <strong style="color:var(--purple)">Internal → Secure :</strong> PERMIT (authenticated, authorized users)
+    </div>
+
+    <h3>// Zero Trust model</h3>
+    <p><strong>Evolution moderne</strong> : "Never trust, always verify". Pas zones trusted/untrusted → TOUT traffic vérifié (même internal).</p>
+
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Assume breach (internal = potentiellement compromis)</li>
+      <li>Microsegmentation (chaque workload isolé)</li>
+      <li>Continuous authentication (pas trust après login)</li>
+      <li>Least privilege access (minimum rights)</li>
+    </ul>
+  </div>
+
+  <!-- LEAST PRIVILEGE -->
+  <div class="section">
+    <div class="section-label">Access principle</div>
+    <h2>Principe du moindre privilège — Least Privilege</h2>
+
+    <p><strong>Least Privilege</strong> = Users/systems ont minimum permissions nécessaires accomplir tâches (rien de plus).</p>
+
+    <h3>// Principe fondamental</h3>
+    <p><strong>Question</strong> : User besoin-t-il VRAIMENT admin rights ?</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--red)">❌ BAD (excessive privileges) :</strong><br>
+      Employee marketing = Domain Admin<br>
+      → Peut : Delete servers, modify AD, access all files<br>
+      → Risque : Account compromis = attacker full control<br><br>
+
+      <strong style="color:var(--green)">✅ GOOD (least privilege) :</strong><br>
+      Employee marketing = Standard User<br>
+      → Peut : Access marketing files, use office apps<br>
+      → Risque : Account compromis = limited damage (marketing data only)
+    </div>
+
+    <h3>// Applications least privilege</h3>
+
+    <p><strong>1. User accounts</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Employees = standard users (pas admin local)</li>
+      <li>Admin tasks = separate admin account (elevation UAC)</li>
+      <li>Service accounts = minimum rights (read-only si possible)</li>
+    </ul>
+
+    <p><strong>2. Network access</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>VLANs restrictifs (guests pas accès internal)</li>
+      <li>ACLs deny default (permit explicit necessaire)</li>
+      <li>Firewall rules spécifiques (deny broad "any any")</li>
+    </ul>
+
+    <p><strong>3. File permissions</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Read-only par défaut (write si nécessaire)</li>
+      <li>Shared folders = permissions granulaires (group-based)</li>
+      <li>Sensitive data = encryption + restricted access</li>
+    </ul>
+
+    <p><strong>4. Application permissions</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Database : Users SELECT only (pas INSERT/DELETE/DROP)</li>
+      <li>APIs : Rate limiting, scope restrictions (OAuth scopes)</li>
+    </ul>
+
+    <h3>// Bénéfices least privilege</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ <strong>Limit blast radius</strong> : Compromission 1 account ≠ catastrophe totale</li>
+      <li>✅ <strong>Reduce attack surface</strong> : Moins permissions = moins exploitation possible</li>
+      <li>✅ <strong>Compliance</strong> : PCI-DSS, HIPAA, SOX exigent least privilege</li>
+      <li>✅ <strong>Audit trail</strong> : Permissions restrictives = easier track qui accède quoi</li>
+    </ul>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Privilege creep = problème courant</strong>
+        Users accumulent permissions au fil temps (changements rôles, projets).<br>
+        Jamais nettoyage = everyone admin eventually.<br>
+        Solution : Regular access reviews (quarterly), automated deprovisioning.
+      </div>
+    </div>
+  </div>
+
+  <!-- DEFENSE IN DEPTH -->
+  <div class="section">
+    <div class="section-label">Layered security</div>
+    <h2>Defense in Depth — Défense en profondeur</h2>
+
+    <p><strong>Defense in Depth</strong> = Multiples couches sécurité (layers). Attaquant bypass 1 layer → bloqué layer suivante.</p>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🧅</span>
+      <div class="callout-body">
+        <strong>Analogie — oignon sécurité</strong>
+        Single layer security = porte château. Porte forcée = attacker inside (game over).<br>
+        Defense in depth = oignon multiples couches (murailles, douves, gardes, portes, coffre-fort). Bypass 1 couche ≠ victoire → encore 5 layers défense.
+      </div>
+    </div>
+
+    <h3>// Layers défense (7 couches)</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;line-height:1.8;">
+      <strong style="color:var(--purple)">1. Policies & Procedures</strong><br>
+      → Security awareness training, acceptable use policy, incident response<br><br>
+
+      <strong style="color:var(--red)">2. Physical Security</strong><br>
+      → Datacenter locks, badge access, cameras, guards<br><br>
+
+      <strong style="color:var(--amber)">3. Perimeter Security</strong><br>
+      → Firewall, IDS/IPS, VPN, DMZ<br><br>
+
+      <strong style="color:var(--cyan)">4. Network Security</strong><br>
+      → VLANs, ACLs, 802.1X, NAC<br><br>
+
+      <strong style="color:var(--green)">5. Host Security</strong><br>
+      → Antivirus, host firewall, patch management, hardening<br><br>
+
+      <strong style="color:var(--accent)">6. Application Security</strong><br>
+      → Input validation, authentication, secure coding, WAF<br><br>
+
+      <strong style="color:var(--purple)">7. Data Security</strong><br>
+      → Encryption at-rest/in-transit, DLP, backups, access controls
+    </div>
+
+    <h3>// Exemple defense in depth</h3>
+    <p><strong>Scénario</strong> : Attaquant tente accéder database customer credit cards.</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Layer 1 : Perimeter</strong><br>
+      → Attacker phishing email → Employee clicks<br>
+      → Firewall blocks C2 callback (IPS signature match)<br>
+      → ❌ Attack stopped Layer 1<br><br>
+
+      <strong>IF Layer 1 bypassed (0-day C2) :</strong><br>
+      <strong>Layer 2 : Network</strong><br>
+      → Malware lateral movement → Blocked VLAN segmentation<br>
+      → ❌ Attack stopped Layer 2<br><br>
+
+      <strong>IF Layer 2 bypassed (VLAN hopping exploit) :</strong><br>
+      <strong>Layer 3 : Host</strong><br>
+      → Malware execute → Antivirus detection + quarantine<br>
+      → ❌ Attack stopped Layer 3<br><br>
+
+      <strong>IF Layer 3 bypassed (AV evasion) :</strong><br>
+      <strong>Layer 4 : Application</strong><br>
+      → SQL injection attempt → WAF blocks malicious query<br>
+      → ❌ Attack stopped Layer 4<br><br>
+
+      <strong>IF Layer 4 bypassed (WAF blind spot) :</strong><br>
+      <strong>Layer 5 : Data</strong><br>
+      → Database access → Credit cards ENCRYPTED (TDE)<br>
+      → Attacker gets ciphertext (useless without key)<br>
+      → ❌ Attack mitigated Layer 5
+    </div>
+
+    <h3>// Principe clé</h3>
+    <p><strong>"No single point of failure"</strong> : 1 control échoue ≠ breach. Redundancy défense.</p>
+
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ Multiple independent controls (fail-safe)</li>
+      <li>✅ Attacker doit bypass TOUS layers (exponentially harder)</li>
+      <li>✅ Detection opportunities multiples (logs, alerts chaque layer)</li>
+    </ul>
+  </div>
+
+  <!-- PIÈGES -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : DMZ = zone totalement sécurisée</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. DMZ = <strong>semi-trusted</strong> (pas trusted).<br><br>
+        DMZ expose Internet → risque compromission élevé.<br>
+        DMZ isolée internal → compromission DMZ ≠ accès internal.<br><br>
+        DMZ = buffer zone (sacrificial, acceptable compromise)
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : Least privilege = aucun privilège</div>
+      <div class="trap-content">
+        <strong>INCOMPLET</strong>. Least privilege = <strong>minimum NÉCESSAIRE</strong> (pas zero).<br><br>
+        User besoin access marketing files → GET permissions marketing folder.<br>
+        User PAS besoin admin rights → DON'T get admin.<br><br>
+        Balance : Functional (user peut travailler) + Secure (pas excessive)
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : Defense in depth = firewall + antivirus</div>
+      <div class="trap-content">
+        <strong>INCOMPLET</strong>. Defense in depth = <strong>MULTIPLES layers</strong> (7+ categories).<br><br>
+        Pas juste 2 tools → Policies, Physical, Perimeter, Network, Host, App, Data.<br>
+        Chaque layer = multiples controls (firewall + IPS + VPN, etc.).<br><br>
+        Comprehensive approach (pas minimal 2 products)
+      </div>
+    </div>
+  </div>
+
+  <!-- RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>DMZ</strong> : Zone semi-trusted hébergeant services publics (web, email, DNS). 2 firewalls (external + internal). Internet → DMZ permit, DMZ → Internal deny. Isolation compromission</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Segmentation</strong> : Diviser réseau zones isolées (VLANs, subnets). Limite propagation malware, policies différentes. Exemple : VLAN Data, Voice, Servers, Guest, Management</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Zones confiance</strong> : Internet (untrusted), DMZ (semi-trusted), Internal (trusted), Secure (high trust). Lower trust → higher trust = deny. Zero Trust = never trust always verify</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Least Privilege</strong> : Minimum permissions nécessaires. Standard users (pas admin). ACLs deny default. Read-only préféré. Limit blast radius compromission. Regular access reviews</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Defense in Depth</strong> : 7 layers sécurité (Policies, Physical, Perimeter, Network, Host, Application, Data). Attacker bypass 1 layer → bloqué suivante. No single point failure</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 10 : ACL</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">S11 - Phase 4</span>
+    <a class="nav-btn next" href="#">Cours 12 : VLAN sécurité avancée →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m4_s11_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+initMastery();
+</script>
+  <div style="margin-top:40px;text-align:center;">
+  <a class="nav-btn" href="index.html">← Accueil — Plan de cours</a>
+</body>
+</html>
