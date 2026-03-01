@@ -477,34 +477,34 @@ const PLAN = [
         note: "⚠️ Domaine le plus important de l'examen — maîtriser la méthode ET les outils",
         topics: [
           // MÉTHODE AVANT TOUT
-          { id:"tr01", name:"Méthodologie CompTIA — 7 étapes",       desc:"1.Identifier→2.Théorie→3.Tester→4.Plan d'action→5.Implémenter→6.Vérifier→7.Documenter", tags:["key","exam"], diff:1 },
-          { id:"tr02", name:"Approches top-down / bottom-up / divide-and-conquer", desc:"Utiliser le modèle OSI pour localiser un problème — savoir quelle approche choisir", tags:["key","exam"], diff:2 },
+          { id:"tr01", name:"tr01. Méthodologie CompTIA — 7 étapes", url:"cours-01-methodologie-comptia",      desc:"1.Identifier→2.Théorie→3.Tester→4.Plan d'action→5.Implémenter→6.Vérifier→7.Documenter", tags:["key","exam"], diff:2 },
+          { id:"tr02", name:"tr02. Approches top-down / bottom-up / divide-and-conquer", url:"cours-02-approches-troubleshooting", desc:"Utiliser le modèle OSI pour localiser un problème — savoir quelle approche choisir", tags:["key","exam"], diff:2 },
           // COUCHE 1
-          { id:"tr03", name:"Problèmes couche Physique",             desc:"Câble défectueux, pinout incorrect (straight-through vs crossover), EMI, boucle réseau", tags:["key","lab","exam"], diff:2 },
-          { id:"tr04", name:"Erreurs d'interface Ethernet",          desc:"CRC errors, runts (<64B), giants (>1518B), collisions, late collisions, input/output errors", tags:["key","exam"], diff:2 },
-          { id:"tr05", name:"Duplex mismatch",                       desc:"Symptômes (late collisions, mauvais débit), cause, résolution par auto-negociation", tags:["key","exam"], diff:2 },
-          { id:"tr06", name:"Problèmes fibre optique",               desc:"Connecteur sale/cassé, mauvais type (SMF vs MMF), budget optique, OTDR", tags:["key","lab"], diff:2 },
+          { id:"tr03", name:"tr03. Problèmes couche Physique", url:"cours-03-problemes-couche-physique",            desc:"Câble défectueux, pinout incorrect (straight-through vs crossover), EMI, boucle réseau", tags:["key","lab","exam"], diff:2 },
+          { id:"tr04", name:"tr04. Erreurs d'interface Ethernet", url:"cours-04-erreurs-interface-ethernet",         desc:"CRC errors, runts (<64B), giants (>1518B), collisions, late collisions, input/output errors", tags:["key","exam"], diff:3 },
+          { id:"tr05", name:"tr05. Duplex mismatch", url:"cours-05-duplex-mismatch",                      desc:"Symptômes (late collisions, mauvais débit), cause, résolution par auto-negociation", tags:["key","exam"], diff:2 },
+          { id:"tr06", name:"tr06. Problèmes fibre optique", url:"cours-06-problemes-fibre-optique",              desc:"Connecteur sale/cassé, mauvais type (SMF vs MMF), budget optique, OTDR", tags:["key","lab"], diff:3 },
           // COUCHE 2
-          { id:"tr07", name:"Problèmes VLAN et switching",           desc:"VLAN mal configuré, native VLAN mismatch, STP loop, MAC flooding, port en err-disabled", tags:["key","lab","exam"], diff:3 },
-          { id:"tr08", name:"Boucles réseau (Loops)",                desc:"Symptômes (CPU 100%, broadcast storm), cause (STP absent), solution STP/RSTP, PortFast", tags:["key","exam"], diff:2 },
+          { id:"tr07", name:"tr07. Problèmes VLAN et switching", url:"cours-07-problemes-vlan-switching",          desc:"VLAN mal configuré, native VLAN mismatch, STP loop, MAC flooding, port en err-disabled", tags:["key","lab","exam"], diff:3 },
+          { id:"tr08", name:"tr08. Boucles réseau (Loops)", url:"cours-08-boucles-reseau-loops",               desc:"Symptômes (CPU 100%, broadcast storm), cause (STP absent), solution STP/RSTP, PortFast", tags:["key","exam"], diff:3 },
           // COUCHE 3
-          { id:"tr09", name:"Problèmes d'adressage IP",              desc:"Conflit d'adresses IP, APIPA, mauvais masque, mauvaise passerelle par défaut", tags:["key","lab","exam"], diff:2 },
-          { id:"tr10", name:"Problèmes de routage",                  desc:"Route manquante, route incorrecte, routing loop, black hole, asymmetric routing", tags:["key","exam"], diff:3 },
-          { id:"tr11", name:"NAT — problèmes de traduction",         desc:"Pool épuisé, mauvais sens (inside/outside), overload mal configuré, connexions qui échouent", tags:["key","exam"], diff:2 },
+          { id:"tr09", name:"tr09. Problèmes d'adressage IP", url:"cours-09-problemes-adressage-ip",             desc:"Conflit d'adresses IP, APIPA, mauvais masque, mauvaise passerelle par défaut", tags:["key","lab","exam"], diff:2 },
+          { id:"tr10", name:"tr10. Problèmes de routage", url:"cours-10-problemes-routage",                 desc:"Route manquante, route incorrecte, routing loop, black hole, asymmetric routing", tags:["key","exam"], diff:3 },
+          { id:"tr11", name:"tr11. NAT — problèmes de traduction", url:"cours-11-nat-problemes-traduction",        desc:"Pool épuisé, mauvais sens (inside/outside), overload mal configuré, connexions qui échouent", tags:["key","exam"], diff:3 },
           // DNS/DHCP
-          { id:"tr12", name:"Problèmes DNS",                         desc:"Pas de résolution nom→IP, mauvais serveur DNS, cache empoisonné, TTL trop court/long", tags:["key","lab","exam"], diff:2 },
-          { id:"tr13", name:"Problèmes DHCP",                        desc:"Pool épuisé, bail expiré, adresse en conflit, DHCP rogue, relay agent mal configuré", tags:["key","lab","exam"], diff:2 },
+          { id:"tr12", name:"tr12. Problèmes DNS", url:"cours-12-problemes-dns",                        desc:"Pas de résolution nom→IP, mauvais serveur DNS, cache empoisonné, TTL trop court/long", tags:["key","lab","exam"], diff:2 },
+          { id:"tr13", name:"tr13. Problèmes DHCP", url:"cours-13-problemes-dhcp",                       desc:"Pool épuisé, bail expiré, adresse en conflit, DHCP rogue, relay agent mal configuré", tags:["key","lab","exam"], diff:2 },
           // WI-FI
-          { id:"tr14", name:"Dépannage Wi-Fi",                       desc:"Signal faible (RSSI < -70dBm), interférences canal, Evil Twin, mauvais SSID, certificat WPA3", tags:["key","lab","exam"], diff:2 },
+          { id:"tr14", name:"tr14. Dépannage Wi-Fi", url:"cours-14-depannage-wifi",                      desc:"Signal faible (RSSI < -70dBm), interférences canal, Evil Twin, mauvais SSID, certificat WPA3", tags:["key","lab","exam"], diff:3 },
           // WAN / VPN
-          { id:"tr15", name:"Dépannage WAN & VPN",                   desc:"Perte de paquets, congestion, latence élevée, VPN qui ne monte pas, MTU/fragmentation IPsec", tags:["key","exam"], diff:3 },
+          { id:"tr15", name:"tr15. Dépannage WAN & VPN", url:"cours-15-depannage-wan-vpn",                  desc:"Perte de paquets, congestion, latence élevée, VPN qui ne monte pas, MTU/fragmentation IPsec", tags:["key","exam"], diff:3 },
           // OUTILS
-          { id:"tr16", name:"Commandes de diagnostic — Windows/Linux", desc:"ping, traceroute/tracert, pathping, nslookup, dig, ipconfig/ifconfig/ip, netstat, arp, route, nmap", tags:["key","lab","exam"], diff:2 },
-          { id:"tr17", name:"Outils matériels de dépannage",         desc:"Câble tester, toner probe, certifier câble (Fluke), OTDR, loopback adapter, multimètre, Wi-Fi analyzer", tags:["key","lab"], diff:1 },
-          { id:"tr18", name:"Capture et analyse de trafic",          desc:"Wireshark — filtres de capture, lecture d'une capture, identification d'anomalies, protocoles", tags:["key","lab","exam"], diff:3 },
-          { id:"tr19", name:"Logs système et réseau",                desc:"Lire des logs syslog, identifier des patterns, corréler avec des événements réseau", tags:["key","lab"], diff:2 },
+          { id:"tr16", name:"tr16. Commandes de diagnostic — Windows/Linux", url:"cours-16-commandes-diagnostic", desc:"ping, traceroute/tracert, pathping, nslookup, dig, ipconfig/ifconfig/ip, netstat, arp, route, nmap", tags:["key","lab","exam"], diff:2 },
+          { id:"tr17", name:"tr17. Outils matériels de dépannage", url:"cours-17-outils-materiels-depannage",        desc:"Câble tester, toner probe, certifier câble (Fluke), OTDR, loopback adapter, multimètre, Wi-Fi analyzer", tags:["key","lab"], diff:2 },
+          { id:"tr18", name:"tr18. Capture et analyse de trafic", url:"cours-18-capture-analyse-trafic-wireshark",         desc:"Wireshark — filtres de capture, lecture d'une capture, identification d'anomalies, protocoles", tags:["key","lab","exam"], diff:3 },
+          { id:"tr19", name:"tr19. Logs système et réseau", url:"cours-19-logs-systeme-reseau",               desc:"Lire des logs syslog, identifier des patterns, corréler avec des événements réseau", tags:["key","lab"], diff:2 },
           // PERFORMANCE
-          { id:"tr20", name:"Problèmes de performance réseau",       desc:"Jitter, latence, gigue, perte de paquets, débit, bande passante — outils de mesure (iperf)", tags:["key","exam"], diff:2 },
+          { id:"tr20", name:"tr20. Problèmes de performance réseau", url:"cours-20-problemes-performance-reseau",      desc:"Jitter, latence, gigue, perte de paquets, débit, bande passante — outils de mesure (iperf)", tags:["key","exam"], diff:3 },
         ]
       }
     ]
