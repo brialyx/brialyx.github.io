@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TR01 — Méthodologie CompTIA · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .step-box { background: var(--bg2); border-left: 4px solid var(--accent); border-radius: 8px; padding: 16px 20px; margin: 16px 0; }
+  .step-num { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; color: var(--accent); font-weight: 800; margin-bottom: 8px; letter-spacing: 1px; }
+  .step-title { font-size: 1rem; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+  .step-content { font-size: 0.88rem; line-height: 1.7; color: var(--muted); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 5.0 — Dépannage réseau</span> &nbsp;›&nbsp; Cours 01</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 5 · TR01</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡☆ Moyen</span>
+  </div>
+
+  <h1><span>Méthodologie</span> CompTIA</h1>
+  <span class="tagline">// 7-step troubleshooting process — Identify → Theory → Test → Plan → Implement → Verify → Document</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise les 7 étapes CompTIA</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends ordre et importance chaque étape</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je sais appliquer méthodologie scénarios réels</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais pièges examen méthodologie</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- INTRO -->
+  <div class="section">
+    <div class="section-label">Troubleshooting methodology</div>
+    <h2>Méthodologie structurée — Pourquoi ?</h2>
+
+    <p><strong>Dépannage ad-hoc</strong> = Approche aléatoire (essayer solutions random jusqu'à succès). Inefficace, risque casser davantage.</p>
+
+    <p><strong>Méthodologie CompTIA</strong> = Processus structuré 7 étapes. Systématique, reproductible, efficace.</p>
+
+    <div class="callout analogy">
+      <span class="callout-icon">🔬</span>
+      <div class="callout-body">
+        <strong>Analogie — méthode scientifique</strong>
+        Troubleshooting réseau = méthode scientifique.<br>
+        Observer symptômes → Hypothèse cause → Tester hypothèse → Confirmer ou rejeter → Documenter résultats.<br>
+        Pas deviner aveuglément, mais déduction logique.
+      </div>
+    </div>
+
+    <h3>// Bénéfices méthodologie structurée</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ <strong>Efficacité</strong> : Résolution rapide (pas perte temps solutions inutiles)</li>
+      <li>✅ <strong>Reproductibilité</strong> : Process standardisé (différents techniciens même approche)</li>
+      <li>✅ <strong>Documentation</strong> : Historique problèmes (future reference, knowledge base)</li>
+      <li>✅ <strong>Minimise risque</strong> : Pas modifications hasardeuses (changements contrôlés)</li>
+      <li>✅ <strong>Conformité</strong> : Change management, audit trail (ITIL, ISO standards)</li>
+    </ul>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Erreur #1 techniciens juniors : Skip steps</strong>
+        "Je sais problème → je fixe directement" = DANGER.<br>
+        Sauter étapes = risque diagnostic erroné, casser autre chose, pas documentation.<br>
+        Examen CompTIA : Toujours suivre 7 étapes DANS ORDRE.
+      </div>
+    </div>
+  </div>
+
+  <!-- 7 STEPS -->
+  <div class="section">
+    <div class="section-label">CompTIA 7-step process</div>
+    <h2>Les 7 étapes — Détails</h2>
+
+    <div class="step-box">
+      <div class="step-num">ÉTAPE 1</div>
+      <div class="step-title">Identifier le problème</div>
+      <div class="step-content">
+        <strong>Objectif :</strong> Comprendre symptômes, scope, impact.<br><br>
+        <strong>Actions :</strong><br>
+        • Gather information (interviewer user : "Que s'est-il passé ?")<br>
+        • Duplicate problem (reproduire erreur si possible)<br>
+        • Question users (symptômes précis, quand démarré, changements récents ?)<br>
+        • Determine scope (1 user ? Tout département ? Tout site ?)<br><br>
+        <strong>Exemple questions :</strong><br>
+        - "Internet ne marche pas" → "Aucun site ? Sites spécifiques ? Email fonctionne ?"<br>
+        - "Depuis quand ?" → "Ce matin ? Après reboot ? Après mise à jour ?"<br>
+        - "Changements récents ?" → "Nouveau logiciel ? Config réseau modifiée ?"
+      </div>
+    </div>
+
+    <div class="step-box">
+      <div class="step-num">ÉTAPE 2</div>
+      <div class="step-title">Établir théorie cause probable</div>
+      <div class="step-content">
+        <strong>Objectif :</strong> Hypothèses causes possibles (du plus probable au moins probable).<br><br>
+        <strong>Actions :</strong><br>
+        • Question obvious (câble débranché ? Alimentation OK ? Erreurs simples d'abord)<br>
+        • Consider multiple approaches (Top-down, Bottom-up, Divide-and-conquer - Cours TR02)<br>
+        • List probable causes (ordre probabilité décroissante)<br><br>
+        <strong>Exemple théories :</strong><br>
+        Symptôme : PC pas ping gateway<br>
+        Théorie 1 : Câble défectueux (probable - vérifier LED switch)<br>
+        Théorie 2 : Config IP incorrecte (moins probable - fonctionnait hier)<br>
+        Théorie 3 : Switch port disabled (peu probable - autres PCs OK même switch)
+      </div>
+    </div>
+
+    <div class="step-box">
+      <div class="step-num">ÉTAPE 3</div>
+      <div class="step-title">Tester théorie déterminer cause</div>
+      <div class="step-content">
+        <strong>Objectif :</strong> Valider ou invalider hypothèses via tests.<br><br>
+        <strong>Actions :</strong><br>
+        • Test théorie la plus probable FIRST<br>
+        • IF confirmed → Proceed Étape 4<br>
+        • IF NOT confirmed → Établir nouvelle théorie (retour Étape 2), tester théorie suivante<br><br>
+        <strong>Exemple tests :</strong><br>
+        Théorie 1 : Câble défectueux<br>
+        → Test : Remplacer câble → Toujours pas ping<br>
+        → Théorie invalidée → Passer théorie 2<br><br>
+        Théorie 2 : Config IP incorrecte<br>
+        → Test : <code>ipconfig /all</code> → IP 169.254.x.x (APIPA)<br>
+        → DHCP failed → Théorie confirmée ✅
+      </div>
+    </div>
+
+    <div class="step-box">
+      <div class="step-num">ÉTAPE 4</div>
+      <div class="step-title">Établir plan d'action résoudre problème</div>
+      <div class="step-content">
+        <strong>Objectif :</strong> Définir steps résolution AVANT implémenter (pas improviser).<br><br>
+        <strong>Actions :</strong><br>
+        • Identify effects (solution impact quoi ? Downtime ? Users affectés ?)<br>
+        • Plan timing (maintenance window ? Business hours éviter ?)<br>
+        • Prepare rollback (comment revenir arrière si problème ?)<br>
+        • Get approval (change management - si modification production)<br><br>
+        <strong>Exemple plan :</strong><br>
+        Cause : DHCP server down<br>
+        Plan :<br>
+        1. Vérifier DHCP service stopped (check logs)<br>
+        2. Restart DHCP service<br>
+        3. IF pas fix → Reboot DHCP server<br>
+        4. Verify lease distribution (test client DHCP request)<br>
+        Impact : 5 min downtime new DHCP leases (existing leases OK)
+      </div>
+    </div>
+
+    <div class="step-box">
+      <div class="step-num">ÉTAPE 5</div>
+      <div class="step-title">Implémenter solution ou escalader</div>
+      <div class="step-content">
+        <strong>Objectif :</strong> Exécuter plan OU escalader si hors compétences/permissions.<br><br>
+        <strong>Actions :</strong><br>
+        • Implement solution (suivre plan Étape 4)<br>
+        • OR escalate (si nécessite expertise senior, vendor support, permissions management)<br><br>
+        <strong>Escalation nécessaire si :</strong><br>
+        - Hors compétences (configuration routeur BGP complexe, jamais fait)<br>
+        - Hors permissions (modifications firewall production = senior engineer only)<br>
+        - Vendor support requis (bug firmware switch, TAC case needed)<br>
+        - Impact critique (changement risqué production, CTO approval needed)
+      </div>
+    </div>
+
+    <div class="step-box">
+      <div class="step-num">ÉTAPE 6</div>
+      <div class="step-title">Vérifier fonctionnalité complète système</div>
+      <div class="step-content">
+        <strong>Objectif :</strong> Confirmer problème résolu ET pas créé nouveaux problèmes.<br><br>
+        <strong>Actions :</strong><br>
+        • Verify full system functionality (pas juste symptôme initial - TOUT fonctionne ?)<br>
+        • Test related systems (solution pas cassé autre chose ?)<br>
+        • Implement preventive measures (empêcher récurrence future)<br><br>
+        <strong>Exemple vérification :</strong><br>
+        Fix : DHCP server restarted<br>
+        Verify :<br>
+        ✅ Client obtient IP DHCP (problème initial résolu)<br>
+        ✅ Client ping gateway (connectivity OK)<br>
+        ✅ Client accède Internet (end-to-end OK)<br>
+        ✅ DNS résolution fonctionne (related service OK)<br>
+        ✅ Autres clients DHCP OK (pas impact négatif)<br><br>
+        Preventive : Monitor DHCP service (alert si down future)
+      </div>
+    </div>
+
+    <div class="step-box">
+      <div class="step-num">ÉTAPE 7</div>
+      <div class="step-title">Documenter conclusions, actions, résultats</div>
+      <div class="step-content">
+        <strong>Objectif :</strong> Knowledge base, audit trail, future reference.<br><br>
+        <strong>Actions :</strong><br>
+        • Document findings (symptômes, cause root, solution)<br>
+        • Document actions taken (steps exactes exécutées)<br>
+        • Document outcomes (résultat, lessons learned)<br>
+        • Update ticketing system (close ticket avec details)<br><br>
+        <strong>Exemple documentation :</strong><br>
+        <strong>Ticket #12345 : Users VLAN 10 pas accès Internet</strong><br>
+        Symptômes : 50 users VLAN 10 rapportent "pas Internet" 9h30 AM<br>
+        Cause : DHCP server service crashed (Windows Event Log error 1000)<br>
+        Solution : Restarted DHCP service → Functional 9h45 AM<br>
+        Preventive : Configured DHCP service auto-restart on failure<br>
+        Root cause : Server RAM full (memory leak application tierce) → Reboot hebdomadaire schedulé
+      </div>
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Question TRÈS fréquente examen</strong>
+        "Première étape troubleshooting CompTIA ?"<br>
+        <strong>Réponse : Identifier le problème (Étape 1)</strong><br><br>
+        "Après tester théorie confirmée, étape suivante ?"<br>
+        <strong>Réponse : Établir plan d'action (Étape 4)</strong><br><br>
+        Examen teste ORDRE étapes. Mémoriser séquence 1→2→3→4→5→6→7.
+      </div>
+    </div>
+  </div>
+
+  <!-- SCENARIO -->
+  <div class="section">
+    <div class="section-label">Practical example</div>
+    <h2>Scénario complet — Application 7 étapes</h2>
+
+    <p><strong>Problème rapporté</strong> : "Les utilisateurs bâtiment B ne peuvent pas accéder serveur fichiers."</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin:16px 0;font-size:0.85rem;line-height:1.8;">
+      <strong style="color:var(--cyan)">ÉTAPE 1 : Identifier</strong><br>
+      → Question users : "Tous users bâtiment B ? Depuis quand ?"<br>
+      → Response : "Oui tous (~30 users). Depuis 8h ce matin."<br>
+      → Duplicate : Laptop admin bâtiment B → Confirme pas accès \\fileserver\shared<br>
+      → Scope : Bâtiment B uniquement (Bâtiment A OK accès fileserver)<br><br>
+
+      <strong style="color:var(--purple)">ÉTAPE 2 : Théorie</strong><br>
+      Théorie 1 : Fileserver down (❌ peu probable - Bât A accède OK)<br>
+      Théorie 2 : Réseau bâtiment B problème (✅ probable - tous users Bât B affected)<br>
+      Théorie 3 : Switch bâtiment B défaillant (✅ très probable - symptôme soudain tous users)<br><br>
+
+      <strong style="color:var(--green)">ÉTAPE 3 : Tester</strong><br>
+      Test théorie 3 :<br>
+      → Ping gateway depuis PC Bât B : <strong>Success</strong> (L3 OK)<br>
+      → Ping fileserver IP : <strong>Timeout</strong> (pas reach fileserver)<br>
+      → Check switch Bât B uplink : <strong>LED port uplink OFF</strong><br>
+      → <strong>Théorie confirmée</strong> : Uplink switch Bât B → Core switch DOWN<br><br>
+
+      <strong style="color:var(--amber)">ÉTAPE 4 : Plan d'action</strong><br>
+      1. Vérifier câble uplink (physical damage ?)<br>
+      2. Test port uplink switch (port disabled ? Error ?)<br>
+      3. Si port failed → Basculer uplink port backup<br>
+      Impact : 5 min downtime Bât B pendant changement uplink<br>
+      Rollback : Rebrancher uplink port original si backup failed<br><br>
+
+      <strong style="color:var(--cyan)">ÉTAPE 5 : Implémenter</strong><br>
+      → Débrancher câble uplink port Gi0/24<br>
+      → Brancher câble uplink port backup Gi0/23<br>
+      → LED port Gi0/23 GREEN (link UP)<br>
+      → Solution implémentée<br><br>
+
+      <strong style="color:var(--purple)">ÉTAPE 6 : Vérifier</strong><br>
+      ✅ PC Bât B ping fileserver : <strong>Success</strong><br>
+      ✅ Access \\fileserver\shared : <strong>OK</strong><br>
+      ✅ Test 5 users différents Bât B : <strong>All OK</strong><br>
+      ✅ Bât A toujours OK : <strong>No impact</strong><br>
+      Preventive : RMA port Gi0/24 failed (vendor support case)<br><br>
+
+      <strong style="color:var(--green)">ÉTAPE 7 : Documenter</strong><br>
+      <strong>Ticket #98765 : Bâtiment B pas accès fileserver</strong><br>
+      Cause : Switch Bât B uplink port Gi0/24 hardware failure (LED OFF, no link)<br>
+      Solution : Failover uplink port backup Gi0/23<br>
+      Downtime : 5 minutes (8h15-8h20 AM)<br>
+      Follow-up : Port Gi0/24 RMA case #ABC123 vendor support
+    </div>
+  </div>
+
+  <!-- PIÈGES -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : Implémenter solution AVANT établir plan</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Ordre étapes STRICT examen.<br><br>
+        Étape 3 : Tester théorie → Cause confirmée<br>
+        Étape 4 : <strong>Plan d'action</strong> (planifier solution)<br>
+        Étape 5 : <strong>Implémenter</strong> (exécuter plan)<br><br>
+        Jamais sauter Étape 4 (plan) → Aller direct Étape 5 (implement).<br>
+        Examen : "Après confirmer cause, next step ?" → Réponse = Plan (pas implement).
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : Documentation optionnelle (Étape 7 skip)</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Étape 7 = <strong>OBLIGATOIRE</strong>.<br><br>
+        "Problème résolu → job done" = INCOMPLET.<br>
+        Documentation = partie intégrante process (knowledge base, audit, compliance).<br><br>
+        Examen : Toujours inclure Étape 7 (documenter) même si question pas mentionne explicitement.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : Vérifier symptôme initial uniquement (Étape 6)</div>
+      <div class="trap-content">
+        <strong>INCOMPLET</strong>. Étape 6 = <strong>Verify FULL system functionality</strong>.<br><br>
+        Pas juste : "Problème initial fixed ?"<br>
+        Mais : "TOUT système fonctionne ? Solution pas créé nouveaux problèmes ?"<br><br>
+        Exemple : Fix DHCP → Vérifier DHCP + DNS + Internet + Email (end-to-end).<br>
+        Examen : "Verify full system functionality" = test complet, pas juste symptôme.
+      </div>
+    </div>
+  </div>
+
+  <!-- RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>7 Étapes ORDRE STRICT</strong> : 1.Identifier → 2.Théorie → 3.Tester → 4.Plan → 5.Implémenter → 6.Vérifier → 7.Documenter. Jamais skip, jamais inverser ordre</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Étape 1 (Identify)</strong> : Gather info, duplicate problem, question users, determine scope. Comprendre symptômes AVANT agir</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Étape 2 (Theory)</strong> : Hypothèses causes probables (most probable first). Question obvious. Multiple approaches (Top-down/Bottom-up/Divide-conquer)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Étape 3 (Test)</strong> : Valider théories via tests. Si confirmée → Étape 4. Si invalidée → Nouvelle théorie (retour Étape 2)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Étape 4 (Plan)</strong> : Définir steps résolution, identify effects, plan timing, prepare rollback, get approval. AVANT implémenter</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Étape 5 (Implement)</strong> : Exécuter plan OU escalader (hors compétences/permissions). Suivre plan Étape 4</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Étape 6 (Verify)</strong> : Full system functionality (pas juste symptôme). Test related systems. Implement preventive measures</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Étape 7 (Document)</strong> : Findings, actions, outcomes. Knowledge base, ticketing system. OBLIGATOIRE (pas optionnel)</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Module 5.0 Dépannage</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">TR01 - Phase 5</span>
+    <a class="nav-btn next" href="#">Cours 02 : Approches troubleshooting →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m5_tr01_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+initMastery();
+</script>
+  <div style="margin-top:40px;text-align:center;">
+  <a class="nav-btn" href="index.html">← Accueil — Plan de cours</a>
+</body>
+</html>

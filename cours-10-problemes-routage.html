@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TR10 — Problèmes de routage · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 5.0 — Dépannage réseau</span> &nbsp;›&nbsp; Cours 10</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 5 · TR10</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡⚡ Difficile</span>
+  </div>
+
+  <h1><span>Problèmes</span> de routage</h1>
+  <span class="tagline">// Layer 3 routing — Route manquante, route incorrecte, routing loop, black hole, asymmetric routing</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je diagnostique routes manquantes</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je détecte routes incorrectes</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je reconnais routing loops</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends black holes et asymmetric routing</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- MISSING ROUTE -->
+  <div class="section">
+    <div class="section-label">Routing table</div>
+    <h2>Route manquante — Missing route</h2>
+
+    <p><strong>Route manquante</strong> = Router pas entrée routing table pour destination → packets dropped.</p>
+
+    <h3>// Principe routing (rappel)</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Router reçoit packet destination 10.2.0.50<br><br>
+
+      1. Check routing table : Route vers 10.2.0.0/24 ?<br>
+      2. Match found → Forward interface<br>
+      3. No match → <strong>Drop packet (no route)</strong>
+    </div>
+
+    <h3>// Symptômes route manquante</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Ping timeout</strong> : Destination unreachable</li>
+      <li><strong>Traceroute stops</strong> : Last hop = router sans route</li>
+      <li><strong>ICMP error</strong> : "Destination network unreachable" (if router sends ICMP reply)</li>
+      <li><strong>Selective connectivity</strong> : Some networks accessible, others not</li>
+    </ul>
+
+    <h3>// Diagnostic route manquante</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>User report :</strong> Can't reach server 10.2.0.50<br><br>
+
+      <strong>Step 1 : Traceroute from source</strong><br>
+      C:\> tracert 10.2.0.50<br><br>
+
+      1&nbsp;&nbsp;&nbsp;&nbsp;1 ms&nbsp;&nbsp;&nbsp;&nbsp;192.168.1.1 (gateway)<br>
+      2&nbsp;&nbsp;&nbsp;&nbsp;5 ms&nbsp;&nbsp;&nbsp;&nbsp;10.0.0.1 (router-core)<br>
+      3&nbsp;&nbsp;&nbsp;&nbsp;* * *&nbsp;&nbsp;&nbsp;&nbsp;Request timed out<br><br>
+
+      → Stops at 10.0.0.1 (router-core) → No route forward<br><br>
+
+      <strong>Step 2 : Check router routing table</strong><br>
+      Router-Core# show ip route<br><br>
+
+      C&nbsp;&nbsp;&nbsp;&nbsp;10.0.0.0/24 is directly connected, Gi0/0<br>
+      C&nbsp;&nbsp;&nbsp;&nbsp;192.168.1.0/24 is directly connected, Gi0/1<br>
+      S&nbsp;&nbsp;&nbsp;&nbsp;0.0.0.0/0 via 203.0.113.1 (default route Internet)<br><br>
+
+      → <strong>No route to 10.2.0.0/24</strong> (missing!)<br>
+      → Packets to 10.2.0.50 dropped
+    </div>
+
+    <h3>// Résolution route manquante</h3>
+
+    <p><strong>Option 1 : Add static route</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Router-Core(config)# ip route 10.2.0.0 255.255.255.0 10.0.0.2<br><br>
+
+      → Add route : 10.2.0.0/24 via next-hop 10.0.0.2<br><br>
+
+      Verify :<br>
+      Router-Core# show ip route<br>
+      S&nbsp;&nbsp;&nbsp;&nbsp;<strong style="color:var(--green)">10.2.0.0/24 [1/0] via 10.0.0.2</strong><br><br>
+
+      Test :<br>
+      Router-Core# ping 10.2.0.50<br>
+      → Success ✅
+    </div>
+
+    <p><strong>Option 2 : Enable dynamic routing</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Router-Core(config)# router ospf 1<br>
+      Router-Core(config-router)# network 10.0.0.0 0.0.0.255 area 0<br>
+      Router-Core(config-router)# network 192.168.1.0 0.0.0.255 area 0<br><br>
+
+      → OSPF advertises routes automatically<br>
+      → Learns 10.2.0.0/24 from neighbor routers
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Question fréquente examen</strong>
+        "Traceroute stops at router. Ping destination unreachable. MOST likely cause ?"<br>
+        A) Cable defect<br>
+        B) Missing route<br>
+        C) DNS failure<br>
+        D) Firewall blocking<br><br>
+        <strong>Réponse : B) Missing route</strong><br>
+        Traceroute stops router = no route forward (routing table incomplete).
+      </div>
+    </div>
+  </div>
+
+  <!-- INCORRECT ROUTE -->
+  <div class="section">
+    <div class="section-label">Misconfiguration</div>
+    <h2>Route incorrecte — Incorrect route</h2>
+
+    <p><strong>Route incorrecte</strong> = Route exists MAIS pointe wrong next-hop/interface → packets sent wrong direction.</p>
+
+    <h3>// Scénario route incorrecte</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Network topology :</strong><br><br>
+
+      10.2.0.0/24 (remote network) ← Router-B (10.0.0.2)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↑<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Router-Core (10.0.0.1)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;192.168.1.0/24 (local)<br><br>
+
+      <strong style="color:var(--red)">INCORRECT route config :</strong><br>
+      Router-Core(config)# ip route 10.2.0.0 255.255.255.0 <strong style="color:var(--red)">10.0.0.99</strong><br><br>
+
+      → Next-hop 10.0.0.99 doesn't exist (typo - should be .2)<br>
+      → Packets to 10.2.0.0/24 sent nowhere → Dropped
+    </div>
+
+    <h3>// Symptômes route incorrecte</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Route exists</strong> : <code>show ip route</code> shows entry (misleading)</li>
+      <li><strong>Connectivity fails</strong> : Ping timeout despite route</li>
+      <li><strong>Traceroute strange path</strong> : Packets routed unexpected direction</li>
+      <li><strong>Intermittent connectivity</strong> : Works if failover path exists, fails primary</li>
+    </ul>
+
+    <h3>// Diagnostic route incorrecte</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Router-Core# show ip route 10.2.0.0<br><br>
+
+      Routing entry for 10.2.0.0/24<br>
+      &nbsp;&nbsp;Known via "static", distance 1, metric 0<br>
+      &nbsp;&nbsp;Routing Descriptor Blocks:<br>
+      &nbsp;&nbsp;* <strong style="color:var(--red)">10.0.0.99</strong>, from 0.0.0.0<br><br>
+
+      → Next-hop 10.0.0.99 (verify exists ?)<br><br>
+
+      Router-Core# ping 10.0.0.99<br>
+      → <strong>Timeout</strong> (next-hop unreachable)<br><br>
+
+      → Route exists BUT next-hop invalid = incorrect route
+    </div>
+
+    <h3>// Résolution route incorrecte</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Step 1 : Remove incorrect route</strong><br>
+      Router-Core(config)# no ip route 10.2.0.0 255.255.255.0 10.0.0.99<br><br>
+
+      <strong>Step 2 : Add correct route</strong><br>
+      Router-Core(config)# ip route 10.2.0.0 255.255.255.0 <strong style="color:var(--green)">10.0.0.2</strong><br><br>
+
+      <strong>Step 3 : Verify</strong><br>
+      Router-Core# show ip route 10.2.0.0<br>
+      &nbsp;&nbsp;* 10.0.0.2 ✅<br><br>
+
+      Router-Core# ping 10.2.0.50<br>
+      → Success ✅
+    </div>
+  </div>
+
+  <!-- ROUTING LOOP -->
+  <div class="section">
+    <div class="section-label">Loop prevention</div>
+    <h2>Routing Loop — Packets circulent infiniment</h2>
+
+    <p><strong>Routing loop</strong> = 2+ routers forward packet back-and-forth infinitely → TTL expires → packet dropped.</p>
+
+    <h3>// Principe routing loop</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Routing loop scenario :</strong><br><br>
+
+      Router-A : Route 10.2.0.0/24 via Router-B<br>
+      Router-B : Route 10.2.0.0/24 via Router-A (misconfiguration)<br><br>
+
+      Packet to 10.2.0.50 :<br>
+      1. PC → Router-A<br>
+      2. Router-A → Router-B (follows route)<br>
+      3. Router-B → Router-A (follows route - LOOP!)<br>
+      4. Router-A → Router-B<br>
+      5. ... (infinite loop until TTL = 0)<br><br>
+
+      → Packet TTL decrements each hop<br>
+      → TTL reaches 0 → Packet dropped<br>
+      → ICMP "Time exceeded" sent source
+    </div>
+
+    <h3>// TTL prevents infinite loops</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>IP header TTL (Time To Live) :</strong><br><br>
+
+      Initial TTL : 64 (Linux), 128 (Windows), 255 (Cisco)<br>
+      Each hop (router) : TTL - 1<br>
+      TTL = 0 ? → Drop packet, send ICMP Time Exceeded<br><br>
+
+      → Prevents packets looping forever<br>
+      → Maximum hops = initial TTL value
+    </div>
+
+    <h3>// Symptômes routing loop</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Ping fails</strong> : "Time exceeded" (TTL expired)</li>
+      <li><strong>Traceroute shows loop</strong> : Same routers repeat</li>
+      <li><strong>High CPU routers</strong> : Processing looping packets</li>
+      <li><strong>Network congestion</strong> : Bandwidth consumed looping traffic</li>
+    </ul>
+
+    <h3>// Diagnostic routing loop</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      C:\> tracert 10.2.0.50<br><br>
+
+      1&nbsp;&nbsp;&nbsp;&nbsp;1 ms&nbsp;&nbsp;&nbsp;&nbsp;192.168.1.1 (Router-A)<br>
+      2&nbsp;&nbsp;&nbsp;&nbsp;2 ms&nbsp;&nbsp;&nbsp;&nbsp;10.0.0.1 (Router-B)<br>
+      3&nbsp;&nbsp;&nbsp;&nbsp;3 ms&nbsp;&nbsp;&nbsp;&nbsp;<strong style="color:var(--red)">192.168.1.1</strong> (Router-A again - LOOP!)<br>
+      4&nbsp;&nbsp;&nbsp;&nbsp;4 ms&nbsp;&nbsp;&nbsp;&nbsp;<strong style="color:var(--red)">10.0.0.1</strong> (Router-B again - LOOP!)<br>
+      5&nbsp;&nbsp;&nbsp;&nbsp;5 ms&nbsp;&nbsp;&nbsp;&nbsp;<strong style="color:var(--red)">192.168.1.1</strong><br>
+      ...<br>
+      30&nbsp;&nbsp;&nbsp;* * *&nbsp;&nbsp;&nbsp;&nbsp;Request timed out (TTL expired)<br><br>
+
+      → Same routers repeat = routing loop detected
+    </div>
+
+    <h3>// Causes routing loops</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Static routes misconfigured</strong> : Manual error (Router-A → B, Router-B → A)</li>
+      <li><strong>Dynamic routing protocol issue</strong> : Split horizon disabled, convergence slow</li>
+      <li><strong>Redistribution misconfigured</strong> : Routes redistributed back original protocol</li>
+      <li><strong>Default route pointing wrong</strong> : Default 0.0.0.0/0 loops back</li>
+    </ul>
+
+    <h3>// Résolution routing loop</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Step 1 : Identify loop routers</strong><br>
+      → Traceroute shows repeating hops<br><br>
+
+      <strong>Step 2 : Check routing tables both routers</strong><br>
+      Router-A# show ip route 10.2.0.0<br>
+      → via Router-B<br><br>
+
+      Router-B# show ip route 10.2.0.0<br>
+      → via Router-A (WRONG - creates loop)<br><br>
+
+      <strong>Step 3 : Fix incorrect route</strong><br>
+      Router-B(config)# no ip route 10.2.0.0 255.255.255.0 Router-A<br>
+      Router-B(config)# ip route 10.2.0.0 255.255.255.0 <correct-next-hop><br><br>
+
+      → Break loop by correcting route
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Routing loop ≠ Switching loop (Layer 2)</strong>
+        Routing loop (L3) : IP packets, routers, TTL prevents infinite.<br>
+        Switching loop (L2) : Broadcast frames, switches, STP prevents.<br>
+        Routing loops self-limiting (TTL), switching loops catastrophic (broadcast storm).
+      </div>
+    </div>
+  </div>
+
+  <!-- BLACK HOLE -->
+  <div class="section">
+    <div class="section-label">Silent discard</div>
+    <h2>Black Hole — Packets disparaissent silencieusement</h2>
+
+    <p><strong>Black hole</strong> = Route exists, packets forwarded, MAIS destination silently discards (no ICMP error).</p>
+
+    <h3>// Scénario black hole</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Topology :</strong><br>
+      PC → Router-A → Router-B → <strong style="color:var(--red)">[Black Hole]</strong><br><br>
+
+      Router-B configured :<br>
+      ip route 10.2.0.0 255.255.255.0 Null0<br><br>
+
+      → Route to Null0 = discard interface<br>
+      → Packets sent Null0 = silently dropped (no error)
+    </div>
+
+    <h3>// Causes black holes</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Route to Null0</strong> : Intentional discard (summarization, security) OR misconfiguration</li>
+      <li><strong>Firewall silent drop</strong> : Firewall blocks, no ICMP reply</li>
+      <li><strong>Next-hop down</strong> : Route points downed interface, no alternative</li>
+      <li><strong>Asymmetric routing</strong> : Forward path works, return path fails (covered next)</li>
+    </ul>
+
+    <h3>// Symptômes black hole</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Ping timeout</strong> : No response (not "unreachable")</li>
+      <li><strong>Traceroute shows path</strong> : Reaches certain point, then silence</li>
+      <li><strong>No ICMP error</strong> : Unlike missing route (gets "unreachable")</li>
+      <li><strong>One-way communication</strong> : Outbound works, inbound fails (OR vice versa)</li>
+    </ul>
+
+    <h3>// Diagnostic black hole</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      C:\> tracert 10.2.0.50<br><br>
+
+      1&nbsp;&nbsp;&nbsp;&nbsp;1 ms&nbsp;&nbsp;&nbsp;&nbsp;192.168.1.1 (Router-A)<br>
+      2&nbsp;&nbsp;&nbsp;&nbsp;5 ms&nbsp;&nbsp;&nbsp;&nbsp;10.0.0.1 (Router-B)<br>
+      3&nbsp;&nbsp;&nbsp;&nbsp;* * *&nbsp;&nbsp;&nbsp;&nbsp;Request timed out (silence - black hole)<br><br>
+
+      → Reaches Router-B, then nothing<br><br>
+
+      Router-B# show ip route 10.2.0.0<br>
+      S&nbsp;&nbsp;&nbsp;&nbsp;10.2.0.0/24 is directly connected, <strong style="color:var(--red)">Null0</strong><br><br>
+
+      → Route to Null0 = black hole found
+    </div>
+
+    <h3>// Résolution black hole</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Router-B(config)# no ip route 10.2.0.0 255.255.255.0 Null0<br>
+      Router-B(config)# ip route 10.2.0.0 255.255.255.0 <correct-next-hop><br><br>
+
+      → Remove Null0 route, add correct route
+    </div>
+  </div>
+
+  <!-- ASYMMETRIC ROUTING -->
+  <div class="section">
+    <div class="section-label">Path asymmetry</div>
+    <h2>Asymmetric Routing — Chemins différents aller/retour</h2>
+
+    <p><strong>Asymmetric routing</strong> = Outbound path ≠ Inbound path. Can cause problems stateful devices (firewalls, NAT).</p>
+
+    <h3>// Principe asymmetric routing</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Network topology :</strong><br><br>
+
+      PC-A → Router-1 → Router-Core → Server (outbound path)<br>
+      PC-A ← Router-2 ← Router-Core ← Server (inbound path)<br><br>
+
+      → Outbound via Router-1<br>
+      → Inbound via Router-2<br>
+      → <strong>Asymmetric</strong> (different paths)
+    </div>
+
+    <h3>// Problèmes asymmetric routing</h3>
+
+    <p><strong>1. Stateful firewall drops</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Firewall on Router-1 :<br>
+      → Sees outbound SYN (PC → Server) → Creates state entry<br>
+      → Expects inbound SYN-ACK via Router-1<br><br>
+
+      BUT SYN-ACK returns via Router-2 (asymmetric)<br>
+      → Firewall Router-1 never sees return traffic<br>
+      → State entry times out → Connection fails
+    </div>
+
+    <p><strong>2. NAT translation broken</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      NAT on Router-1 :<br>
+      → Outbound : 192.168.1.50 → 203.0.113.10 (translated)<br>
+      → Creates NAT table entry<br><br>
+
+      Inbound returns via Router-2 (no NAT)<br>
+      → Destination 203.0.113.10 → Router-2 can't translate (no table)<br>
+      → Packet dropped or misrouted
+    </div>
+
+    <h3>// Symptômes asymmetric routing</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Connection timeouts</strong> : TCP handshake fails (SYN sent, SYN-ACK lost)</li>
+      <li><strong>Intermittent connectivity</strong> : Works sometimes (symmetric), fails others (asymmetric)</li>
+      <li><strong>Firewall logs</strong> : "Out-of-state packet" dropped</li>
+      <li><strong>Traceroute different paths</strong> : Forward vs reverse show different hops</li>
+    </ul>
+
+    <h3>// Diagnostic asymmetric routing</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Traceroute forward :</strong><br>
+      C:\> tracert 10.2.0.50<br>
+      1 → 192.168.1.1 (Router-1)<br>
+      2 → 10.0.0.1 (Router-Core)<br>
+      3 → 10.2.0.50 (Server)<br><br>
+
+      <strong>Traceroute reverse (from server) :</strong><br>
+      Server# traceroute 192.168.1.50<br>
+      1 → 10.0.0.1 (Router-Core)<br>
+      2 → <strong style="color:var(--red)">192.168.1.2</strong> (Router-2 - different!)<br>
+      3 → 192.168.1.50 (PC)<br><br>
+
+      → Asymmetric detected (outbound Router-1, inbound Router-2)
+    </div>
+
+    <h3>// Solutions asymmetric routing</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Fix routing</strong> : Make paths symmetric (adjust metrics, prefer same path)</li>
+      <li><strong>Disable stateful inspection</strong> : Firewall allow asymmetric (if safe)</li>
+      <li><strong>Clustered firewalls</strong> : Firewalls share state (both paths see traffic)</li>
+      <li><strong>Policy-based routing</strong> : Force symmetric paths (source-based routing)</li>
+    </ul>
+
+    <div class="callout ok">
+      <span class="callout-icon">🔀</span>
+      <div class="callout-body">
+        <strong>Asymmetric routing = not always bad</strong>
+        Simple routing (no firewalls/NAT) : Asymmetric OK (packets reach destination).<br>
+        Stateful devices : Asymmetric problematic (state not synchronized).<br>
+        Modern networks : Often asymmetric (Internet multiple paths), design accordingly.
+      </div>
+    </div>
+  </div>
+
+  <!-- PIÈGES -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : Routing loop = infinite (pas de fin)</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Routing loop = <strong>self-limiting</strong> (TTL expires).<br><br>
+        TTL (Time To Live) decrements each hop.<br>
+        TTL = 0 → Packet dropped, ICMP Time Exceeded sent.<br><br>
+        Maximum loop iterations = initial TTL (64, 128, 255).<br>
+        Examen : Routing loops problematic BUT not infinite (TTL protection).
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : Black hole = route manquante</div>
+      <div class="trap-content">
+        <strong>DIFFÉRENT</strong>. Black hole = <strong>route EXISTS</strong>, packets discarded silently.<br><br>
+        Missing route : No entry routing table → ICMP "unreachable" (usually).<br>
+        Black hole : Route to Null0 OR silent drop → No ICMP error.<br><br>
+        Symptom différence : Missing route = "unreachable", Black hole = timeout silence.<br>
+        Examen : Black hole harder troubleshoot (no error messages).
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : Asymmetric routing = always problem</div>
+      <div class="trap-content">
+        <strong>NUANCE</strong>. Asymmetric routing = <strong>problematic IF stateful devices</strong>.<br><br>
+        No firewall/NAT : Asymmetric OK (packets reach destination both directions).<br>
+        Stateful firewall/NAT : Asymmetric breaks (state not synchronized paths).<br><br>
+        Internet routing : Often asymmetric (multiple ISPs, optimized paths).<br>
+        Examen : Context matters (stateful devices present ?).
+      </div>
+    </div>
+  </div>
+
+  <!-- RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Route manquante</strong> : No entry routing table. Symptom: Traceroute stops, unreachable. Fix: Add static route OR enable dynamic routing protocol</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Route incorrecte</strong> : Route exists BUT wrong next-hop. Symptom: Route shows, connectivity fails. Diagnostic: Ping next-hop (unreachable?). Fix: Correct next-hop address</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Routing loop</strong> : Routers forward packet back-and-forth. TTL expires (self-limiting). Symptom: Traceroute repeats hops, "Time exceeded". Fix: Correct routes break loop</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Black hole</strong> : Route to Null0 OR silent discard. No ICMP error. Symptom: Timeout silence (not "unreachable"). Diagnostic: show ip route (Null0?). Fix: Remove Null0 route</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Asymmetric routing</strong> : Outbound path ≠ inbound path. Problems: Stateful firewall, NAT. Symptom: Connection fails, firewall drops. Fix: Symmetric paths, clustered firewalls, disable stateful if safe</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Commands</strong> : show ip route (table), show ip route X.X.X.X (specific), ping, traceroute/tracert, show ip interface brief (status). Static route: ip route network mask next-hop</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 09 : Adressage IP</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">TR10 - Phase 5</span>
+    <a class="nav-btn next" href="#">Cours 11 : NAT problems →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m5_tr10_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+initMastery();
+</script>
+  <div style="margin-top:40px;text-align:center;">
+  <a class="nav-btn" href="index.html">← Accueil — Plan de cours</a>
+</body>
+</html>

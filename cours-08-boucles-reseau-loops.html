@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TR08 — Boucles réseau (Loops) · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 5.0 — Dépannage réseau</span> &nbsp;›&nbsp; Cours 08</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 5 · TR08</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡⚡ Difficile</span>
+  </div>
+
+  <h1><span>Boucles</span> réseau (Loops)</h1>
+  <span class="tagline">// Broadcast storms — Symptômes CPU 100%, causes STP absent, solution STP/RSTP, PortFast</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je reconnais symptômes broadcast storm</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends causes boucles réseau</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise STP/RSTP configuration</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais PortFast usage correct</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- SYMPTOMES -->
+  <div class="section">
+    <div class="section-label">Broadcast storm symptoms</div>
+    <h2>Symptômes boucle réseau — Network meltdown</h2>
+
+    <p><strong>Boucle réseau (Network Loop)</strong> = Chemin redondant Layer 2 sans STP → broadcast frames loop infiniment → network catastrophe.</p>
+
+    <h3>// Symptôme #1 : CPU 100% switches</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Switch# show processes cpu sorted<br><br>
+
+      CPU utilization for five seconds: <strong style="color:var(--red)">99%/0%</strong><br>
+      one minute: 99%; five minutes: 99%<br><br>
+
+      PID&nbsp;&nbsp;Process&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CPU<br>
+      104&nbsp;&nbsp;Ethernet Input&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong style="color:var(--red)">95%</strong><br>
+      23&nbsp;&nbsp;&nbsp;ARP Input&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong style="color:var(--red)">2%</strong><br><br>
+
+      → Switch CPU saturé processing broadcast frames
+    </div>
+
+    <h3>// Symptôme #2 : MAC address table flapping</h3>
+    <p><strong>MAC flapping</strong> = Same MAC address seen multiple ports → table entries change rapidly.</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Switch# show mac address-table dynamic<br><br>
+
+      VLAN&nbsp;&nbsp;MAC Address&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Port<br>
+      10&nbsp;&nbsp;&nbsp;&nbsp;aa:bb:cc:dd:ee:ff&nbsp;&nbsp;<strong style="color:var(--red)">Gi0/1</strong><br>
+      10&nbsp;&nbsp;&nbsp;&nbsp;aa:bb:cc:dd:ee:ff&nbsp;&nbsp;<strong style="color:var(--red)">Gi0/2</strong> (flapping!)<br>
+      10&nbsp;&nbsp;&nbsp;&nbsp;aa:bb:cc:dd:ee:ff&nbsp;&nbsp;<strong style="color:var(--red)">Gi0/1</strong> (flapping!)<br><br>
+
+      → Same MAC multiple ports = loop indicator
+    </div>
+
+    <h3>// Symptôme #3 : LED ports rapid blinking</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Switch port LEDs blink extremely fast (flood traffic)</li>
+      <li>All ports affected (broadcast propagates everywhere)</li>
+      <li>Link utilization 90-100% (bandwidth saturated)</li>
+    </ul>
+
+    <h3>// Symptôme #4 : Total connectivity loss</h3>
+    <p><strong>User experience</strong> : Everything stops working instantly.</p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Ping : Timeout (network overwhelmed)</li>
+      <li>Web : Doesn't load (applications timeout)</li>
+      <li>Email : Can't send/receive</li>
+      <li>File shares : Inaccessible</li>
+    </ul>
+
+    <h3>// Symptôme #5 : High STP topology changes</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Switch# show spanning-tree summary<br><br>
+
+      Root bridge for: VLAN0010<br>
+      Topology Change Count: <strong style="color:var(--red)">4,523</strong> (abnormally high)<br>
+      Time since last TC: 2 seconds<br><br>
+
+      → Excessive topology changes = loop or unstable STP
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Question TRÈS fréquente examen</strong>
+        "Network suddenly stops working. Switch CPU 99%. MAC addresses flapping. MOST likely cause ?"<br>
+        A) Cable defect<br>
+        B) Broadcast storm / Network loop<br>
+        C) DNS failure<br>
+        D) Routing problem<br><br>
+        <strong>Réponse : B) Broadcast storm / Network loop</strong><br>
+        Instant total failure + CPU 100% + MAC flapping = signature loop.
+      </div>
+    </div>
+  </div>
+
+  <!-- CAUSES -->
+  <div class="section">
+    <div class="section-label">Root causes</div>
+    <h2>Causes boucles réseau — Comment arrivent ?</h2>
+
+    <h3>// Cause #1 : STP disabled (JAMAIS faire production)</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--red)">BAD configuration :</strong><br>
+      Switch(config)# no spanning-tree vlan 10<br><br>
+
+      → STP disabled VLAN 10<br>
+      → Redundant paths = instant loop<br>
+      → <strong>NEVER disable STP production</strong>
+    </div>
+
+    <h3>// Cause #2 : Unmanaged switch inserted (rogue device)</h3>
+    <p><strong>Scénario</strong> : User plugs personal unmanaged switch (no STP support).</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Managed Switch A ←→ Managed Switch B (STP enabled)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↑<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
+      &nbsp;&nbsp;&nbsp;<strong style="color:var(--red)">Unmanaged Switch</strong> (no STP) ← User plugs here<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+      &nbsp;&nbsp;&nbsp;Managed Switch B<br><br>
+
+      → Unmanaged switch creates path bypasses STP<br>
+      → Loop immediate (broadcast storm)
+    </div>
+
+    <h3>// Cause #3 : User cables both ends PC → switch (accidental)</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      User PC : 2 Ethernet ports (NIC + docking station)<br>
+      User plugs BOTH → Switch ports Gi0/5 + Gi0/6<br><br>
+
+      → PC creates bridge between ports<br>
+      → Loop on VLAN<br><br>
+
+      <strong>Prevention : Port Security</strong> (1 MAC max per port)
+    </div>
+
+    <h3>// Cause #4 : PortFast on trunk port (misconfiguration)</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--red)">INCORRECT config :</strong><br>
+      interface GigabitEthernet0/1<br>
+      &nbsp;&nbsp;switchport mode trunk<br>
+      &nbsp;&nbsp;<strong style="color:var(--red)">spanning-tree portfast trunk</strong><br><br>
+
+      → PortFast bypasses STP states (Listening, Learning)<br>
+      → Port goes Forwarding immediately<br>
+      → If loop exists → No STP protection → Storm
+    </div>
+
+    <h3>// Cause #5 : Fiber TX/RX swapped (creates loop)</h3>
+    <p><strong>Scenario</strong> : Fiber optic link, TX/RX reversed both ends.</p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Normal : TX-A → RX-B, TX-B → RX-A (correct)<br><br>
+
+      <strong style="color:var(--red)">Swapped :</strong><br>
+      TX-A → <strong>TX-B</strong> (looped back)<br>
+      RX-A ← <strong>RX-B</strong> (looped back)<br><br>
+
+      → Data sent immediately received same switch<br>
+      → Creates internal loop → Storm
+    </div>
+  </div>
+
+  <!-- STP SOLUTION -->
+  <div class="section">
+    <div class="section-label">Spanning Tree Protocol</div>
+    <h2>STP — Solution boucles Layer 2</h2>
+
+    <h3>// Principe STP (IEEE 802.1D)</h3>
+    <p><strong>STP</strong> = Prevents loops blocking redundant paths logiquement. Maintains loop-free topology.</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>STP workflow :</strong><br><br>
+
+      1. <strong>Elect Root Bridge</strong><br>
+      &nbsp;&nbsp;&nbsp;→ Switch lowest Bridge ID (priority + MAC)<br>
+      &nbsp;&nbsp;&nbsp;→ Default priority 32768 (all switches)<br>
+      &nbsp;&nbsp;&nbsp;→ Lowest MAC wins (tie-breaker)<br><br>
+
+      2. <strong>Calculate best path each switch → Root</strong><br>
+      &nbsp;&nbsp;&nbsp;→ Path cost : 100 Mbps = 19, 1 Gbps = 4, 10 Gbps = 2<br>
+      &nbsp;&nbsp;&nbsp;→ Shortest cost = Root Port (forwarding)<br><br>
+
+      3. <strong>Elect Designated Port each segment</strong><br>
+      &nbsp;&nbsp;&nbsp;→ Port closest Root Bridge<br>
+      &nbsp;&nbsp;&nbsp;→ Forwarding state<br><br>
+
+      4. <strong>Block redundant ports</strong><br>
+      &nbsp;&nbsp;&nbsp;→ Non-Root, Non-Designated = <strong>Blocking</strong><br>
+      &nbsp;&nbsp;&nbsp;→ Prevents loops<br><br>
+
+      5. <strong>Monitor topology</strong><br>
+      &nbsp;&nbsp;&nbsp;→ Link fails ? → Blocked port activates (convergence ~30-50 sec)
+    </div>
+
+    <h3>// STP Port States</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>State</th><th>Forwards Data ?</th><th>Learns MACs ?</th><th>Duration</th></tr>
+        <tr>
+          <td><strong>Blocking</strong></td>
+          <td>❌ No</td>
+          <td>❌ No</td>
+          <td>Permanent (until topology change)</td>
+        </tr>
+        <tr>
+          <td><strong>Listening</strong></td>
+          <td>❌ No</td>
+          <td>❌ No</td>
+          <td>15 seconds (Forward Delay)</td>
+        </tr>
+        <tr>
+          <td><strong>Learning</strong></td>
+          <td>❌ No</td>
+          <td>✅ Yes</td>
+          <td>15 seconds (Forward Delay)</td>
+        </tr>
+        <tr>
+          <td><strong>Forwarding</strong></td>
+          <td>✅ Yes</td>
+          <td>✅ Yes</td>
+          <td>Permanent (normal operation)</td>
+        </tr>
+        <tr>
+          <td><strong>Disabled</strong></td>
+          <td>❌ No</td>
+          <td>❌ No</td>
+          <td>Manual shutdown</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>// Vérifier STP status</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Switch# show spanning-tree<br><br>
+
+      VLAN0010<br>
+      &nbsp;&nbsp;Root ID&nbsp;&nbsp;&nbsp;&nbsp;Priority&nbsp;&nbsp;&nbsp;&nbsp;32778<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Address&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;aabb.cc00.1000<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong style="color:var(--green)">This bridge is the root</strong><br><br>
+
+      Interface&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Role&nbsp;&nbsp;Sts&nbsp;&nbsp;Cost<br>
+      Gi0/1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong style="color:var(--green)">Desg</strong>&nbsp;&nbsp;<strong style="color:var(--green)">FWD</strong>&nbsp;&nbsp;4<br>
+      Gi0/2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong style="color:var(--green)">Desg</strong>&nbsp;&nbsp;<strong style="color:var(--green)">FWD</strong>&nbsp;&nbsp;4<br>
+      Gi0/3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong style="color:var(--amber)">Altn</strong>&nbsp;&nbsp;<strong style="color:var(--amber)">BLK</strong>&nbsp;&nbsp;4 (blocked = prevents loop)<br><br>
+
+      → Port Gi0/3 blocked (redundant path)
+    </div>
+  </div>
+
+  <!-- RSTP -->
+  <div class="section">
+    <div class="section-label">Rapid Spanning Tree</div>
+    <h2>RSTP — Convergence rapide</h2>
+
+    <p><strong>RSTP (IEEE 802.1w)</strong> = Rapid Spanning Tree Protocol. Améliore STP : convergence <5 seconds (vs STP 30-50 sec).</p>
+
+    <h3>// Améliorations RSTP vs STP</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Feature</th><th>STP (802.1D)</th><th>RSTP (802.1w)</th></tr>
+        <tr>
+          <td><strong>Convergence</strong></td>
+          <td>30-50 seconds</td>
+          <td><5 seconds</td>
+        </tr>
+        <tr>
+          <td><strong>Port States</strong></td>
+          <td>5 (Blocking, Listening, Learning, Forwarding, Disabled)</td>
+          <td>3 (Discarding, Learning, Forwarding)</td>
+        </tr>
+        <tr>
+          <td><strong>Port Roles</strong></td>
+          <td>Root, Designated, Blocking</td>
+          <td>Root, Designated, Alternate, Backup</td>
+        </tr>
+        <tr>
+          <td><strong>Proposal/Agreement</strong></td>
+          <td>❌ No</td>
+          <td>✅ Yes (fast convergence)</td>
+        </tr>
+        <tr>
+          <td><strong>Backward compatible</strong></td>
+          <td>-</td>
+          <td>✅ Yes (works with STP)</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>// RSTP Port Roles</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Root Port</strong> : Best path to Root Bridge (forwarding)</li>
+      <li><strong>Designated Port</strong> : Forwards frames segment (forwarding)</li>
+      <li><strong>Alternate Port</strong> : Backup path to Root (discarding, ready fast failover)</li>
+      <li><strong>Backup Port</strong> : Backup Designated Port (discarding, rare)</li>
+    </ul>
+
+    <h3>// Enable RSTP (Cisco)</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Switch(config)# spanning-tree mode rapid-pvst<br><br>
+
+      → Enable RSTP per-VLAN (Cisco proprietary Rapid PVST+)<br>
+      → Modern default most switches<br><br>
+
+      Verify :<br>
+      Switch# show spanning-tree summary<br>
+      Switch is in <strong style="color:var(--green)">rapid-pvst</strong> mode
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">⚡</span>
+      <div class="callout-body">
+        <strong>RSTP = modern standard</strong>
+        Most modern switches : RSTP enabled default.<br>
+        Legacy STP (802.1D) : Slow convergence (30-50 sec downtime link failure).<br>
+        RSTP : <5 sec convergence (acceptable production environments).<br>
+        Always use RSTP (or MSTP 802.1s) modern networks.
+      </div>
+    </div>
+  </div>
+
+  <!-- PORTFAST -->
+  <div class="section">
+    <div class="section-label">Access port optimization</div>
+    <h2>PortFast — Bypass STP delays access ports</h2>
+
+    <p><strong>PortFast</strong> = Feature bypass STP states (Listening, Learning) → port goes Forwarding immediately.</p>
+
+    <h3>// Problème sans PortFast</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      User boots PC → NIC link UP<br>
+      → STP port : Listening (15 sec) → Learning (15 sec) → Forwarding<br>
+      → <strong>30 seconds delay before network access</strong><br><br>
+
+      → DHCP request sent immediately (PC boots) → Discarded (port not forwarding)<br>
+      → DHCP timeout → PC gets APIPA 169.254.x.x<br>
+      → User : "No network access" (frustration)
+    </div>
+
+    <h3>// Solution PortFast</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      User boots PC → NIC link UP<br>
+      → PortFast enabled → <strong>Port Forwarding immediately (0 sec)</strong><br>
+      → DHCP request sent → Success ✅<br>
+      → User : Network access instant
+    </div>
+
+    <h3>// Configuration PortFast</h3>
+
+    <p><strong>Per-interface (access ports)</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      interface GigabitEthernet0/5<br>
+      &nbsp;&nbsp;switchport mode access<br>
+      &nbsp;&nbsp;switchport access vlan 10<br>
+      &nbsp;&nbsp;<strong style="color:var(--green)">spanning-tree portfast</strong><br><br>
+
+      → PortFast enabled port Gi0/5 (PC connected)
+    </div>
+
+    <p><strong>Global (all access ports)</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Switch(config)# spanning-tree portfast default<br><br>
+
+      → Enable PortFast ALL access ports automatically<br>
+      → Does NOT apply trunk ports (safe)
+    </div>
+
+    <h3>// PortFast Best Practices</h3>
+
+    <p><strong>✅ USE PortFast :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Access ports connected end devices (PCs, printers, phones, servers)</li>
+      <li>Ports où loops impossible (single device, no switches downstream)</li>
+    </ul>
+
+    <p><strong>❌ NEVER PortFast :</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Trunk ports (switch ↔ switch links)</li>
+      <li>Ports connected autre switch (creates loops)</li>
+      <li>Ports où user peut plug switch (rogue device risk)</li>
+    </ul>
+
+    <h3>// BPDU Guard (protection PortFast)</h3>
+    <p><strong>BPDU Guard</strong> = Security feature : disable port si reçoit BPDU (switch connected → loop risk).</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      interface GigabitEthernet0/5<br>
+      &nbsp;&nbsp;spanning-tree portfast<br>
+      &nbsp;&nbsp;<strong style="color:var(--purple)">spanning-tree bpduguard enable</strong><br><br>
+
+      → If BPDU received (switch plugged) → Port err-disabled<br>
+      → Prevents loops rogue switches<br><br>
+
+      Global enable ALL PortFast ports :<br>
+      Switch(config)# spanning-tree portfast bpduguard default
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>PortFast trunk = DANGEROUS</strong>
+        JAMAIS enable PortFast trunk ports.<br>
+        Command : <code>spanning-tree portfast trunk</code> = DISABLE STP protection → Loops.<br>
+        Examen : PortFast = access ports ONLY (end devices), never trunks.
+      </div>
+    </div>
+  </div>
+
+  <!-- PIÈGES -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : Broadcast storm = Layer 3 routing problem</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Broadcast storm = <strong>Layer 2 switching</strong> loop.<br><br>
+        Layer 2 : Switches, broadcast frames, MAC addresses, STP.<br>
+        Layer 3 : Routers, IP packets, routing protocols.<br><br>
+        Broadcast storm caused redundant switch paths no STP.<br>
+        Routing loops prevented TTL (Time To Live) IP packets.<br>
+        Examen : "Broadcast storm" = L2 STP problem, not L3 routing.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : STP convergence = instant</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. STP convergence = <strong>30-50 seconds</strong> (slow).<br><br>
+        STP (802.1D) : Listening 15s + Learning 15s = 30s minimum.<br>
+        RSTP (802.1w) : <5 seconds (rapid convergence).<br><br>
+        Link failure STP network → 30-50s downtime before blocked port activates.<br>
+        RSTP → <5s downtime (acceptable production).<br>
+        Examen : Know STP slow, RSTP fast convergence times.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : PortFast = disable STP</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. PortFast = <strong>bypass initial states</strong>, not disable STP.<br><br>
+        PortFast : Port goes Forwarding immediately (skip Listening/Learning).<br>
+        STP still active : If BPDU received → Port transitions normal STP states.<br><br>
+        PortFast + BPDU Guard = Best combo (fast boot + loop protection).<br>
+        Examen : PortFast optimizes access ports, doesn't disable STP completely.
+      </div>
+    </div>
+  </div>
+
+  <!-- RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Symptômes broadcast storm</strong> : CPU 100% switches, MAC flapping (same MAC multiple ports), LED rapid blinking, total connectivity loss instant, high STP topology changes</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Causes loops</strong> : STP disabled (NEVER production), unmanaged switch inserted (rogue), user cables both ports PC, PortFast trunk (bypass STP protection), fiber TX/RX swapped</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>STP (802.1D)</strong> : Elect Root Bridge, calculate best paths, block redundant ports. States: Blocking, Listening (15s), Learning (15s), Forwarding. Convergence 30-50s (slow)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>RSTP (802.1w)</strong> : Rapid STP, convergence <5s. Port roles: Root, Designated, Alternate, Backup. Modern standard (backward compatible STP). Enable: spanning-tree mode rapid-pvst</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>PortFast</strong> : Bypass STP states (Listening/Learning) → Forwarding immediate. USE: Access ports end devices. NEVER: Trunk ports (loops). BPDU Guard: Disable port if BPDU received (rogue switch protection)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Commands</strong> : show spanning-tree (topology), show spanning-tree summary (TC count), show mac address-table (flapping), show processes cpu (utilization). Enable RSTP: spanning-tree mode rapid-pvst</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 07 : VLAN switching</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">TR08 - Phase 5</span>
+    <a class="nav-btn next" href="#">Cours 09 : Problèmes adressage IP →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m5_tr08_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+initMastery();
+</script>
+  <div style="margin-top:40px;text-align:center;">
+  <a class="nav-btn" href="index.html">← Accueil — Plan de cours</a>
+</body>
+</html>

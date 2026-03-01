@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TR15 — Dépannage WAN & VPN · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 5.0 — Dépannage réseau</span> &nbsp;›&nbsp; Cours 15</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 5 · TR15</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡⚡ Difficile</span>
+  </div>
+
+  <h1><span>Dépannage</span> WAN & VPN</h1>
+  <span class="tagline">// Wide Area Network — Perte paquets, congestion, latence, VPN failures, MTU fragmentation</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je diagnostique perte de paquets</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je détecte congestion WAN</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je résous latence élevée</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je troubleshoot VPN qui ne monte pas</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends MTU/fragmentation IPsec</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- PACKET LOSS -->
+  <div class="section">
+    <div class="section-label">Packet drops</div>
+    <h2>Perte de paquets — Packet loss</h2>
+
+    <p><strong>Perte de paquets (Packet loss)</strong> = Packets dropped en transit → retransmissions → slow applications, timeouts.</p>
+
+    <h3>// Mesure packet loss</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      C:\> ping 8.8.8.8 -n 100<br><br>
+
+      Packets: Sent = 100, Received = <strong style="color:var(--amber)">95</strong>, Lost = <strong style="color:var(--red)">5</strong> (<strong style="color:var(--red)">5% loss</strong>)<br><br>
+
+      <strong>Acceptable loss :</strong><br>
+      0-1% : Excellent (normal)<br>
+      1-2.5% : Acceptable (noticeable video/VoIP)<br>
+      2.5-5% : Poor (applications slow, retransmissions)<br>
+      >5% : Bad (serious problem, investigate)
+    </div>
+
+    <h3>// Causes packet loss</h3>
+
+    <p><strong>1. Congestion link (bandwidth saturated)</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      WAN link : 100 Mbps<br>
+      Traffic load : <strong style="color:var(--red)">110 Mbps</strong> (peak hours)<br><br>
+
+      → Link saturated (exceeds capacity)<br>
+      → Router buffers full → Drops packets (tail drop)<br>
+      → 10% packet loss
+    </div>
+
+    <p><strong>2. Interface errors (CRC, collisions)</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Router# show interfaces GigabitEthernet0/0<br><br>
+
+      CRC errors : <strong style="color:var(--red)">1,234</strong> (incrementing)<br>
+      Input errors : <strong style="color:var(--red)">2,456</strong><br><br>
+
+      → Cable defect, EMI, duplex mismatch<br>
+      → Corrupted frames → Dropped
+    </div>
+
+    <p><strong>3. Routing loops / TTL expiration</strong></p>
+    <p>Packets loop routers → TTL expires → Dropped (voir Cours TR10).</p>
+
+    <p><strong>4. Firewall/ACL blocking</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Firewall rule : Block ICMP (ping)<br><br>
+
+      → Ping packets dropped → 100% loss<br>
+      → Other traffic (TCP/UDP) may work
+    </div>
+
+    <h3>// Symptômes packet loss</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Slow applications</strong> : TCP retransmissions add latency</li>
+      <li><strong>Video/audio choppy</strong> : VoIP, streaming buffer/stutter</li>
+      <li><strong>File transfer slow</strong> : Downloads/uploads take longer</li>
+      <li><strong>Intermittent connectivity</strong> : Works sometimes, fails randomly</li>
+    </ul>
+
+    <h3>// Diagnostic packet loss</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Step 1 : Ping test (measure loss)</strong><br>
+      C:\> ping 8.8.8.8 -n 100<br>
+      → Loss 5% ? = Problem<br><br>
+
+      <strong>Step 2 : Traceroute (locate where loss occurs)</strong><br>
+      C:\> tracert 8.8.8.8<br><br>
+
+      1&nbsp;&nbsp;&nbsp;&nbsp;1 ms&nbsp;&nbsp;&nbsp;&nbsp;192.168.1.1 (gateway) — 0% loss<br>
+      2&nbsp;&nbsp;&nbsp;&nbsp;10 ms&nbsp;&nbsp;&nbsp;10.0.0.1 (ISP router) — <strong style="color:var(--red)">15% loss</strong><br>
+      3&nbsp;&nbsp;&nbsp;&nbsp;15 ms&nbsp;&nbsp;&nbsp;203.0.113.1 (ISP core) — 15% loss<br><br>
+
+      → Loss starts hop 2 (ISP router) = ISP problem<br><br>
+
+      <strong>Step 3 : Check interface errors</strong><br>
+      Router# show interfaces<br>
+      → CRC errors incrementing ? = Physical problem
+    </div>
+
+    <h3>// Résolution packet loss</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Congestion</strong> : Upgrade bandwidth, QoS prioritize traffic, compress data</li>
+      <li><strong>Interface errors</strong> : Replace cable, fix duplex, check connectors</li>
+      <li><strong>ISP problem</strong> : Contact ISP (provide traceroute showing loss hop)</li>
+      <li><strong>Firewall</strong> : Adjust rules (allow required traffic)</li>
+    </ul>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Question fréquente examen</strong>
+        "VoIP calls choppy. Ping shows 5% packet loss. BEST tool identify WHERE loss occurs ?"<br>
+        A) nslookup<br>
+        B) traceroute/tracert<br>
+        C) netstat<br>
+        D) ipconfig<br><br>
+        <strong>Réponse : B) traceroute/tracert</strong><br>
+        Traceroute shows loss per hop (identifies problem router/link).
+      </div>
+    </div>
+  </div>
+
+  <!-- CONGESTION -->
+  <div class="section">
+    <div class="section-label">Bandwidth saturation</div>
+    <h2>Congestion WAN — Link congestion</h2>
+
+    <p><strong>Congestion</strong> = Traffic demand exceeds link capacity → buffers full → packet loss, high latency.</p>
+
+    <h3>// Principe congestion</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      WAN link capacity : 100 Mbps<br><br>
+
+      <strong>Traffic load :</strong><br>
+      09:00 : 30 Mbps (30% utilization) — Good ✅<br>
+      12:00 : 70 Mbps (70% utilization) — Moderate ⚠️<br>
+      15:00 : <strong style="color:var(--red)">105 Mbps</strong> (105% utilization) — <strong>Congested ❌</strong><br><br>
+
+      → Exceeds capacity → Queue buffers → Tail drop → Loss
+    </div>
+
+    <h3>// Causes congestion</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Insufficient bandwidth</strong> : Link too small user count/applications</li>
+      <li><strong>Bulk transfers</strong> : Backups, large file downloads saturate link</li>
+      <li><strong>Broadcast storms</strong> : Layer 2 loops (voir Cours TR08)</li>
+      <li><strong>DDoS attack</strong> : Flood traffic overwhelms link</li>
+      <li><strong>Misconfigured QoS</strong> : Low-priority traffic crowds out high-priority</li>
+    </ul>
+
+    <h3>// Symptômes congestion</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Slow during peak hours</strong> : Morning/lunchtime slow, night fast</li>
+      <li><strong>High latency</strong> : Ping times increase (10 ms → 200 ms)</li>
+      <li><strong>Packet loss</strong> : Buffers overflow → Drops</li>
+      <li><strong>Applications timeout</strong> : Web, email, VoIP fail</li>
+    </ul>
+
+    <h3>// Diagnostic congestion</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Check interface utilization :</strong><br>
+      Router# show interfaces GigabitEthernet0/0<br><br>
+
+      5 minute input rate : <strong style="color:var(--red)">95000000</strong> bits/sec (95 Mbps)<br>
+      5 minute output rate : <strong style="color:var(--red)">98000000</strong> bits/sec (98 Mbps)<br>
+      Link speed : 100 Mbps<br><br>
+
+      → Utilization 95-98% (near capacity) = Congestion ❌<br><br>
+
+      <strong>Monitor over time (SNMP, NetFlow) :</strong><br>
+      → Graph utilization 24 hours<br>
+      → Identify peak times (when >80% utilization)
+    </div>
+
+    <h3>// Résolution congestion</h3>
+
+    <p><strong>Option 1 : Upgrade bandwidth</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Current : 100 Mbps WAN link<br>
+      Upgrade : 1 Gbps WAN link<br><br>
+
+      → 10x capacity increase<br>
+      → Solves congestion (if budget permits)
+    </div>
+
+    <p><strong>Option 2 : QoS (Quality of Service)</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Priority classes :<br>
+      1. VoIP (highest) — Guaranteed 20% bandwidth<br>
+      2. Business apps (high) — 40%<br>
+      3. Web browsing (medium) — 30%<br>
+      4. Backups (low) — 10% (can be dropped if congestion)<br><br>
+
+      → Critical traffic prioritized<br>
+      → Less important traffic throttled/dropped first
+    </div>
+
+    <p><strong>Option 3 : Traffic shaping / Policing</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Shaping</strong> : Buffer excess traffic (smooth bursts)</li>
+      <li><strong>Policing</strong> : Drop excess traffic (enforce limits)</li>
+      <li>Limit non-business traffic (YouTube, social media)</li>
+    </ul>
+
+    <p><strong>Option 4 : Schedule bulk transfers</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Backups : Run overnight (2:00 AM - 6:00 AM)<br>
+      → Avoid peak business hours<br>
+      → Utilize unused bandwidth off-hours
+    </div>
+  </div>
+
+  <!-- HIGH LATENCY -->
+  <div class="section">
+    <div class="section-label">Round-trip time</div>
+    <h2>Latence élevée — High latency</h2>
+
+    <p><strong>Latence (Latency)</strong> = Délai transmission packet source → destination (round-trip time RTT). High latency → slow applications.</p>
+
+    <h3>// Latency targets</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Application</th><th>Acceptable Latency</th><th>Impact if exceeded</th></tr>
+        <tr>
+          <td><strong>VoIP</strong></td>
+          <td><150 ms</td>
+          <td>Voice delay noticeable, echo</td>
+        </tr>
+        <tr>
+          <td><strong>Video conferencing</strong></td>
+          <td><150 ms</td>
+          <td>Lag, out-of-sync audio/video</td>
+        </tr>
+        <tr>
+          <td><strong>Gaming</strong></td>
+          <td><50 ms</td>
+          <td>Input lag, unplayable FPS</td>
+        </tr>
+        <tr>
+          <td><strong>Web browsing</strong></td>
+          <td><300 ms</td>
+          <td>Pages load slowly</td>
+        </tr>
+        <tr>
+          <td><strong>File transfer</strong></td>
+          <td><1000 ms</td>
+          <td>Slow but functional</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>// Causes high latency</h3>
+
+    <p><strong>1. Physical distance (geographic)</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Speed of light : ~200,000 km/sec (fiber optic)<br><br>
+
+      Distance NYC → London : 5,500 km<br>
+      Minimum latency : 5,500 / 200,000 = 0.0275 sec = <strong>27.5 ms</strong><br>
+      Round-trip : 55 ms (theoretical minimum)<br><br>
+
+      Actual latency : 80-120 ms (routing overhead, processing)<br><br>
+
+      → Distance unavoidable (physics limit)
+    </div>
+
+    <p><strong>2. Congestion (queuing delay)</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Normal : Ping 10 ms<br>
+      During congestion : Ping <strong style="color:var(--red)">200 ms</strong><br><br>
+
+      → Packets queued buffers (waiting transmission)<br>
+      → Bufferbloat (excessive buffering adds delay)
+    </div>
+
+    <p><strong>3. Satellite links</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Geostationary satellite : 35,786 km altitude<br>
+      Round-trip distance : 4 × 35,786 = 143,144 km<br>
+      Latency : 143,144 / 200,000 = 0.716 sec = <strong>716 ms</strong><br><br>
+
+      → Satellite unavoidably high latency (>500 ms typical)
+    </div>
+
+    <p><strong>4. Too many hops (routing)</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Each router hop : +1-10 ms processing delay<br>
+      Inefficient routing : 20 hops = 200 ms added<br>
+      Optimal routing : 5 hops = 50 ms added
+    </div>
+
+    <h3>// Diagnostic high latency</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      C:\> ping 8.8.8.8<br><br>
+
+      Reply from 8.8.8.8: time=<strong style="color:var(--red)">250ms</strong> TTL=54 (high!)<br>
+      Reply from 8.8.8.8: time=<strong style="color:var(--red)">245ms</strong> TTL=54<br><br>
+
+      <strong>Traceroute identify delay hops :</strong><br>
+      C:\> tracert 8.8.8.8<br><br>
+
+      1&nbsp;&nbsp;&nbsp;&nbsp;1 ms&nbsp;&nbsp;&nbsp;&nbsp;192.168.1.1<br>
+      2&nbsp;&nbsp;&nbsp;&nbsp;10 ms&nbsp;&nbsp;&nbsp;10.0.0.1<br>
+      3&nbsp;&nbsp;&nbsp;&nbsp;<strong style="color:var(--red)">180 ms</strong>&nbsp;&nbsp;203.0.113.1 (delay spike here)<br>
+      4&nbsp;&nbsp;&nbsp;&nbsp;185 ms&nbsp;&nbsp;8.8.8.8<br><br>
+
+      → Hop 3 adds 170 ms (problem hop)
+    </div>
+
+    <h3>// Résolution high latency</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Reduce congestion</strong> : Upgrade bandwidth, QoS</li>
+      <li><strong>Optimize routing</strong> : Shorter path (BGP tuning)</li>
+      <li><strong>Use CDN</strong> : Content delivery network (geographically closer servers)</li>
+      <li><strong>Satellite</strong> : Replace with fiber/cable (if possible)</li>
+      <li><strong>Compression</strong> : Reduce data volume (less transmission time)</li>
+    </ul>
+  </div>
+
+  <!-- VPN NOT CONNECTING -->
+  <div class="section">
+    <div class="section-label">Virtual Private Network</div>
+    <h2>VPN qui ne monte pas — VPN connection fails</h2>
+
+    <p><strong>VPN fails to connect</strong> = Encrypted tunnel cannot establish → remote access denied.</p>
+
+    <h3>// Causes VPN connection failure</h3>
+
+    <p><strong>1. Firewall blocking VPN protocols</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>VPN protocols/ports :</strong><br>
+      IPsec : UDP 500 (IKE), UDP 4500 (NAT-T), Protocol 50 (ESP)<br>
+      L2TP/IPsec : UDP 1701 (L2TP) + IPsec ports<br>
+      OpenVPN : UDP/TCP 1194 (configurable)<br>
+      PPTP : TCP 1723, GRE Protocol 47<br><br>
+
+      <strong>Problem :</strong><br>
+      Firewall blocks UDP 500 → IPsec IKE handshake fails<br>
+      → VPN cannot establish tunnel
+    </div>
+
+    <p><strong>2. NAT traversal (NAT-T) problem</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      IPsec ESP (Protocol 50) : Doesn't work through NAT (no ports)<br><br>
+
+      Solution : NAT-T (NAT Traversal)<br>
+      → Encapsulates ESP in UDP 4500<br>
+      → Works through NAT ✅<br><br>
+
+      Problem : NAT-T disabled/blocked<br>
+      → VPN fails behind NAT router
+    </div>
+
+    <p><strong>3. Authentication failure</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Wrong credentials</strong> : Username/password incorrect</li>
+      <li><strong>Expired certificate</strong> : Client/server cert expired</li>
+      <li><strong>Pre-shared key mismatch</strong> : IPsec PSK different both sides</li>
+      <li><strong>RADIUS server down</strong> : Authentication server unavailable</li>
+    </ul>
+
+    <p><strong>4. Phase 1/Phase 2 mismatch (IPsec)</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>IPsec Phase 1 (ISAKMP) :</strong><br>
+      Client : Encryption AES-256, Hash SHA-256, DH Group 14<br>
+      Server : Encryption <strong style="color:var(--red)">3DES</strong>, Hash <strong style="color:var(--red)">SHA-1</strong>, DH Group 14<br><br>
+
+      → Encryption/Hash mismatch<br>
+      → Phase 1 fails → VPN doesn't establish<br><br>
+
+      <strong>Must match :</strong><br>
+      Encryption algorithm, Hash, DH group, Authentication method
+    </div>
+
+    <h3>// Diagnostic VPN failure</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Step 1 : Check basic connectivity</strong><br>
+      C:\> ping vpn-server.company.com<br>
+      → Reply ? = Server reachable ✅<br>
+      → Timeout ? = Network/DNS problem<br><br>
+
+      <strong>Step 2 : Verify ports open</strong><br>
+      C:\> telnet vpn-server.company.com 500<br>
+      → Connection ? = Port 500 open<br>
+      → Timeout ? = Firewall blocking<br><br>
+
+      <strong>Step 3 : Check VPN client logs</strong><br>
+      Windows Event Viewer → Applications and Services Logs → Microsoft → Windows → VPN Client<br>
+      → "Authentication failed" = Credentials/cert<br>
+      → "Phase 1 negotiation failed" = Crypto mismatch<br>
+      → "No response from server" = Firewall/network
+    </div>
+
+    <h3>// Résolution VPN failure</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Firewall</strong> : Allow UDP 500, 4500, Protocol 50 (IPsec)</li>
+      <li><strong>NAT-T</strong> : Enable NAT Traversal both sides</li>
+      <li><strong>Authentication</strong> : Verify credentials, renew certificates</li>
+      <li><strong>Phase mismatch</strong> : Match encryption, hash, DH group both ends</li>
+      <li><strong>Update VPN client</strong> : Latest version (bug fixes, compatibility)</li>
+    </ul>
+  </div>
+
+  <!-- MTU FRAGMENTATION -->
+  <div class="section">
+    <div class="section-label">Maximum Transmission Unit</div>
+    <h2>MTU / Fragmentation IPsec — MTU problems VPN</h2>
+
+    <p><strong>MTU (Maximum Transmission Unit)</strong> = Largest packet size link supports. IPsec adds overhead → exceeds MTU → fragmentation → slow/broken VPN.</p>
+
+    <h3>// MTU standard values</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Link Type</th><th>MTU (bytes)</th></tr>
+        <tr><td><strong>Ethernet</strong></td><td>1500</td></tr>
+        <tr><td><strong>PPPoE (DSL)</strong></td><td>1492</td></tr>
+        <tr><td><strong>VPN tunnel (IPsec)</strong></td><td>1400-1440 (reduced overhead)</td></tr>
+        <tr><td><strong>GRE tunnel</strong></td><td>1476</td></tr>
+      </table>
+    </div>
+
+    <h3>// IPsec overhead</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Original packet :</strong><br>
+      Data : 1400 bytes<br>
+      IP header : 20 bytes<br>
+      TCP header : 20 bytes<br>
+      Total : 1440 bytes<br><br>
+
+      <strong>IPsec ESP adds :</strong><br>
+      ESP header : 8 bytes<br>
+      ESP trailer : 2+ bytes (padding)<br>
+      ESP auth : 12-16 bytes (HMAC)<br>
+      New IP header : 20 bytes (tunnel mode)<br>
+      Total overhead : ~60 bytes<br><br>
+
+      <strong>Result :</strong><br>
+      1440 + 60 = <strong style="color:var(--red)">1500 bytes</strong><br>
+      → Exactly MTU (edge case)<br>
+      → If original 1460 bytes → 1520 total → <strong>Exceeds MTU 1500</strong> → Fragmentation
+    </div>
+
+    <h3>// Problème fragmentation</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Packet 1520 bytes > MTU 1500<br><br>
+
+      Router fragments :<br>
+      Fragment 1 : 1500 bytes<br>
+      Fragment 2 : 20 bytes<br><br>
+
+      <strong>Problems :</strong><br>
+      → IPsec encrypts entire packet (fragments can't be reassembled until decrypted)<br>
+      → Fragment loss = entire packet lost (both fragments needed)<br>
+      → Firewalls drop fragments (security policy)<br>
+      → <strong>VPN slow or broken</strong>
+    </div>
+
+    <h3>// Symptômes MTU problem</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>VPN connects BUT slow</strong> : Tunnel establishes, traffic slow/intermittent</li>
+      <li><strong>Small packets work, large fail</strong> : Ping small (64 bytes) works, ping large (1400 bytes) fails</li>
+      <li><strong>Web browsing broken</strong> : Can ping, can't load websites (large HTTP responses)</li>
+      <li><strong>Email attachments fail</strong> : Small emails OK, large attachments timeout</li>
+    </ul>
+
+    <h3>// Diagnostic MTU problem</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Test MTU (ping with Don't Fragment) :</strong><br><br>
+
+      Windows :<br>
+      C:\> ping vpn-server.com -f -l 1472<br>
+      → Reply = MTU OK (1472 + 28 headers = 1500)<br><br>
+
+      C:\> ping vpn-server.com -f -l 1500<br>
+      → "Packet needs to be fragmented but DF set" = <strong>MTU too large</strong><br><br>
+
+      Linux :<br>
+      $ ping -M do -s 1472 vpn-server.com<br><br>
+
+      → Test progressively smaller sizes find maximum
+    </div>
+
+    <h3>// Résolution MTU problem</h3>
+
+    <p><strong>Solution 1 : Reduce MTU client/server</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Windows :</strong><br>
+      > netsh interface ipv4 set subinterface "VPN Connection" mtu=1400 store=persistent<br><br>
+
+      <strong>Linux :</strong><br>
+      $ sudo ip link set dev tun0 mtu 1400<br><br>
+
+      <strong>VPN server config :</strong><br>
+      → Set tunnel MTU 1400 (accommodates IPsec overhead)
+    </div>
+
+    <p><strong>Solution 2 : MSS clamping (TCP)</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>MSS (Maximum Segment Size)</strong> = TCP payload size<br>
+      Normal MSS : 1460 (MTU 1500 - 40 headers)<br><br>
+
+      Router/firewall :<br>
+      → Clamp MSS to 1360 (accounts IPsec overhead)<br>
+      → TCP sessions auto-adjust smaller packets<br>
+      → Prevents fragmentation ✅
+    </div>
+
+    <p><strong>Solution 3 : Path MTU Discovery (PMTUD)</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Client sends packets DF (Don't Fragment) flag<br>
+      Router : "Too big" ICMP message (MTU exceeded)<br>
+      Client reduces packet size<br>
+      → Auto-discovers optimal MTU<br><br>
+
+      Problem : Firewalls block ICMP → PMTUD fails → Black hole<br>
+      → Must manually set MTU if PMTUD broken
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>MTU black hole = mysterious VPN failure</strong>
+        VPN connects (small control packets), traffic fails (large data packets).<br>
+        Symptom : Ping works, web/email doesn't.<br>
+        Always test MTU VPN troubleshooting (ping -f -l test).
+      </div>
+    </div>
+  </div>
+
+  <!-- PIÈGES -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : Packet loss always means bad cable</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Packet loss = <strong>multiple possible causes</strong>.<br><br>
+        Cable : Possible (interface errors, CRC).<br>
+        Also : Congestion (buffers full), firewall (ACL blocking), routing loops (TTL).<br><br>
+        Diagnostic : Check interface errors. If none → Not cable (congestion/firewall).<br>
+        Examen : Loss + no interface errors = congestion/routing (not physical).
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : High latency = slow bandwidth</div>
+      <div class="trap-content">
+        <strong>CONFUSION</strong>. Latency ≠ Bandwidth.<br><br>
+        Latency : Delay (ms) — how long packet takes reach destination.<br>
+        Bandwidth : Capacity (Mbps) — how much data per second.<br><br>
+        Can have : High bandwidth (1 Gbps) + high latency (satellite 500 ms).<br>
+        OR : Low bandwidth (10 Mbps) + low latency (fiber 5 ms).<br>
+        Examen : "Slow downloads" = bandwidth. "Delay/lag" = latency.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : VPN connects = MTU not a problem</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. VPN connect ≠ MTU OK.<br><br>
+        VPN handshake : Small packets (IKE, authentication) — Works fine.<br>
+        Data transfer : Large packets → MTU exceeded → Fragmentation → Broken.<br><br>
+        Symptom : VPN connected, can't browse web (large HTTP responses fragmented/dropped).<br>
+        Examen : "VPN connects but slow/broken" = suspect MTU fragmentation.
+      </div>
+    </div>
+  </div>
+
+  <!-- RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Perte paquets</strong> : >5% serious. Causes: Congestion (buffers full), interface errors (CRC), firewall, routing loops. Diagnostic: Ping loss %, traceroute locate hop. Fix: Upgrade bandwidth, fix cable, QoS</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Congestion</strong> : Traffic exceeds capacity (>80% utilization). Causes: Insufficient bandwidth, bulk transfers, DDoS. Symptoms: Slow peak hours, loss, high latency. Fix: Upgrade link, QoS prioritize, schedule backups off-hours</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Latence élevée</strong> : Delay >150 ms VoIP bad. Causes: Distance (physics), congestion (queuing), satellite (500+ ms), many hops. Diagnostic: Ping RTT, traceroute identify delay hop. Fix: Reduce congestion, optimize routing, CDN</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>VPN fails</strong> : Causes: Firewall blocks UDP 500/4500, NAT-T disabled, authentication (creds/cert), Phase 1/2 mismatch (crypto). Diagnostic: Ping server, telnet ports, check logs. Fix: Allow ports, enable NAT-T, match crypto</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>MTU fragmentation</strong> : IPsec overhead (~60 bytes) exceeds MTU 1500. Symptoms: VPN connects, large packets fail. Test: ping -f -l 1472. Fix: Reduce MTU 1400, MSS clamping 1360, PMTUD (if ICMP allowed)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Tools</strong> : ping (loss/latency), traceroute (hop-by-hop), pathping (combines both), show interfaces (utilization/errors), SNMP/NetFlow (monitoring). VPN logs (Event Viewer Windows). Latency vs Bandwidth: Separate concepts</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 14 : Dépannage Wi-Fi</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">TR15 - Phase 5</span>
+    <a class="nav-btn next" href="#">Cours 16 : Commandes diagnostic →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m5_tr15_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+initMastery();
+</script>
+  <div style="margin-top:40px;text-align:center;">
+  <a class="nav-btn" href="index.html">← Accueil — Plan de cours</a>
+</body>
+</html>

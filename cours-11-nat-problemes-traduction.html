@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TR11 — NAT - Problèmes de traduction · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 5.0 — Dépannage réseau</span> &nbsp;›&nbsp; Cours 11</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 5 · TR11</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡⚡ Difficile</span>
+  </div>
+
+  <h1><span>NAT</span> — Problèmes de traduction</h1>
+  <span class="tagline">// Network Address Translation — Pool épuisé, inside/outside inversé, overload PAT, connexions échouent</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je diagnostique pool NAT épuisé</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je détecte inside/outside inversé</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends overload PAT mal configuré</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je résous connexions NAT échouées</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- NAT RAPPEL -->
+  <div class="section">
+    <div class="section-label">NAT review</div>
+    <h2>NAT — Rappel fonctionnement</h2>
+
+    <p><strong>NAT (Network Address Translation)</strong> = Traduit IP privées (RFC 1918) → IP publiques (Internet routable).</p>
+
+    <h3>// Principe NAT (rappel Cours I20)</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Workflow NAT :</strong><br><br>
+
+      PC private : 192.168.1.50 (inside local)<br>
+      Router NAT translates → 203.0.113.10 (inside global)<br>
+      Internet sees : 203.0.113.10 (public IP)<br><br>
+
+      Return traffic :<br>
+      Internet → 203.0.113.10<br>
+      Router NAT translates → 192.168.1.50<br>
+      PC receives packet
+    </div>
+
+    <h3>// NAT types</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Type</th><th>Description</th><th>Mapping</th></tr>
+        <tr>
+          <td><strong>Static NAT</strong></td>
+          <td>1:1 permanent mapping</td>
+          <td>192.168.1.10 ↔ 203.0.113.10 (always)</td>
+        </tr>
+        <tr>
+          <td><strong>Dynamic NAT</strong></td>
+          <td>1:1 from pool (temporary)</td>
+          <td>192.168.1.50 → 203.0.113.15 (while active)</td>
+        </tr>
+        <tr>
+          <td><strong>PAT / Overload</strong></td>
+          <td>Many:1 with port translation</td>
+          <td>192.168.1.x:port → 203.0.113.1:port</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>// NAT terminology</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Inside local</strong> : Private IP (LAN side) — 192.168.1.50</li>
+      <li><strong>Inside global</strong> : Public IP (translated) — 203.0.113.10</li>
+      <li><strong>Outside local</strong> : Internet destination (as seen inside) — 8.8.8.8</li>
+      <li><strong>Outside global</strong> : Internet destination (actual) — 8.8.8.8</li>
+    </ul>
+  </div>
+
+  <!-- POOL EXHAUSTED -->
+  <div class="section">
+    <div class="section-label">Address depletion</div>
+    <h2>Pool NAT épuisé — No addresses available</h2>
+
+    <p><strong>Pool NAT épuisé</strong> = Dynamic NAT pool : all public IPs allocated → new connections fail.</p>
+
+    <h3>// Scénario pool épuisé</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>NAT configuration :</strong><br><br>
+
+      Pool : 203.0.113.10 - 203.0.113.15 (<strong>6 public IPs</strong>)<br>
+      Inside devices : 100 PCs (192.168.1.0/24)<br><br>
+
+      <strong>Problem :</strong><br>
+      First 6 PCs connect Internet → Pool fully allocated<br>
+      7th PC tries connect → <strong>No IP available</strong> → Connection FAILS
+    </div>
+
+    <h3>// Symptômes pool épuisé</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Selective connectivity</strong> : Some users work, others can't reach Internet</li>
+      <li><strong>Intermittent failures</strong> : Works if other users disconnect (IP freed)</li>
+      <li><strong>Syslog messages</strong> : "NAT pool exhausted" warnings</li>
+      <li><strong>First users OK</strong> : Early connections succeed, later connections fail</li>
+    </ul>
+
+    <h3>// Diagnostic pool épuisé</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Router# show ip nat statistics<br><br>
+
+      Total active translations: <strong style="color:var(--red)">6</strong> (6 dynamic, 0 static, 0 extended)<br>
+      Peak translations: 6<br>
+      Outside interfaces: GigabitEthernet0/0<br>
+      Inside interfaces: GigabitEthernet0/1<br>
+      Hits: 4523&nbsp;&nbsp;Misses: <strong style="color:var(--red)">127</strong><br><br>
+
+      Dynamic mappings:<br>
+      -- Inside Source<br>
+      [Id: 1] access-list 1 pool PUBLIC refcount 6<br>
+       pool PUBLIC: netmask 255.255.255.0<br>
+              start 203.0.113.10 end 203.0.113.15<br>
+              type generic, total addresses <strong style="color:var(--amber)">6</strong>, allocated <strong style="color:var(--red)">6</strong> (100%)<br><br>
+
+      → Pool 100% allocated (6/6 used) → No capacity
+    </div>
+
+    <h3>// Résolution pool épuisé</h3>
+
+    <p><strong>Option 1 : Expand pool (add IPs)</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Router(config)# ip nat pool PUBLIC 203.0.113.10 <strong style="color:var(--green)">203.0.113.30</strong> netmask 255.255.255.0<br><br>
+
+      → Increase pool 6 → 21 IPs (203.0.113.10-30)
+    </div>
+
+    <p><strong>Option 2 : Use PAT/Overload (RECOMMENDED)</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Router(config)# ip nat inside source list 1 interface GigabitEthernet0/0 <strong style="color:var(--green)">overload</strong><br><br>
+
+      → PAT (Port Address Translation) : Many:1 mapping<br>
+      → 65,535 ports available → Supports thousands simultaneous connections<br>
+      → Solves exhaustion problem ✅
+    </div>
+
+    <p><strong>Option 3 : Reduce timeout (aggressive)</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Router(config)# ip nat translation timeout 300<br><br>
+
+      → Timeout 300 sec (5 min) instead default 24h<br>
+      → IPs freed faster (BUT can break long connections)
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>PAT/Overload = solution moderne</strong>
+        Dynamic NAT pool = legacy (requires many public IPs, expensive).<br>
+        PAT (Overload) = standard modern (1 public IP → thousands connections).<br>
+        Home routers : PAT default (single ISP IP serves whole household).
+      </div>
+    </div>
+  </div>
+
+  <!-- INSIDE OUTSIDE -->
+  <div class="section">
+    <div class="section-label">Interface direction</div>
+    <h2>Inside/Outside inversé — Wrong NAT direction</h2>
+
+    <p><strong>Inside/Outside inversé</strong> = Interfaces configured wrong direction → NAT translation fails OR incorrect direction.</p>
+
+    <h3>// Principe Inside vs Outside</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Correct configuration :</strong><br><br>
+
+      Inside interface (LAN side) :<br>
+      &nbsp;&nbsp;interface GigabitEthernet0/1<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<strong style="color:var(--green)">ip nat inside</strong><br>
+      &nbsp;&nbsp;→ Connected to private network (192.168.1.0/24)<br><br>
+
+      Outside interface (WAN side) :<br>
+      &nbsp;&nbsp;interface GigabitEthernet0/0<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<strong style="color:var(--green)">ip nat outside</strong><br>
+      &nbsp;&nbsp;→ Connected to Internet (public IP)
+    </div>
+
+    <h3>// Scénario inversé</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--red)">INCORRECT configuration :</strong><br><br>
+
+      interface GigabitEthernet0/1 (LAN side)<br>
+      &nbsp;&nbsp;<strong style="color:var(--red)">ip nat outside</strong> (WRONG - should be inside)<br><br>
+
+      interface GigabitEthernet0/0 (WAN side)<br>
+      &nbsp;&nbsp;<strong style="color:var(--red)">ip nat inside</strong> (WRONG - should be outside)<br><br>
+
+      → NAT translates wrong direction<br>
+      → Internet IPs translated → private (backward)<br>
+      → Private IPs sent untranslated → Internet (fail)
+    </div>
+
+    <h3>// Symptômes inside/outside inversé</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>No Internet connectivity</strong> : Private IPs sent Internet (not routable)</li>
+      <li><strong>NAT table empty/wrong</strong> : No translations created OR backward entries</li>
+      <li><strong>ISP rejects packets</strong> : RFC 1918 private IPs on Internet (dropped)</li>
+      <li><strong>Configuration looks correct</strong> : NAT rules OK, BUT interfaces wrong</li>
+    </ul>
+
+    <h3>// Diagnostic inside/outside</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Router# show ip nat statistics<br><br>
+
+      Inside interfaces: <strong style="color:var(--red)">GigabitEthernet0/0</strong> (WAN - WRONG!)<br>
+      Outside interfaces: <strong style="color:var(--red)">GigabitEthernet0/1</strong> (LAN - WRONG!)<br><br>
+
+      → Interfaces reversed<br><br>
+
+      Router# show ip interface brief<br>
+      Gi0/0&nbsp;&nbsp;&nbsp;&nbsp;203.0.113.1 (public IP - should be OUTSIDE)<br>
+      Gi0/1&nbsp;&nbsp;&nbsp;&nbsp;192.168.1.1 (private IP - should be INSIDE)<br><br>
+
+      → Mismatch detected
+    </div>
+
+    <h3>// Résolution inside/outside inversé</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Step 1 : Remove incorrect config</strong><br>
+      Router(config)# interface GigabitEthernet0/0<br>
+      Router(config-if)# no ip nat inside<br><br>
+
+      Router(config)# interface GigabitEthernet0/1<br>
+      Router(config-if)# no ip nat outside<br><br>
+
+      <strong>Step 2 : Apply correct direction</strong><br>
+      Router(config)# interface GigabitEthernet0/0<br>
+      Router(config-if)# <strong style="color:var(--green)">ip nat outside</strong> (WAN side)<br><br>
+
+      Router(config)# interface GigabitEthernet0/1<br>
+      Router(config-if)# <strong style="color:var(--green)">ip nat inside</strong> (LAN side)<br><br>
+
+      <strong>Step 3 : Clear NAT translations</strong><br>
+      Router# clear ip nat translation *<br><br>
+
+      → Reset NAT table, rebuild correct translations
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Question piège examen</strong>
+        "NAT configured, but private IPs appear on Internet. MOST likely cause ?"<br>
+        A) NAT pool exhausted<br>
+        B) Inside/Outside interfaces reversed<br>
+        C) ACL blocking<br>
+        D) Routing problem<br><br>
+        <strong>Réponse : B) Inside/Outside interfaces reversed</strong><br>
+        Private IPs on Internet = NAT not translating (wrong direction).
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERLOAD PAT -->
+  <div class="section">
+    <div class="section-label">Port Address Translation</div>
+    <h2>Overload PAT mal configuré — Port translation issues</h2>
+
+    <p><strong>PAT (Port Address Translation)</strong> = Overload : Many inside IPs → 1 public IP using port translation.</p>
+
+    <h3>// Principe PAT/Overload</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>PAT workflow :</strong><br><br>
+
+      PC-A : 192.168.1.50:5000 → Internet<br>
+      PC-B : 192.168.1.51:5000 → Internet<br><br>
+
+      Router NAT translates :<br>
+      192.168.1.50:5000 → 203.0.113.1:<strong>10001</strong><br>
+      192.168.1.51:5000 → 203.0.113.1:<strong>10002</strong><br><br>
+
+      → Same public IP (203.0.113.1)<br>
+      → Different ports (10001 vs 10002)<br>
+      → Unique mapping each connection ✅
+    </div>
+
+    <h3>// Problème #1 : Overload keyword manquant</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong style="color:var(--red)">INCORRECT :</strong><br>
+      Router(config)# ip nat inside source list 1 interface Gi0/0<br><br>
+
+      → <strong>No "overload" keyword</strong><br>
+      → Dynamic NAT (1:1) instead PAT (many:1)<br>
+      → Only 1 connection works (single IP no port translation)<br><br>
+
+      <strong style="color:var(--green)">CORRECT :</strong><br>
+      Router(config)# ip nat inside source list 1 interface Gi0/0 <strong style="color:var(--green)">overload</strong><br><br>
+
+      → PAT enabled ✅<br>
+      → Thousands connections supported
+    </div>
+
+    <h3>// Problème #2 : Port exhaustion (rare)</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Scenario :</strong><br>
+      Thousands simultaneous connections → Same destination IP:port<br>
+      Example : 10,000 users → same web server 8.8.8.8:80<br><br>
+
+      Ports available : 1024-65535 = ~64,000<br>
+      If ALL users → same destination → Port exhaustion possible<br><br>
+
+      → Very rare production (distributed destinations)<br>
+      → Mitigation : Multiple public IPs, load balancing
+    </div>
+
+    <h3>// Problème #3 : ACL pas match traffic</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Router(config)# access-list 1 permit 192.168.1.0 0.0.0.255<br>
+      Router(config)# ip nat inside source list 1 interface Gi0/0 overload<br><br>
+
+      <strong>Problem :</strong><br>
+      User subnet : <strong style="color:var(--red)">192.168.2.0/24</strong> (different!)<br>
+      ACL 1 : 192.168.1.0/24<br>
+      → ACL doesn't match user traffic<br>
+      → <strong>No NAT translation</strong> → Connection fails<br><br>
+
+      <strong>Fix :</strong><br>
+      Router(config)# access-list 1 permit <strong style="color:var(--green)">192.168.2.0</strong> 0.0.0.255<br><br>
+
+      → ACL matches actual subnet ✅
+    </div>
+
+    <h3>// Diagnostic PAT/Overload</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Router# show ip nat translations<br><br>
+
+      Pro&nbsp;&nbsp;Inside global&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Inside local&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Outside local&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Outside global<br>
+      tcp&nbsp;&nbsp;203.0.113.1:10001&nbsp;&nbsp;192.168.1.50:5000&nbsp;&nbsp;8.8.8.8:80&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8.8.8.8:80<br>
+      tcp&nbsp;&nbsp;203.0.113.1:10002&nbsp;&nbsp;192.168.1.51:5000&nbsp;&nbsp;8.8.8.8:80&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8.8.8.8:80<br><br>
+
+      → Multiple connections same public IP (203.0.113.1)<br>
+      → Different ports (10001, 10002) = PAT working ✅<br><br>
+
+      If table empty :<br>
+      → Check ACL matches traffic<br>
+      → Check "overload" keyword present<br>
+      → Check inside/outside interfaces correct
+    </div>
+  </div>
+
+  <!-- CONNECTION FAILURES -->
+  <div class="section">
+    <div class="section-label">Troubleshooting</div>
+    <h2>Connexions qui échouent — NAT troubleshooting workflow</h2>
+
+    <h3>// Symptômes généraux NAT failure</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>No Internet access</strong> : Ping external IPs fail (8.8.8.8 timeout)</li>
+      <li><strong>Local network works</strong> : Can ping gateway, local devices OK</li>
+      <li><strong>DNS may work</strong> : Can resolve names (if DNS server local)</li>
+      <li><strong>Traceroute stops gateway</strong> : Doesn't leave local network</li>
+    </ul>
+
+    <h3>// Diagnostic workflow complet</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Step 1 : Verify NAT configuration</strong><br>
+      Router# show running-config | section nat<br>
+      → Check inside/outside interfaces<br>
+      → Check ACL matches traffic<br>
+      → Check pool OR overload present<br><br>
+
+      <strong>Step 2 : Check NAT statistics</strong><br>
+      Router# show ip nat statistics<br>
+      → Inside/outside interfaces correct ?<br>
+      → Pool exhausted (100% allocated) ?<br>
+      → Hits vs Misses ratio (high misses = problem)<br><br>
+
+      <strong>Step 3 : Check active translations</strong><br>
+      Router# show ip nat translations<br>
+      → Translations created when user connects ?<br>
+      → If empty = NAT not triggering (ACL, interfaces)<br><br>
+
+      <strong>Step 4 : Test connectivity</strong><br>
+      Router# ping 8.8.8.8 source GigabitEthernet0/1<br>
+      → Ping from inside interface<br>
+      → Creates NAT entry ? Check translations again<br><br>
+
+      <strong>Step 5 : Debug (last resort)</strong><br>
+      Router# debug ip nat<br>
+      → Shows real-time NAT translations<br>
+      → <strong>WARNING : High CPU usage (disable quickly)</strong>
+    </div>
+
+    <h3>// Common NAT problems summary</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Problem</th><th>Symptom</th><th>Fix</th></tr>
+        <tr>
+          <td><strong>Pool exhausted</strong></td>
+          <td>Some users work, others fail</td>
+          <td>Expand pool OR use PAT overload</td>
+        </tr>
+        <tr>
+          <td><strong>Inside/Outside reversed</strong></td>
+          <td>Private IPs on Internet</td>
+          <td>Swap interface directions</td>
+        </tr>
+        <tr>
+          <td><strong>Missing overload</strong></td>
+          <td>Only 1 user can connect</td>
+          <td>Add "overload" keyword PAT</td>
+        </tr>
+        <tr>
+          <td><strong>ACL mismatch</strong></td>
+          <td>No translations created</td>
+          <td>Fix ACL match actual subnet</td>
+        </tr>
+        <tr>
+          <td><strong>No default route</strong></td>
+          <td>NAT OK, routing fails</td>
+          <td>Add default route 0.0.0.0/0</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">🔍</span>
+      <div class="callout-body">
+        <strong>Clear NAT translations after changes</strong>
+        After NAT config changes : <code>clear ip nat translation *</code><br>
+        Removes stale entries, forces rebuild.<br>
+        Active connections may drop (warn users before clearing production).
+      </div>
+    </div>
+  </div>
+
+  <!-- PIÈGES -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : PAT = same as NAT pool</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. PAT (Overload) ≠ Dynamic NAT pool.<br><br>
+        Dynamic NAT : 1:1 mapping (1 inside IP → 1 public IP, requires pool).<br>
+        PAT/Overload : Many:1 mapping (many inside IPs → 1 public IP + ports).<br><br>
+        PAT requires "overload" keyword.<br>
+        Examen : "Overload" = PAT (port translation), not just dynamic NAT.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : NAT inside = LAN interface always</div>
+      <div class="trap-content">
+        <strong>NUANCE</strong>. Inside/Outside = <strong>NAT perspective</strong>, not physical location.<br><br>
+        Typically : Inside = LAN (private), Outside = WAN (public).<br>
+        MAIS : Can reverse (ex: NAT servers outbound connections).<br><br>
+        Inside = source of traffic needing translation.<br>
+        Outside = destination side (Internet typically).<br>
+        Examen : Follow NAT flow direction (where translation originates).
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : Pool exhausted = router problem</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Pool exhausted = <strong>design/capacity problem</strong>, not router fault.<br><br>
+        Router working correctly (translating within pool limits).<br>
+        Problem : Pool too small for user count (undersized).<br><br>
+        Solution : Expand pool (more public IPs) OR use PAT (better scalability).<br>
+        Examen : Pool exhausted = capacity planning issue, not technical failure.
+      </div>
+    </div>
+  </div>
+
+  <!-- RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Pool NAT épuisé</strong> : All public IPs allocated. Symptom: Some users work, later users fail. Show ip nat statistics (allocated 100%). Fix: Expand pool OR use PAT overload</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Inside/Outside inversé</strong> : Interfaces wrong direction. Symptom: Private IPs on Internet, NAT table empty/wrong. Diagnostic: show ip nat statistics. Fix: Swap interface directions (inside↔outside)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>PAT/Overload mal configuré</strong> : Missing "overload" keyword. Only 1 connection works (1:1 instead many:1). Fix: Add "overload" keyword. Also check ACL matches traffic subnet</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Connexions échouent</strong> : Workflow: Check config (inside/outside, ACL), check statistics (pool, hits/misses), check translations (created?), test (ping from inside), debug (last resort). Clear translations after changes</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>NAT types</strong> : Static (1:1 permanent), Dynamic (1:1 pool temporary), PAT/Overload (many:1 port translation). Modern = PAT default (scalable, 1 public IP thousands connections)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Commands</strong> : show ip nat translations, show ip nat statistics, show running-config | section nat, clear ip nat translation *, debug ip nat (high CPU warning). Interface: ip nat inside/outside</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 10 : Problèmes routage</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">TR11 - Phase 5</span>
+    <a class="nav-btn next" href="#">Module 5.0 en cours →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m5_tr11_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+initMastery();
+</script>
+  <div style="margin-top:40px;text-align:center;">
+  <a class="nav-btn" href="index.html">← Accueil — Plan de cours</a>
+</body>
+</html>

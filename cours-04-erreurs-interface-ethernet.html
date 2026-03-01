@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TR04 — Erreurs d'interface Ethernet · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 5.0 — Dépannage réseau</span> &nbsp;›&nbsp; Cours 04</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 5 · TR04</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡⚡ Difficile</span>
+  </div>
+
+  <h1><span>Erreurs</span> d'interface Ethernet</h1>
+  <span class="tagline">// Interface errors — CRC errors, runts, giants, collisions, late collisions, input/output errors</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends CRC errors causes</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je différencie runts vs giants</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise collisions vs late collisions</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais input/output errors signification</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- SHOW INTERFACES -->
+  <div class="section">
+    <div class="section-label">Interface statistics</div>
+    <h2>Commande diagnostic — show interfaces</h2>
+
+    <p><strong>show interfaces</strong> = Commande Cisco afficher statistiques interface (errors, packets, collisions).</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;line-height:1.8;">
+      Switch# <strong>show interfaces GigabitEthernet0/1</strong><br><br>
+
+      GigabitEthernet0/1 is <strong style="color:var(--green)">up</strong>, line protocol is <strong style="color:var(--green)">up</strong><br>
+      &nbsp;&nbsp;Hardware is Gigabit Ethernet, address is aabb.cc00.0100<br>
+      &nbsp;&nbsp;MTU 1500 bytes, BW 1000000 Kbit/sec<br>
+      &nbsp;&nbsp;Full-duplex, 1000Mb/s, media type is 10/100/1000BaseTX<br><br>
+
+      &nbsp;&nbsp;5 minute input rate 1000 bits/sec, 2 packets/sec<br>
+      &nbsp;&nbsp;5 minute output rate 2000 bits/sec, 4 packets/sec<br><br>
+
+      &nbsp;&nbsp;12345678 packets input, 987654321 bytes<br>
+      &nbsp;&nbsp;Received 123 broadcasts, 456 multicast<br>
+      &nbsp;&nbsp;<strong style="color:var(--red)">0 runts, 0 giants, 0 throttles</strong><br>
+      &nbsp;&nbsp;<strong style="color:var(--red)">5 input errors, 3 CRC, 0 frame, 0 overrun, 2 ignored</strong><br><br>
+
+      &nbsp;&nbsp;87654321 packets output, 123456789 bytes<br>
+      &nbsp;&nbsp;<strong style="color:var(--red)">0 output errors, 0 collisions, 0 interface resets</strong><br>
+      &nbsp;&nbsp;<strong style="color:var(--red)">0 late collisions, 0 deferred</strong>
+    </div>
+
+    <p><strong>Interprétation</strong> : Erreurs = normal quelques unités (bruit électrique), MAIS centaines/milliers = problème.</p>
+
+    <div class="callout tip">
+      <span class="callout-icon">📊</span>
+      <div class="callout-body">
+        <strong>Baseline vs anomalies</strong>
+        Interface errors = TOUJOURS présentes (environment noise, occasional glitches).<br>
+        Question : Errors incrementing RAPIDEMENT ? (Ex: 100 errors/min = problem).<br>
+        Commande : <code>show interfaces | include error</code> → Monitor trends.
+      </div>
+    </div>
+  </div>
+
+  <!-- CRC ERRORS -->
+  <div class="section">
+    <div class="section-label">Frame integrity</div>
+    <h2>CRC Errors — Corruption données</h2>
+
+    <p><strong>CRC (Cyclic Redundancy Check)</strong> = Checksum Ethernet frame vérifier intégrité données. Frame reçue → recalcule CRC → compare. Mismatch = CRC error.</p>
+
+    <h3>// Principe CRC</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Ethernet frame structure :</strong><br><br>
+
+      [Preamble] [Dest MAC] [Src MAC] [Type] [Data] [<strong style="color:var(--amber)">FCS</strong>]<br><br>
+
+      <strong>FCS (Frame Check Sequence)</strong> = 4 bytes CRC-32 checksum<br><br>
+
+      Sender :<br>
+      → Calculate CRC-32 over frame data → Append FCS<br><br>
+
+      Receiver :<br>
+      → Recalculate CRC-32 received data<br>
+      → Compare calculated CRC vs received FCS<br>
+      → Match ? ✅ Frame OK<br>
+      → Mismatch ? ❌ <strong>CRC error → Frame dropped</strong>
+    </div>
+
+    <h3>// Causes CRC errors</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Câble défectueux</strong> : Bad termination, damaged cable (Cours TR03)</li>
+      <li><strong>EMI</strong> : Electromagnetic interference corrupts bits transit (Cours TR03)</li>
+      <li><strong>Duplex mismatch</strong> : Half-duplex ↔ Full-duplex mismatch (collisions → corruption)</li>
+      <li><strong>NIC defective</strong> : Hardware failure NIC transmit/receive circuitry</li>
+      <li><strong>Switch port failure</strong> : Port hardware defect</li>
+    </ul>
+
+    <h3>// Diagnostic CRC errors</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Symptom : CRC errors incrementing</strong><br><br>
+
+      Switch# show interfaces Gi0/1<br>
+      → <strong style="color:var(--red)">250 input errors, 245 CRC, 5 frame</strong><br><br>
+
+      <strong>Step 1 : Check duplex mismatch</strong><br>
+      Switch# show interfaces Gi0/1 | include duplex<br>
+      → Full-duplex, 1000Mb/s<br><br>
+
+      Connected device (PC) : ipconfig /all<br>
+      → Speed: 1 Gbps, Duplex: Half<br>
+      → <strong>Mismatch found ! Switch Full ↔ PC Half</strong><br><br>
+
+      Fix : Configure both Full-duplex (auto-negotiation ou manual)<br><br>
+
+      <strong>Step 2 : If duplex OK, check cable</strong><br>
+      → Swap cable known-good → Errors stop ? ✅ Cable defective<br><br>
+
+      <strong>Step 3 : If cable OK, check NIC/port</strong><br>
+      → Move device different switch port → Errors follow device ? NIC bad<br>
+      → Errors stay original port ? Switch port bad
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Question fréquente examen</strong>
+        "High CRC errors interface. MOST likely cause ?"<br>
+        A) Duplex mismatch<br>
+        B) Broadcast storm<br>
+        C) Routing loop<br>
+        D) DNS failure<br><br>
+        <strong>Réponse : A) Duplex mismatch</strong><br>
+        CRC errors = Layer 1/2 physical/data link. Duplex mismatch = cause commune CRC/collisions.
+      </div>
+    </div>
+  </div>
+
+  <!-- RUNTS GIANTS -->
+  <div class="section">
+    <div class="section-label">Frame size errors</div>
+    <h2>Runts & Giants — Frames taille incorrecte</h2>
+
+    <h3>// Runts (undersized frames)</h3>
+    <p><strong>Runt</strong> = Frame <strong>< 64 bytes</strong> (minimum Ethernet frame size). Considéré invalid, dropped.</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Ethernet frame min size : 64 bytes</strong><br>
+      (Includes: 14 bytes header + 46 bytes min payload + 4 bytes FCS)<br><br>
+
+      Payload < 46 bytes ? → Padded to 46 bytes (zeros added)<br><br>
+
+      <strong>Runt example : 50 bytes frame</strong><br>
+      → Too short (< 64 bytes) → <strong>Runt error</strong>
+    </div>
+
+    <h3>// Causes Runts</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Collisions</strong> : Collision fragments frame (partial transmission)</li>
+      <li><strong>Duplex mismatch</strong> : Half ↔ Full → Collisions → Runts</li>
+      <li><strong>Faulty NIC</strong> : Hardware malfunction transmits incomplete frames</li>
+      <li><strong>Software bug</strong> : Driver/firmware bug generates malformed frames</li>
+    </ul>
+
+    <h3>// Giants (oversized frames)</h3>
+    <p><strong>Giant</strong> = Frame <strong>> 1518 bytes</strong> (maximum standard Ethernet frame). Considéré invalid, dropped.</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Ethernet frame max size : 1518 bytes</strong><br>
+      (14 bytes header + 1500 bytes max payload + 4 bytes FCS)<br><br>
+
+      <strong>Exception : Jumbo frames</strong><br>
+      → Jumbo frames : Up to 9000 bytes (non-standard, requires support)<br>
+      → If switch pas support jumbo → frames > 1518 = Giants<br><br>
+
+      <strong>Giant example : 2000 bytes frame</strong><br>
+      → Too large (> 1518 bytes) → <strong>Giant error</strong>
+    </div>
+
+    <h3>// Causes Giants</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Jumbo frames mismatch</strong> : Device sends jumbo (9000B), switch expects standard (1518B)</li>
+      <li><strong>Faulty NIC</strong> : Hardware malfunction transmits oversized frames</li>
+      <li><strong>Software bug</strong> : Driver bug generates malformed large frames</li>
+      <li><strong>VLAN tag issue</strong> : 802.1Q tag adds 4 bytes → 1518 + 4 = 1522 (some switches count as giant si strict)</li>
+    </ul>
+
+    <h3>// Diagnostic Runts/Giants</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Runts troubleshooting :</strong><br>
+      → Check collisions (runts often accompany collisions)<br>
+      → Check duplex mismatch (show interfaces | include duplex)<br>
+      → Swap NIC (runts follow device ? NIC faulty)<br><br>
+
+      <strong>Giants troubleshooting :</strong><br>
+      → Check jumbo frames config (MTU settings consistent ?)<br>
+      → Disable jumbo frames test (if enabled, disable → giants stop ?)<br>
+      → Swap NIC (giants follow device ? NIC faulty)
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Runts vs Giants = frame size violations</strong>
+        Runts < 64 bytes (usually collisions/duplex mismatch).<br>
+        Giants > 1518 bytes (usually jumbo frames mismatch/NIC fault).<br>
+        Both = frames dropped (impact connectivity/performance).
+      </div>
+    </div>
+  </div>
+
+  <!-- COLLISIONS -->
+  <div class="section">
+    <div class="section-label">CSMA/CD</div>
+    <h2>Collisions — Half-Duplex legacy</h2>
+
+    <p><strong>Collision</strong> = 2+ devices transmettent simultanément shared medium Ethernet (half-duplex). Signaux se chevauchent → corruption.</p>
+
+    <h3>// CSMA/CD (Collision Detection)</h3>
+    <p><strong>CSMA/CD</strong> = Carrier Sense Multiple Access / Collision Detection. Protocole Ethernet half-duplex gestion collisions.</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>CSMA/CD workflow :</strong><br><br>
+
+      1. <strong>Carrier Sense</strong> : Listen medium (wire busy ?)<br>
+      &nbsp;&nbsp;&nbsp;→ Busy ? Wait. Idle ? Proceed.<br><br>
+
+      2. <strong>Transmit</strong> : Send frame<br><br>
+
+      3. <strong>Collision Detection</strong> : Monitor while transmitting<br>
+      &nbsp;&nbsp;&nbsp;→ Collision detected ? (voltage spike, jamming signal)<br><br>
+
+      4. <strong>Jam Signal</strong> : Send 32-bit jam pattern (alert all devices collision occurred)<br><br>
+
+      5. <strong>Backoff</strong> : Wait random time (exponential backoff algorithm)<br>
+      &nbsp;&nbsp;&nbsp;→ Retry transmission<br><br>
+
+      6. <strong>Retry</strong> : Maximum 16 attempts → If still collisions, abort
+    </div>
+
+    <h3>// Half-Duplex vs Full-Duplex</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Critère</th><th>Half-Duplex</th><th>Full-Duplex</th></tr>
+        <tr>
+          <td><strong>Transmission</strong></td>
+          <td>One direction at a time (send OR receive)</td>
+          <td>Both directions simultaneously (send AND receive)</td>
+        </tr>
+        <tr>
+          <td><strong>Collisions</strong></td>
+          <td>⚠️ Possible (shared medium)</td>
+          <td>✅ Impossible (dedicated paths TX/RX)</td>
+        </tr>
+        <tr>
+          <td><strong>CSMA/CD</strong></td>
+          <td>✅ Required</td>
+          <td>❌ Disabled (no collisions possible)</td>
+        </tr>
+        <tr>
+          <td><strong>Performance</strong></td>
+          <td>⚠️ ~50-60% efficiency (collision overhead)</td>
+          <td>✅ ~95%+ efficiency</td>
+        </tr>
+        <tr>
+          <td><strong>Usage moderne</strong></td>
+          <td>❌ Obsolete (hubs legacy)</td>
+          <td>✅ Standard (switches)</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>// Causes Collisions modernes</h3>
+    <p><strong>Modern networks</strong> = Full-duplex switches → Collisions = <strong>abnormal</strong>.</p>
+
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Duplex mismatch</strong> : Switch Full ↔ Device Half (most common cause)</li>
+      <li><strong>Legacy hub</strong> : Hub still present network (rare 2024)</li>
+      <li><strong>Faulty auto-negotiation</strong> : Auto-negotiate failed → defaults half-duplex</li>
+    </ul>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Duplex mismatch scenario :</strong><br><br>
+
+      Switch port Gi0/1 : <strong>Full-duplex</strong> (auto-negotiation)<br>
+      PC NIC : <strong>Half-duplex</strong> (manual config ou failed auto-neg)<br><br>
+
+      PC transmits → Thinks shared medium (half-duplex logic)<br>
+      Switch transmits simultaneously → Full-duplex allows<br>
+      → Collision PC side (PC detects overlap)<br>
+      → Switch NO collision detection (full-duplex disabled CSMA/CD)<br><br>
+
+      → PC retransmits (backoff) → Performance degraded<br>
+      → Switch sees <strong>late collisions, CRC errors</strong>
+    </div>
+  </div>
+
+  <!-- LATE COLLISIONS -->
+  <div class="section">
+    <div class="section-label">Timing violations</div>
+    <h2>Late Collisions — Duplex mismatch signature</h2>
+
+    <p><strong>Late Collision</strong> = Collision détectée APRÈS 512 bits (64 bytes) transmis. Violation timing Ethernet. <strong>Signature duplex mismatch</strong>.</p>
+
+    <h3>// Normal Collision vs Late Collision</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Normal Collision (Half-Duplex) :</strong><br>
+      → Detected WITHIN first 64 bytes (512 bits) transmission<br>
+      → Device stops transmitting, sends jam signal, backoff, retry<br>
+      → <strong>Expected behavior half-duplex</strong><br><br>
+
+      <strong>Late Collision :</strong><br>
+      → Detected AFTER 64 bytes transmitted<br>
+      → Device already committed significant data<br>
+      → Too late stop cleanly → Frame corrupted<br>
+      → <strong>Abnormal, indicates problem</strong>
+    </div>
+
+    <h3>// Slot Time (512 bits)</h3>
+    <p><strong>Slot Time</strong> = 512 bit-times = 64 bytes @ 10 Mbps. Minimum frame size garantit collision detection.</p>
+
+    <p><strong>Principe</strong> : Worst-case propagation delay network < slot time → Collision detected sender AVANT finit transmission min frame.</p>
+
+    <p><strong>Late collision</strong> = Violation slot time rule → Indicates network diameter trop large OU duplex mismatch.</p>
+
+    <h3>// Causes Late Collisions</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Duplex mismatch</strong> : #1 cause (90%+ late collisions)</li>
+      <li><strong>Cable trop long</strong> : Ethernet max 100m → >100m late collisions possible (rare modern)</li>
+      <li><strong>Too many repeaters</strong> : Excessive hubs/repeaters (legacy, obsolete)</li>
+    </ul>
+
+    <h3>// Diagnostic Late Collisions</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Switch# show interfaces Gi0/1<br>
+      → <strong style="color:var(--red)">150 late collisions</strong><br><br>
+
+      <strong>Step 1 : Check duplex</strong><br>
+      Switch# show interfaces Gi0/1 | include duplex<br>
+      → <strong>Full-duplex</strong>, 1000Mb/s<br><br>
+
+      Connected device (Server) NIC settings :<br>
+      → Speed: 1 Gbps, Duplex: <strong>Half</strong><br><br>
+
+      → <strong>Mismatch confirmed ! Fix both Full-duplex</strong><br><br>
+
+      Fix :<br>
+      Switch(config-if)# duplex full<br>
+      Server NIC : Configure Full-duplex (driver settings)<br><br>
+
+      Verify : Late collisions stop incrementing ✅
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Late collisions = RED FLAG duplex mismatch</strong>
+        Examen : "Interface shows late collisions. MOST likely cause ?"<br>
+        <strong>Réponse : Duplex mismatch</strong><br><br>
+        Late collisions + CRC errors + runts = Trinity duplex mismatch symptoms.
+      </div>
+    </div>
+  </div>
+
+  <!-- INPUT OUTPUT ERRORS -->
+  <div class="section">
+    <div class="section-label">Error counters</div>
+    <h2>Input / Output Errors — Compteurs généraux</h2>
+
+    <h3>// Input Errors</h3>
+    <p><strong>Input Errors</strong> = Total erreurs frames REÇUES. Somme : CRC + Runts + Giants + Frame errors + Overruns + Ignored.</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Input Errors breakdown :</strong><br><br>
+
+      <strong>CRC</strong> : Frame Check Sequence mismatch (corruption)<br>
+      <strong>Runts</strong> : Frames < 64 bytes<br>
+      <strong>Giants</strong> : Frames > 1518 bytes<br>
+      <strong>Frame</strong> : Frame alignment errors (bits pas byte-aligned)<br>
+      <strong>Overrun</strong> : Receiver buffer overflow (traffic faster than processing)<br>
+      <strong>Ignored</strong> : Frames dropped (buffer full, no resources)
+    </div>
+
+    <h3>// Output Errors</h3>
+    <p><strong>Output Errors</strong> = Total erreurs frames TRANSMISES. Somme : Collisions + Late Collisions + Deferred + Underruns.</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Output Errors breakdown :</strong><br><br>
+
+      <strong>Collisions</strong> : Normal collisions (half-duplex)<br>
+      <strong>Late Collisions</strong> : Collisions after 64 bytes (duplex mismatch)<br>
+      <strong>Deferred</strong> : Transmission delayed (medium busy, half-duplex waiting)<br>
+      <strong>Underrun</strong> : Transmit buffer underflow (CPU too slow supply data)
+    </div>
+
+    <h3>// Overruns vs Underruns</h3>
+    <p><strong>Overrun (Input)</strong> : Receiver buffer overflow → Incoming data faster than CPU process → Frames dropped.</p>
+    <p><strong>Underrun (Output)</strong> : Transmit buffer underflow → CPU pas supply data fast enough → Transmission gaps, errors.</p>
+
+    <p><strong>Causes</strong> : Usually CPU overloaded, memory insufficient, hardware limitations.</p>
+
+    <h3>// Interprétation Error Counters</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Input Errors dominants</strong> : Problème incoming (cable, EMI, sender NIC)</li>
+      <li><strong>Output Errors dominants</strong> : Problème outgoing (duplex, local NIC, collisions)</li>
+      <li><strong>Both high</strong> : Bidirectional problem (duplex mismatch, faulty switch port)</li>
+      <li><strong>Incrementing rapidly</strong> : Active problem (fix urgently)</li>
+      <li><strong>Static count</strong> : Old errors (monitor, pas urgent si stable)</li>
+    </ul>
+
+    <div class="callout ok">
+      <span class="callout-icon">📈</span>
+      <div class="callout-body">
+        <strong>Monitor error rates, not absolute counts</strong>
+        Interface 10 years uptime → 1000 CRC errors total = OK (rare glitches).<br>
+        Interface 1 hour uptime → 1000 CRC errors = PROBLEM (16 errors/min).<br>
+        Command : <code>show interfaces</code> twice 5 min apart → Compare counters increment.
+      </div>
+    </div>
+  </div>
+
+  <!-- PIÈGES -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : Collisions = toujours problème</div>
+      <div class="trap-content">
+        <strong>NUANCE</strong>. Dépend duplex mode.<br><br>
+        <strong>Half-duplex</strong> : Collisions = NORMAL (expected CSMA/CD behavior).<br>
+        <strong>Full-duplex</strong> : Collisions = ABNORMAL (indicates duplex mismatch).<br><br>
+        Modern networks full-duplex switches → Collisions = problem.<br>
+        Examen : Context matters. "Full-duplex interface collisions" = duplex mismatch.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : Late collisions = cable trop long</div>
+      <div class="trap-content">
+        <strong>RARE moderne</strong>. Late collisions = <strong>90%+ duplex mismatch</strong>.<br><br>
+        Cable length violations possible (>100m Ethernet), MAIS rare production.<br>
+        Duplex mismatch = cause #1 late collisions (configuration error common).<br><br>
+        Examen : "Late collisions interface. FIRST check ?"<br>
+        Réponse : Duplex settings (pas cable length).
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : Giants = frames > 1500 bytes</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Giants = frames <strong>> 1518 bytes</strong>.<br><br>
+        Standard Ethernet frame max : 1518 bytes (14 header + 1500 payload + 4 FCS).<br>
+        MTU 1500 = payload max, pas frame total.<br><br>
+        Examen : Giants threshold = 1518 bytes (pas 1500).
+      </div>
+    </div>
+  </div>
+
+  <!-- RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>CRC errors</strong> : Frame Check Sequence mismatch (data corruption). Causes = cable defect, EMI, duplex mismatch, NIC failure. Diagnostic = check duplex, swap cable, test NIC/port</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Runts</strong> : Frames < 64 bytes. Causes = collisions (fragments), duplex mismatch, faulty NIC. <strong>Giants</strong> : Frames > 1518 bytes. Causes = jumbo frames mismatch, faulty NIC</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Collisions</strong> : Half-duplex normal (CSMA/CD). Full-duplex abnormal (duplex mismatch). Modern networks full-duplex → collisions = problem</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Late collisions</strong> : Collision after 64 bytes. Signature #1 duplex mismatch (90%+ cause). Also possible cable >100m (rare). Late collisions + CRC + runts = duplex mismatch trinity</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Input Errors</strong> : Sum CRC + Runts + Giants + Frame + Overrun + Ignored. Incoming problems. <strong>Output Errors</strong> : Sum Collisions + Late Collisions + Deferred + Underrun. Outgoing problems</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Duplex mismatch</strong> : Most common cause interface errors. Symptoms = CRC errors, late collisions, runts, poor performance. Fix = configure both ends same duplex (Full recommended)</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 03 : Problèmes Physical</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">TR04 - Phase 5</span>
+    <a class="nav-btn next" href="#">Module 5.0 en cours →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m5_tr04_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+initMastery();
+</script>
+  <div style="margin-top:40px;text-align:center;">
+  <a class="nav-btn" href="index.html">← Accueil — Plan de cours</a>
+</body>
+</html>

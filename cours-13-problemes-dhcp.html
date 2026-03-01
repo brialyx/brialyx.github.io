@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TR13 — Problèmes DHCP · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 5.0 — Dépannage réseau</span> &nbsp;›&nbsp; Cours 13</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 5 · TR13</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-lab">🧪 LAB</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡☆ Moyen</span>
+  </div>
+
+  <h1><span>Problèmes</span> DHCP</h1>
+  <span class="tagline">// Dynamic Host Configuration Protocol — Pool épuisé, bail expiré, conflits IP, rogue DHCP, relay agent</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je diagnostique pool DHCP épuisé</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends baux expirés</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je résous conflits IP DHCP</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je détecte DHCP rogue</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je configure relay agents</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- POOL EXHAUSTED -->
+  <div class="section">
+    <div class="section-label">Address depletion</div>
+    <h2>Pool DHCP épuisé — No addresses available</h2>
+
+    <p><strong>Pool DHCP épuisé</strong> = Toutes IP addresses pool allouées → nouveaux clients cannot get IP → APIPA 169.254.x.x.</p>
+
+    <h3>// Principe DHCP pool (rappel Cours F28)</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>DHCP pool configuration :</strong><br><br>
+
+      Network : 192.168.1.0/24<br>
+      Pool : 192.168.1.100 - 192.168.1.200 (<strong>101 addresses</strong>)<br>
+      Lease time : 24 hours<br><br>
+
+      First 101 clients : Get IP from pool ✅<br>
+      102nd client : <strong>No IP available</strong> → APIPA 169.254.x.x ❌
+    </div>
+
+    <h3>// Symptômes pool épuisé</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>APIPA addresses</strong> : New clients get 169.254.x.x (DHCP failed)</li>
+      <li><strong>Some users work</strong> : Existing leases OK, new connections fail</li>
+      <li><strong>Intermittent</strong> : Works if other users disconnect (IP freed)</li>
+      <li><strong>DHCP server logs</strong> : "No addresses available in pool" warnings</li>
+      <li><strong>No Internet</strong> : APIPA = no gateway, no routing</li>
+    </ul>
+
+    <h3>// Causes pool épuisé</h3>
+
+    <p><strong>1. Pool trop petit (undersized)</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Pool : 192.168.1.100 - 192.168.1.150 (<strong>51 addresses</strong>)<br>
+      Devices network : <strong>100+ PCs, phones, printers</strong><br><br>
+
+      → Pool insufficient devices count<br>
+      → <strong>Design problem</strong> (capacity planning error)
+    </div>
+
+    <p><strong>2. Lease time trop long (stale leases)</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Lease time : <strong>30 days</strong> (default Windows Server)<br>
+      Laptop users : Connect, disconnect daily<br><br>
+
+      Problem :<br>
+      → Laptop gets IP, disconnects<br>
+      → Lease held 30 days (not released)<br>
+      → IP unavailable even device offline<br>
+      → Pool fills with inactive leases
+    </div>
+
+    <p><strong>3. Devices multiples interfaces (consume multiple IPs)</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Laptop : WiFi + Ethernet + VPN = 3 IPs<br>
+      Desktop : Ethernet + WiFi (unused) = 2 IPs<br><br>
+
+      50 devices × 2-3 IPs each = 100-150 IPs consumed<br>
+      → Pool exhausted faster than expected
+    </p>
+
+    <h3>// Diagnostic pool épuisé</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>User PC :</strong><br>
+      C:\> ipconfig<br><br>
+
+      IP Address : <strong style="color:var(--red)">169.254.45.123</strong> (APIPA)<br>
+      Subnet Mask : 255.255.0.0<br>
+      Default Gateway : <strong>(blank)</strong><br><br>
+
+      → APIPA = DHCP failed<br><br>
+
+      <strong>DHCP server check :</strong><br>
+      Windows DHCP Server :<br>
+      → DHCP console → Address Pool<br>
+      → Addresses in use : <strong style="color:var(--red)">101 / 101</strong> (100%)<br>
+      → Addresses free : <strong style="color:var(--red)">0</strong><br><br>
+
+      Linux (ISC DHCP) :<br>
+      $ cat /var/lib/dhcp/dhcpd.leases | grep "lease 192.168.1" | wc -l<br>
+      → 101 (pool size 101 = 100% allocated)
+    </div>
+
+    <h3>// Résolution pool épuisé</h3>
+
+    <p><strong>Option 1 : Expand pool (add IPs)</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Old pool : 192.168.1.100 - 192.168.1.200 (101 IPs)<br>
+      <strong>New pool : 192.168.1.100 - 192.168.1.250</strong> (151 IPs)<br><br>
+
+      → Add 50 IPs capacity<br>
+      → Requires IPs not used static assignments
+    </div>
+
+    <p><strong>Option 2 : Reduce lease time (free IPs faster)</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Old lease : 30 days<br>
+      <strong>New lease : 8 hours</strong> (workday duration)<br><br>
+
+      → Laptops disconnect end-of-day → Lease expires overnight<br>
+      → IP freed next morning (reused)<br>
+      → Reduces pool consumption
+    </div>
+
+    <p><strong>Option 3 : Release stale leases (manual cleanup)</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      DHCP server :<br>
+      → Delete inactive leases (devices offline >7 days)<br>
+      → Reconcile scopes (Windows DHCP)<br>
+      → Frees IPs immediately<br><br>
+
+      <strong>Caution :</strong> Device returns, may get different IP (breaks static mappings apps)
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">📊</span>
+      <div class="callout-body">
+        <strong>Best practice : Pool sizing</strong>
+        Formula : Pool size ≥ (Active devices × 1.5) + Growth margin 20%.<br>
+        Example : 100 devices → Pool 150-180 IPs.<br>
+        Lease time : 8-12 hours office (daily turnover), 24 hours datacenter (stable).
+      </div>
+    </div>
+  </div>
+
+  <!-- EXPIRED LEASE -->
+  <div class="section">
+    <div class="section-label">Lease lifecycle</div>
+    <h2>Bail (Lease) expiré — Lease expiration</h2>
+
+    <p><strong>Bail expiré</strong> = DHCP lease timeout → client perd IP → must renew OR get APIPA.</p>
+
+    <h3>// DHCP lease process (rappel)</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>DORA process :</strong><br>
+      <strong>D</strong>iscover : Client broadcasts "Need IP"<br>
+      <strong>O</strong>ffer : DHCP server offers IP + lease time<br>
+      <strong>R</strong>equest : Client requests offered IP<br>
+      <strong>A</strong>ck : DHCP server acknowledges<br><br>
+
+      <strong>Lease renewal :</strong><br>
+      T1 (50% lease) : Client tries renew (unicast DHCP server)<br>
+      T2 (87.5% lease) : If T1 fails, broadcast renew (any DHCP server)<br>
+      Lease expires : If T2 fails, release IP → APIPA 169.254.x.x
+    </div>
+
+    <h3>// Scénario bail expiré</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Timeline lease 8 hours :</strong><br><br>
+
+      00:00 : Client gets IP 192.168.1.150 (lease 8h)<br>
+      04:00 (T1 50%) : Client tries renew → <strong>DHCP server unreachable</strong> (fails)<br>
+      07:00 (T2 87.5%) : Client broadcast renew → <strong>No response</strong> (fails)<br>
+      08:00 : <strong>Lease expires</strong><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ Client releases 192.168.1.150<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ Client self-assigns <strong style="color:var(--red)">169.254.x.x</strong> (APIPA)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ <strong>Connectivity lost</strong>
+    </div>
+
+    <h3>// Causes lease expiration problems</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>DHCP server down during renewal</strong> : T1/T2 attempts fail</li>
+      <li><strong>Network connectivity loss</strong> : Client can't reach DHCP server</li>
+      <li><strong>Firewall blocking</strong> : DHCP renewal packets (UDP 67/68) dropped</li>
+      <li><strong>Lease time too short</strong> : Frequent renewals, higher failure risk</li>
+    </ul>
+
+    <h3>// Symptômes lease expiration</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Sudden connectivity loss</strong> : Was working, suddenly APIPA</li>
+      <li><strong>Timing pattern</strong> : Fails exactly lease duration (8h, 24h)</li>
+      <li><strong>Event logs</strong> : "DHCP renewal failed" warnings</li>
+      <li><strong>Manual renewal works</strong> : <code>ipconfig /renew</code> gets new IP</li>
+    </ul>
+
+    <h3>// Résolution lease expiration</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Immediate fix (user) :</strong><br>
+      C:\> ipconfig /release<br>
+      C:\> ipconfig /renew<br><br>
+
+      → Forces new DHCP request<br>
+      → Gets IP if DHCP server available ✅<br><br>
+
+      <strong>Long-term fix :</strong><br>
+      1. Ensure DHCP server high availability (redundant servers)<br>
+      2. Increase lease time (reduce renewal frequency)<br>
+      3. Monitor DHCP server uptime (alerting)<br>
+      4. Check network connectivity (VLAN, routing)
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Question fréquente examen</strong>
+        "User had IP, now APIPA. Works after ipconfig /renew. MOST likely cause ?"<br>
+        A) Pool exhausted<br>
+        B) Lease expired, renewal failed<br>
+        C) Rogue DHCP<br>
+        D) Cable defect<br><br>
+        <strong>Réponse : B) Lease expired, renewal failed</strong><br>
+        Had IP → lost → manual renew works = lease expiration problem.
+      </div>
+    </div>
+  </div>
+
+  <!-- IP CONFLICT -->
+  <div class="section">
+    <div class="section-label">Address collision</div>
+    <h2>Adresse en conflit — DHCP IP conflict</h2>
+
+    <p><strong>Conflit IP DHCP</strong> = DHCP server assigns IP already in use → duplicate address → both devices connectivity problems.</p>
+
+    <h3>// Cause conflit DHCP</h3>
+
+    <p><strong>Scenario commun : DHCP + Static overlap</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      DHCP pool : 192.168.1.100 - 192.168.1.200<br>
+      Static assignment : Printer 192.168.1.150 (manual config)<br><br>
+
+      <strong>Problem :</strong><br>
+      DHCP server doesn't know about static 192.168.1.150<br>
+      DHCP assigns 192.168.1.150 → Laptop<br>
+      → <strong>Conflict</strong> (Printer vs Laptop same IP)
+    </div>
+
+    <h3>// DHCP conflict detection</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>DHCP server behavior (conflict detection enabled) :</strong><br><br>
+
+      1. DHCP server selects IP from pool<br>
+      2. Ping IP before assigning (ICMP echo request)<br>
+      3a. No reply → Assign IP (safe) ✅<br>
+      3b. Reply received → IP in use → <strong>Mark conflict</strong> ❌<br>
+      4. If conflict, try next IP from pool<br><br>
+
+      <strong>If all IPs conflict ?</strong><br>
+      → DHCP server cannot assign (client gets APIPA)
+    </div>
+
+    <h3>// Symptômes conflit DHCP</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Windows pop-up</strong> : "IP address conflict detected"</li>
+      <li><strong>Intermittent connectivity</strong> : Works sometimes, fails randomly</li>
+      <li><strong>DHCP server logs</strong> : "Conflict detected for IP X.X.X.X"</li>
+      <li><strong>Both devices affected</strong> : Static device + DHCP client</li>
+    </ul>
+
+    <h3>// Résolution conflit DHCP</h3>
+
+    <p><strong>Best practice : Exclude static IPs from DHCP pool</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Network design :</strong><br><br>
+
+      Subnet : 192.168.1.0/24<br>
+      Static range : 192.168.1.1 - 192.168.1.99 (routers, servers, printers)<br>
+      DHCP pool : 192.168.1.100 - 192.168.1.250 (workstations)<br><br>
+
+      <strong>DHCP exclusion range :</strong><br>
+      Windows DHCP Server :<br>
+      → Add Exclusion Range : 192.168.1.1 - 192.168.1.99<br><br>
+
+      Linux ISC DHCP (dhcpd.conf) :<br>
+      subnet 192.168.1.0 netmask 255.255.255.0 {<br>
+      &nbsp;&nbsp;range 192.168.1.100 192.168.1.250;<br>
+      }<br><br>
+
+      → DHCP never assigns 1-99 (reserved static)
+    </div>
+
+    <p><strong>Enable conflict detection (DHCP server)</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Windows DHCP Server :<br>
+      → Server properties → Advanced<br>
+      → Conflict detection attempts : <strong>2</strong> (ping 2 times before assign)<br><br>
+
+      → Prevents assigning IPs already in use ✅
+    </div>
+
+    <p><strong>Immediate fix (release conflict IP)</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      DHCP client :<br>
+      C:\> ipconfig /release<br>
+      C:\> ipconfig /renew<br><br>
+
+      → Gets different IP (no conflict) ✅
+    </div>
+  </div>
+
+  <!-- ROGUE DHCP -->
+  <div class="section">
+    <div class="section-label">Unauthorized server</div>
+    <h2>DHCP rogue — Rogue DHCP server</h2>
+
+    <p><strong>DHCP rogue</strong> = Unauthorized DHCP server network → clients get wrong IP/gateway/DNS → connectivity broken OR man-in-the-middle attack.</p>
+
+    <h3>// Scénario DHCP rogue</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Legitimate DHCP server :</strong><br>
+      IP pool : 192.168.1.100 - 192.168.1.200<br>
+      Gateway : 192.168.1.1 (correct router)<br>
+      DNS : 192.168.1.100 (correct DNS)<br><br>
+
+      <strong style="color:var(--red)">Rogue DHCP server :</strong><br>
+      User plugs personal router (home router, accidental)<br>
+      IP pool : 192.168.1.2 - 192.168.1.50<br>
+      Gateway : <strong style="color:var(--red)">192.168.1.2</strong> (rogue router - wrong!)<br>
+      DNS : <strong style="color:var(--red)">8.8.8.8</strong> (bypasses internal DNS)<br><br>
+
+      <strong>Client behavior :</strong><br>
+      PC boots → Sends DHCP Discover (broadcast)<br>
+      <strong>Both servers reply</strong> (legitimate + rogue)<br>
+      PC accepts <strong>first response</strong> (race condition)<br><br>
+
+      If rogue wins :<br>
+      → PC gets IP from rogue<br>
+      → Gateway points rogue router (broken routing)<br>
+      → <strong>No Internet access</strong>
+    </div>
+
+    <h3>// Symptômes DHCP rogue</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Random connectivity failures</strong> : Some PCs work, others don't (luck DHCP race)</li>
+      <li><strong>Wrong gateway</strong> : <code>ipconfig</code> shows unexpected gateway IP</li>
+      <li><strong>Wrong subnet</strong> : IPs from different range than expected</li>
+      <li><strong>Intermittent</strong> : Depends which DHCP server replies first</li>
+      <li><strong>Started suddenly</strong> : After user plugged device (router, AP)</li>
+    </ul>
+
+    <h3>// Diagnostic DHCP rogue</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Affected PC :</strong><br>
+      C:\> ipconfig<br><br>
+
+      IP Address : 192.168.1.25 (unexpected range)<br>
+      Subnet Mask : 255.255.255.0<br>
+      Default Gateway : <strong style="color:var(--red)">192.168.1.2</strong> (not legitimate 192.168.1.1)<br><br>
+
+      → Wrong gateway = suspect rogue DHCP<br><br>
+
+      <strong>Identify rogue DHCP server :</strong><br>
+      Method 1 : ARP table<br>
+      C:\> arp -a | findstr 192.168.1.2<br>
+      192.168.1.2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;aa-bb-cc-dd-ee-ff<br><br>
+
+      → Look up MAC vendor (aa-bb-cc = TP-Link home router)<br><br>
+
+      Method 2 : DHCP snooping logs (managed switches)<br>
+      Switch# show ip dhcp snooping binding<br>
+      → Shows DHCP servers MAC addresses, ports<br><br>
+
+      Method 3 : Wireshark packet capture<br>
+      → Filter : bootp<br>
+      → See DHCP Offer packets (multiple servers = rogue present)
+    </div>
+
+    <h3>// Résolution DHCP rogue</h3>
+
+    <p><strong>Immediate : Locate and disconnect rogue</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      1. Identify rogue MAC address<br>
+      2. Find switch port (MAC address table)<br>
+      3. Physically disconnect device<br>
+      4. Release/renew affected clients :<br>
+      &nbsp;&nbsp;&nbsp;C:\> ipconfig /release<br>
+      &nbsp;&nbsp;&nbsp;C:\> ipconfig /renew<br>
+      &nbsp;&nbsp;&nbsp;→ Get IP from legitimate DHCP ✅
+    </div>
+
+    <p><strong>Prevention : DHCP Snooping (Cours S12)</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Managed switch configuration :</strong><br><br>
+
+      Switch(config)# ip dhcp snooping<br>
+      Switch(config)# ip dhcp snooping vlan 10<br><br>
+
+      Switch(config)# interface GigabitEthernet0/1<br>
+      Switch(config-if)# <strong style="color:var(--green)">ip dhcp snooping trust</strong><br>
+      → Port Gi0/1 : DHCP server port (trusted)<br><br>
+
+      Switch(config)# interface range Gi0/2 - 24<br>
+      Switch(config-if-range)# <strong style="color:var(--amber)">ip dhcp snooping</strong> (untrusted default)<br>
+      → Ports Gi0/2-24 : User ports (untrusted)<br><br>
+
+      → Untrusted ports : DHCP server messages BLOCKED<br>
+      → Rogue DHCP prevented ✅
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Rogue DHCP = security threat + availability problem</strong>
+        Accidental : User plugs home router → breaks network (downtime).<br>
+        Malicious : Attacker DHCP server → Man-in-the-middle (traffic interception, DNS poisoning).<br>
+        DHCP Snooping = defense layer (trusted ports only).
+      </div>
+    </div>
+  </div>
+
+  <!-- RELAY AGENT -->
+  <div class="section">
+    <div class="section-label">Multi-subnet DHCP</div>
+    <h2>Relay Agent mal configuré — IP Helper misconfiguration</h2>
+
+    <p><strong>DHCP Relay Agent (IP Helper)</strong> = Forwards DHCP broadcasts across subnets → centralized DHCP server multiple VLANs.</p>
+
+    <h3>// Problème : DHCP broadcasts don't cross routers</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Topology :</strong><br><br>
+
+      VLAN 10 : 192.168.10.0/24 (PCs)<br>
+      VLAN 20 : 192.168.20.0/24 (DHCP server 192.168.20.100)<br><br>
+
+      <strong>Without relay :</strong><br>
+      PC VLAN 10 → DHCP Discover (broadcast 255.255.255.255)<br>
+      Router → <strong>Drops broadcast</strong> (doesn't forward different subnet)<br>
+      DHCP server VLAN 20 → Never receives request<br>
+      → PC gets <strong>APIPA 169.254.x.x</strong>
+    </div>
+
+    <h3>// Solution : IP Helper-Address (DHCP Relay)</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Router configuration :</strong><br><br>
+
+      Router(config)# interface GigabitEthernet0/1<br>
+      Router(config-if)# description VLAN 10 - User PCs<br>
+      Router(config-if)# ip address 192.168.10.1 255.255.255.0<br>
+      Router(config-if)# <strong style="color:var(--green)">ip helper-address 192.168.20.100</strong><br><br>
+
+      <strong>Workflow with relay :</strong><br>
+      1. PC VLAN 10 → DHCP Discover (broadcast)<br>
+      2. Router receives (local subnet)<br>
+      3. Router forwards as <strong>unicast</strong> → 192.168.20.100 (DHCP server)<br>
+      4. DHCP server → DHCP Offer (unicast back via router)<br>
+      5. Router → Forwards to PC VLAN 10<br>
+      6. PC gets IP ✅
+    </div>
+
+    <h3>// Problèmes relay agent</h3>
+
+    <p><strong>1. IP helper-address missing</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      interface GigabitEthernet0/1<br>
+      &nbsp;&nbsp;ip address 192.168.10.1 255.255.255.0<br>
+      &nbsp;&nbsp;<strong style="color:var(--red)">! No ip helper-address configured</strong><br><br>
+
+      → Broadcasts not forwarded<br>
+      → DHCP fails → APIPA
+    </div>
+
+    <p><strong>2. IP helper-address wrong IP</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      DHCP server : 192.168.20.100<br>
+      Configured : ip helper-address <strong style="color:var(--red)">192.168.20.101</strong> (typo)<br><br>
+
+      → Forwarded to wrong IP (nonexistent)<br>
+      → No response → APIPA
+    </div>
+
+    <p><strong>3. IP helper-address unreachable</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      ip helper-address 10.0.0.100<br>
+      No route to 10.0.0.0/24<br><br>
+
+      → Routing problem (DHCP server unreachable)<br>
+      → Packets dropped → APIPA
+    </div>
+
+    <h3>// Diagnostic relay agent</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Symptom :</strong> PCs VLAN 10 get APIPA<br><br>
+
+      <strong>Check relay configuration :</strong><br>
+      Router# show running-config interface GigabitEthernet0/1<br><br>
+
+      interface GigabitEthernet0/1<br>
+      &nbsp;ip address 192.168.10.1 255.255.255.0<br>
+      &nbsp;ip helper-address 192.168.20.100 ✅<br><br>
+
+      <strong>Verify DHCP server reachable :</strong><br>
+      Router# ping 192.168.20.100<br>
+      → Success ✅ (DHCP server reachable)<br><br>
+
+      <strong>Test DHCP from router :</strong><br>
+      Router# debug ip dhcp server packet<br>
+      → Shows DHCP relay forwarding (if working)
+    </div>
+
+    <h3>// Résolution relay agent</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Add/fix ip helper-address :</strong><br><br>
+
+      Router(config)# interface GigabitEthernet0/1<br>
+      Router(config-if)# <strong style="color:var(--green)">ip helper-address 192.168.20.100</strong><br><br>
+
+      <strong>Verify :</strong><br>
+      Router# show running-config interface Gi0/1 | include helper<br>
+      &nbsp;ip helper-address 192.168.20.100 ✅<br><br>
+
+      <strong>Test client :</strong><br>
+      C:\> ipconfig /release<br>
+      C:\> ipconfig /renew<br>
+      → Gets IP from DHCP server ✅
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">🌐</span>
+      <div class="callout-body">
+        <strong>Best practice : Centralized DHCP + relay</strong>
+        Instead DHCP server per VLAN (costly, complex management).<br>
+        Use : 1-2 DHCP servers (redundant) + ip helper-address all VLANs.<br>
+        Simplified : Single pool management, consistent config, easier troubleshooting.
+      </div>
+    </div>
+  </div>
+
+  <!-- PIÈGES -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : APIPA = DHCP server down always</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. APIPA = <strong>DHCP failed</strong>, multiple causes.<br><br>
+        DHCP server down : One cause (among many).<br>
+        Other causes : Pool exhausted, no relay agent, wrong VLAN, network unreachable, firewall blocking.<br><br>
+        APIPA = symptom (DHCP didn't work). Diagnose root cause.<br>
+        Examen : APIPA → investigate DHCP infrastructure (not assume server down).
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : Rogue DHCP = always malicious attack</div>
+      <div class="trap-content">
+        <strong>NUANCE</strong>. Rogue DHCP = <strong>often accidental</strong>, not intentional attack.<br><br>
+        Common scenario : User plugs home router/AP (forgot disable DHCP).<br>
+        Malicious : Possible (attacker DHCP for MitM), but rare.<br><br>
+        Impact same (network broken) whether accidental or malicious.<br>
+        Examen : Rogue DHCP = unauthorized DHCP (not necessarily attack).
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : IP helper-address = DHCP server IP only</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. <code>ip helper-address</code> forwards <strong>multiple services</strong>, not just DHCP.<br><br>
+        Forwarded (default Cisco) : DHCP (67/68), DNS (53), TFTP (69), NetBIOS (137/138), TACACS (49).<br>
+        DHCP most common usage, but not exclusive.<br><br>
+        Can configure : ip helper-address forwards any UDP service (configurable).<br>
+        Examen : IP helper = broadcast relay mechanism (primarily DHCP).
+      </div>
+    </div>
+  </div>
+
+  <!-- RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Pool épuisé</strong> : All IPs allocated → APIPA. Causes: Undersized pool, long lease time, multiple interfaces. Fix: Expand pool, reduce lease (8-12h), release stale leases. Formula: Pool ≥ devices × 1.5</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Bail expiré</strong> : Lease timeout → APIPA. T1 (50%) renew fails, T2 (87.5%) fails → expires. Symptom: Sudden loss after lease duration. Fix: ipconfig /renew, ensure DHCP availability, longer lease</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Conflit IP</strong> : DHCP assigns IP already used (static). Prevention: Exclude static range from pool, enable conflict detection (ping before assign). Fix: ipconfig /release/renew, proper IP planning</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>DHCP rogue</strong> : Unauthorized DHCP server (home router accidental). Symptom: Wrong gateway, random failures. Diagnostic: Check gateway IP, MAC vendor. Prevention: DHCP Snooping (trusted ports only)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Relay agent</strong> : ip helper-address forwards DHCP across subnets. Missing/wrong → APIPA different VLANs. Config: ip helper-address [DHCP-server-IP] on VLAN interface. Centralized DHCP + relay = best practice</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Commands</strong> : ipconfig /release, ipconfig /renew, show ip dhcp binding (server leases), show running-config interface (relay), show ip dhcp snooping binding (rogue detection). APIPA = 169.254.x.x signature DHCP failure</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 12 : Problèmes DNS</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">TR13 - Phase 5</span>
+    <a class="nav-btn next" href="#">Module 5.0 en cours →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m5_tr13_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+initMastery();
+</script>
+  <div style="margin-top:40px;text-align:center;">
+  <a class="nav-btn" href="index.html">← Accueil — Plan de cours</a>
+</body>
+</html>

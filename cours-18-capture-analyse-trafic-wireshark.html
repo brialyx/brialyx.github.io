@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TR18 — Capture et analyse de trafic · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 5.0 — Dépannage réseau</span> &nbsp;›&nbsp; Cours 18</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 5 · TR18</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-lab">🧪 LAB</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡⚡ Difficile</span>
+  </div>
+
+  <h1><span>Capture et analyse</span> de trafic</h1>
+  <span class="tagline">// Wireshark — Filtres de capture, lecture captures, identification anomalies, analyse protocoles</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise filtres de capture Wireshark</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je lis et interprète captures réseau</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'identifie anomalies et problèmes</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'analyse protocoles (TCP, DNS, HTTP)</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- WIRESHARK INTRO -->
+  <div class="section">
+    <div class="section-label">Packet analyzer</div>
+    <h2>Wireshark — Introduction</h2>
+
+    <p><strong>Wireshark</strong> = Analyseur de paquets réseau (packet sniffer). Capture trafic en temps réel, analyse protocoles, troubleshooting réseau.</p>
+
+    <h3>// Principe fonctionnement</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      1. <strong>Promiscuous mode</strong> : NIC capture ALL packets (not just addressed to it)<br>
+      2. <strong>Capture</strong> : Wireshark reads packets from NIC<br>
+      3. <strong>Decode</strong> : Parse protocols (Ethernet, IP, TCP, HTTP, etc.)<br>
+      4. <strong>Display</strong> : Show packets human-readable format<br>
+      5. <strong>Filter</strong> : Display specific traffic (by IP, port, protocol)<br>
+      6. <strong>Analyze</strong> : Statistics, follow streams, export data
+    </div>
+
+    <h3>// Installation</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Windows/macOS/Linux</strong> : Download wireshark.org (free, open source)</li>
+      <li><strong>Requires admin/root</strong> : Promiscuous mode = privileged operation</li>
+      <li><strong>WinPcap/Npcap</strong> : Windows driver required (packet capture)</li>
+    </ul>
+
+    <h3>// Interface Wireshark</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>3 panels principaux :</strong><br><br>
+
+      1. <strong>Packet List</strong> (top) :<br>
+      &nbsp;&nbsp;&nbsp;→ Summary each packet (time, source, dest, protocol, info)<br>
+      &nbsp;&nbsp;&nbsp;→ One line per packet<br><br>
+
+      2. <strong>Packet Details</strong> (middle) :<br>
+      &nbsp;&nbsp;&nbsp;→ Protocol layers expandable (Ethernet → IP → TCP → HTTP)<br>
+      &nbsp;&nbsp;&nbsp;→ Header fields detailed<br><br>
+
+      3. <strong>Packet Bytes</strong> (bottom) :<br>
+      &nbsp;&nbsp;&nbsp;→ Raw hexadecimal data<br>
+      &nbsp;&nbsp;&nbsp;→ ASCII representation
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Wireshark = powerful tool, use responsibly</strong>
+        Captures ALL traffic (including passwords if unencrypted).<br>
+        Corporate networks : Get permission before packet capture.<br>
+        Legal/ethical : Only capture traffic you're authorized to monitor.
+      </div>
+    </div>
+  </div>
+
+  <!-- CAPTURE FILTERS -->
+  <div class="section">
+    <div class="section-label">Filtering traffic</div>
+    <h2>Filtres de capture — Capture Filters</h2>
+
+    <p><strong>Capture filters</strong> = Applied BEFORE capture (limit what's captured). Syntax BPF (Berkeley Packet Filter).</p>
+
+    <h3>// Capture filter vs Display filter</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Type</th><th>When applied</th><th>Purpose</th><th>Syntax</th></tr>
+        <tr>
+          <td><strong>Capture filter</strong></td>
+          <td>Before capture</td>
+          <td>Limit what's captured (save disk/memory)</td>
+          <td>BPF (tcpdump)</td>
+        </tr>
+        <tr>
+          <td><strong>Display filter</strong></td>
+          <td>After capture</td>
+          <td>Show subset captured packets</td>
+          <td>Wireshark syntax</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>// Capture filter examples</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Host-based :</strong><br>
+      host 192.168.1.100<br>
+      → Capture traffic to/from 192.168.1.100<br><br>
+
+      src host 192.168.1.50<br>
+      → Only traffic FROM 192.168.1.50<br><br>
+
+      dst host 8.8.8.8<br>
+      → Only traffic TO 8.8.8.8<br><br>
+
+      <strong>Port-based :</strong><br>
+      port 80<br>
+      → HTTP traffic (port 80)<br><br>
+
+      port 53<br>
+      → DNS traffic<br><br>
+
+      portrange 1000-2000<br>
+      → Ports 1000 to 2000<br><br>
+
+      <strong>Protocol-based :</strong><br>
+      tcp<br>
+      → TCP traffic only<br><br>
+
+      udp<br>
+      → UDP traffic only<br><br>
+
+      icmp<br>
+      → ICMP (ping) traffic<br><br>
+
+      <strong>Combinations (AND, OR, NOT) :</strong><br>
+      host 192.168.1.100 and port 443<br>
+      → Traffic to/from .100 on port 443 (HTTPS)<br><br>
+
+      tcp port 80 or tcp port 443<br>
+      → HTTP OR HTTPS<br><br>
+
+      not broadcast and not multicast<br>
+      → Exclude broadcast/multicast (cleaner capture)
+    </div>
+
+    <h3>// Setting capture filter</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      1. Wireshark → Capture → Options<br>
+      2. Select interface (eth0, Wi-Fi, etc.)<br>
+      3. Enter capture filter field : <strong>port 80</strong><br>
+      4. Start capture<br><br>
+
+      → Only HTTP packets captured ✅
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>Capture filter = performance optimization</strong>
+        Busy network : Capture ALL = millions packets (disk/memory).<br>
+        Capture filter : Only relevant traffic (focused troubleshooting).<br>
+        Example : "port 53" = DNS only (ignore other traffic).
+      </div>
+    </div>
+  </div>
+
+  <!-- DISPLAY FILTERS -->
+  <div class="section">
+    <div class="section-label">Post-capture filtering</div>
+    <h2>Filtres d'affichage — Display Filters</h2>
+
+    <p><strong>Display filters</strong> = Applied AFTER capture (show subset packets). More flexible syntax than capture filters.</p>
+
+    <h3>// Display filter examples</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>IP-based :</strong><br>
+      ip.addr == 192.168.1.100<br>
+      → Traffic to/from 192.168.1.100<br><br>
+
+      ip.src == 192.168.1.50<br>
+      → Source IP = .50<br><br>
+
+      ip.dst == 8.8.8.8<br>
+      → Destination IP = 8.8.8.8<br><br>
+
+      <strong>Protocol-based :</strong><br>
+      tcp<br>
+      → TCP packets only<br><br>
+
+      dns<br>
+      → DNS traffic<br><br>
+
+      http<br>
+      → HTTP traffic<br><br>
+
+      tls<br>
+      → TLS/SSL traffic<br><br>
+
+      <strong>Port-based :</strong><br>
+      tcp.port == 443<br>
+      → TCP port 443 (HTTPS)<br><br>
+
+      udp.port == 53<br>
+      → UDP port 53 (DNS)<br><br>
+
+      tcp.srcport == 80<br>
+      → Source port 80<br><br>
+
+      <strong>TCP flags :</strong><br>
+      tcp.flags.syn == 1<br>
+      → SYN packets (connection initiation)<br><br>
+
+      tcp.flags.reset == 1<br>
+      → RST packets (connection reset)<br><br>
+
+      tcp.flags == 0x012<br>
+      → SYN+ACK packets (handshake response)<br><br>
+
+      <strong>HTTP-specific :</strong><br>
+      http.request.method == "GET"<br>
+      → HTTP GET requests<br><br>
+
+      http.response.code == 404<br>
+      → HTTP 404 errors<br><br>
+
+      http.host contains "google.com"<br>
+      → Requests to google.com<br><br>
+
+      <strong>Combinations :</strong><br>
+      ip.addr == 192.168.1.100 && tcp.port == 443<br>
+      → .100 HTTPS traffic<br><br>
+
+      dns || http<br>
+      → DNS OR HTTP<br><br>
+
+      !(arp || icmp || dns)<br>
+      → Exclude ARP, ICMP, DNS (show other traffic)
+    </div>
+
+    <h3>// Operators</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Operator</th><th>Meaning</th><th>Example</th></tr>
+        <tr><td>==</td><td>Equals</td><td>ip.addr == 192.168.1.1</td></tr>
+        <tr><td>!=</td><td>Not equals</td><td>tcp.port != 80</td></tr>
+        <tr><td>></td><td>Greater than</td><td>frame.len > 1000</td></tr>
+        <tr><td><</td><td>Less than</td><td>tcp.window_size < 1000</td></tr>
+        <tr><td>contains</td><td>Contains string</td><td>http.host contains "example"</td></tr>
+        <tr><td>matches</td><td>Regex match</td><td>http.host matches ".*\.com"</td></tr>
+        <tr><td>&&</td><td>AND</td><td>ip.src == X && tcp.port == 80</td></tr>
+        <tr><td>||</td><td>OR</td><td>tcp.port == 80 || tcp.port == 443</td></tr>
+        <tr><td>!</td><td>NOT</td><td>!dns</td></tr>
+      </table>
+    </div>
+
+    <h3>// Using display filters</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      1. Capture packets (no filter = capture ALL)<br>
+      2. Filter toolbar (top) : Enter display filter<br>
+      &nbsp;&nbsp;&nbsp;Example : <strong>tcp.port == 443</strong><br>
+      3. Press Enter → Only matching packets displayed<br>
+      4. Clear filter : X button (show all again)
+    </div>
+  </div>
+
+  <!-- READING CAPTURES -->
+  <div class="section">
+    <div class="section-label">Packet analysis</div>
+    <h2>Lecture d'une capture — Reading packets</h2>
+
+    <h3>// TCP handshake example</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>3-way handshake :</strong><br><br>
+
+      Packet 1 : <strong style="color:var(--green)">SYN</strong><br>
+      Source : 192.168.1.50:49678<br>
+      Dest : 8.8.8.8:443<br>
+      Flags : SYN<br>
+      Seq : 0 (relative)<br>
+      → Client initiates connection<br><br>
+
+      Packet 2 : <strong style="color:var(--green)">SYN+ACK</strong><br>
+      Source : 8.8.8.8:443<br>
+      Dest : 192.168.1.50:49678<br>
+      Flags : SYN, ACK<br>
+      Seq : 0, Ack : 1<br>
+      → Server acknowledges, sends SYN<br><br>
+
+      Packet 3 : <strong style="color:var(--green)">ACK</strong><br>
+      Source : 192.168.1.50:49678<br>
+      Dest : 8.8.8.8:443<br>
+      Flags : ACK<br>
+      Seq : 1, Ack : 1<br>
+      → Client acknowledges → <strong>Connection established</strong> ✅
+    </div>
+
+    <h3>// DNS query example</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Packet 1 : <strong>DNS Query</strong><br>
+      Source : 192.168.1.50:54321 (random port)<br>
+      Dest : 8.8.8.8:53 (DNS)<br>
+      Protocol : DNS<br>
+      Query : google.com A record<br>
+      → Client asks IP for google.com<br><br>
+
+      Packet 2 : <strong>DNS Response</strong><br>
+      Source : 8.8.8.8:53<br>
+      Dest : 192.168.1.50:54321<br>
+      Protocol : DNS<br>
+      Answer : google.com → 142.250.185.46<br>
+      → DNS server responds with IP ✅
+    </div>
+
+    <h3>// HTTP request/response</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Packet X : <strong>HTTP GET</strong><br>
+      GET /index.html HTTP/1.1<br>
+      Host: example.com<br>
+      User-Agent: Mozilla/5.0<br>
+      → Client requests page<br><br>
+
+      Packet Y : <strong>HTTP 200 OK</strong><br>
+      HTTP/1.1 200 OK<br>
+      Content-Type: text/html<br>
+      Content-Length: 1234<br>
+      → Server responds with page data ✅
+    </div>
+
+    <h3>// Follow TCP Stream</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Reassemble conversation :</strong><br><br>
+
+      1. Right-click packet → Follow → TCP Stream<br>
+      2. Wireshark shows entire conversation :<br>
+      &nbsp;&nbsp;&nbsp;Red = Client → Server<br>
+      &nbsp;&nbsp;&nbsp;Blue = Server → Client<br>
+      3. See complete HTTP request/response (not fragmented)<br><br>
+
+      → Useful : View full application-layer conversation
+    </div>
+  </div>
+
+  <!-- IDENTIFYING ANOMALIES -->
+  <div class="section">
+    <div class="section-label">Troubleshooting</div>
+    <h2>Identification d'anomalies — Detecting problems</h2>
+
+    <h3>// Anomaly #1 : Retransmissions excessives</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Display filter :</strong><br>
+      tcp.analysis.retransmission<br><br>
+
+      <strong>What it shows :</strong><br>
+      → Packets retransmitted (original packet lost)<br>
+      → Red/black background in packet list<br><br>
+
+      <strong>Cause :</strong><br>
+      → Packet loss (congestion, bad cable, interference)<br>
+      → High retransmissions = network problem ❌<br><br>
+
+      <strong>Normal :</strong> <1% retransmissions<br>
+      <strong>Problem :</strong> >5% retransmissions
+    </div>
+
+    <h3>// Anomaly #2 : TCP resets (RST)</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Display filter :</strong><br>
+      tcp.flags.reset == 1<br><br>
+
+      <strong>Causes RST :</strong><br>
+      → Firewall blocking connection<br>
+      → Application crash (closes connection abruptly)<br>
+      → Port closed (connection refused)<br>
+      → Network error<br><br>
+
+      <strong>Symptom :</strong> Connection drops unexpectedly
+    </div>
+
+    <h3>// Anomaly #3 : Duplicate ACKs</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Display filter :</strong><br>
+      tcp.analysis.duplicate_ack<br><br>
+
+      <strong>What it means :</strong><br>
+      → Receiver sends multiple ACKs same sequence number<br>
+      → Indicates : Packet(s) missing (out-of-order delivery)<br><br>
+
+      <strong>Cause :</strong> Packet loss, reordering (network problem)
+    </div>
+
+    <h3>// Anomaly #4 : DNS failures</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Display filter :</strong><br>
+      dns.flags.rcode != 0<br><br>
+
+      <strong>Response codes :</strong><br>
+      0 = No error (success)<br>
+      1 = Format error<br>
+      2 = Server failure<br>
+      3 = Name error (NXDOMAIN - domain doesn't exist)<br>
+      5 = Refused<br><br>
+
+      → NXDOMAIN = typo in domain OR domain doesn't exist
+    </div>
+
+    <h3>// Anomaly #5 : HTTP errors</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Display filter :</strong><br>
+      http.response.code >= 400<br><br>
+
+      <strong>Common errors :</strong><br>
+      400 = Bad Request (client error)<br>
+      401 = Unauthorized (authentication required)<br>
+      403 = Forbidden (access denied)<br>
+      404 = Not Found (page doesn't exist)<br>
+      500 = Internal Server Error (server problem)<br>
+      503 = Service Unavailable (server overloaded)
+    </div>
+
+    <h3>// Anomaly #6 : ARP spoofing</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Display filter :</strong><br>
+      arp<br><br>
+
+      <strong>Check :</strong><br>
+      Same IP address → Multiple different MAC addresses<br>
+      → ARP poisoning attack (man-in-the-middle) ❌<br><br>
+
+      Normal : 1 IP = 1 MAC (consistent)
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Question examen : "High retransmissions in Wireshark. MOST likely cause ?"</strong>
+        A) DNS failure<br>
+        B) Packet loss (congestion, bad cable)<br>
+        C) Firewall blocking<br>
+        D) Wrong IP address<br><br>
+        <strong>Réponse : B) Packet loss</strong><br>
+        Retransmissions = packets lost in transit (need resend).
+      </div>
+    </div>
+  </div>
+
+  <!-- STATISTICS -->
+  <div class="section">
+    <div class="section-label">Analysis tools</div>
+    <h2>Statistiques Wireshark — Built-in analysis</h2>
+
+    <h3>// Statistics menu</h3>
+
+    <p><strong>1. Protocol Hierarchy</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Statistics → Protocol Hierarchy<br><br>
+
+      Shows :<br>
+      → Percentage each protocol (Ethernet, IP, TCP, HTTP, etc.)<br>
+      → Bytes transmitted per protocol<br><br>
+
+      Useful : Identify what's consuming bandwidth
+    </div>
+
+    <p><strong>2. Conversations</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Statistics → Conversations<br><br>
+
+      Shows :<br>
+      → All IP conversations (who talking to whom)<br>
+      → Bytes transferred each conversation<br>
+      → Sort by bytes (find top talkers)<br><br>
+
+      Useful : Identify bandwidth hogs
+    </div>
+
+    <p><strong>3. I/O Graph</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Statistics → I/O Graph<br><br>
+
+      Shows :<br>
+      → Traffic over time (packets/sec, bytes/sec)<br>
+      → Visualize traffic patterns (spikes = events)<br><br>
+
+      Useful : Identify when problem occurred (time correlation)
+    </div>
+
+    <p><strong>4. Expert Information</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Analyze → Expert Information<br><br>
+
+      Shows :<br>
+      → Errors (red) : Serious problems (RST, malformed packets)<br>
+      → Warnings (yellow) : Potential issues (retransmissions, duplicate ACKs)<br>
+      → Notes (cyan) : Informational (TCP window updates)<br><br>
+
+      Useful : Quick overview all problems in capture
+    </div>
+  </div>
+
+  <!-- RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Wireshark</strong> : Packet sniffer, promiscuous mode. 3 panels : Packet List, Details, Bytes. Capture all traffic, decode protocols. Free download wireshark.org. Requires admin privileges</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Capture filters</strong> : Applied BEFORE capture (BPF syntax). Examples: host 192.168.1.100, port 80, tcp, not broadcast. Limit captured packets (performance). Set in Capture Options</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Display filters</strong> : Applied AFTER capture (Wireshark syntax). Examples: ip.addr == X, tcp.port == 443, dns, http.response.code == 404. Operators: ==, !=, &&, ||, !. More flexible than capture</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Reading captures</strong> : TCP handshake (SYN, SYN+ACK, ACK). DNS query/response. HTTP GET/response. Follow TCP Stream (reassemble conversation). Identify protocols layers</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Anomalies</strong> : Retransmissions (tcp.analysis.retransmission >5% bad), TCP RST (connection abort), Duplicate ACKs (packet loss), DNS failures (rcode != 0), HTTP errors (>= 400), ARP spoofing (IP → multiple MACs)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Statistics</strong> : Protocol Hierarchy (bandwidth per protocol), Conversations (top talkers), I/O Graph (traffic over time), Expert Information (errors/warnings summary). Analyze menu powerful troubleshooting</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 17 : Outils matériels</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">TR18 - Phase 5</span>
+    <a class="nav-btn next" href="#">Cours 19 : Logs système →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m5_tr18_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+initMastery();
+</script>
+  <div style="margin-top:40px;text-align:center;">
+  <a class="nav-btn" href="index.html">← Accueil — Plan de cours</a>
+</body>
+</html>

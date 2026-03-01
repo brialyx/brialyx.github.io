@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TR17 — Outils matériels dépannage · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 5.0 — Dépannage réseau</span> &nbsp;›&nbsp; Cours 17</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 5 · TR17</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-lab">🧪 LAB</span>
+    <span class="pill pill-diff">⚡⚡☆ Moyen</span>
+  </div>
+
+  <h1><span>Outils matériels</span> dépannage</h1>
+  <span class="tagline">// Hardware tools — Cable tester, toner probe, certifier, OTDR, loopback, multimeter, Wi-Fi analyzer</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je utilise cable tester et toner probe</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends cable certifier (Fluke)</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais OTDR fibre optique</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je diagnostique avec loopback, multimeter, Wi-Fi analyzer</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- CABLE TESTER -->
+  <div class="section">
+    <div class="section-label">Basic testing</div>
+    <h2>Cable Tester — Test continuité câble</h2>
+
+    <p><strong>Cable tester</strong> = Device test câbles Ethernet continuité, pinout, faults (opens, shorts, split pairs).</p>
+
+    <h3>// Fonctions cable tester</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Continuité</strong> : Chaque fil connecté correctement ?</li>
+      <li><strong>Pinout verification</strong> : T568A vs T568B, correct wiring ?</li>
+      <li><strong>Open circuit</strong> : Fil cassé (broken wire)</li>
+      <li><strong>Short circuit</strong> : Deux fils touchent (shorted together)</li>
+      <li><strong>Split pairs</strong> : Twisted pairs incorrectement arrangés (performance loss)</li>
+      <li><strong>Cable length</strong> : Approximation longueur (basic testers)</li>
+    </ul>
+
+    <h3>// Usage typique</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Test procedure :</strong><br><br>
+
+      1. Connect cable ends → Tester main unit + remote unit<br>
+      2. Power ON → Press TEST button<br>
+      3. Tester sends signal each wire (1-8)<br>
+      4. Remote unit receives signals<br>
+      5. LED indicators show results :<br>
+      &nbsp;&nbsp;&nbsp;✅ Green LED = Wire OK<br>
+      &nbsp;&nbsp;&nbsp;❌ Red LED / No LED = Wire fault<br><br>
+
+      <strong>Example output :</strong><br>
+      Pin 1 → <strong style="color:var(--green)">Green</strong> (OK)<br>
+      Pin 2 → <strong style="color:var(--green)">Green</strong> (OK)<br>
+      Pin 3 → <strong style="color:var(--red)">OFF</strong> (Open circuit - broken wire)<br>
+      Pin 4 → <strong style="color:var(--green)">Green</strong> (OK)<br>
+      ...<br><br>
+
+      → Pin 3 broken = Cable defective (replace OR re-terminate)
+    </div>
+
+    <h3>// Types cable testers</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Type</th><th>Features</th><th>Cost</th><th>Usage</th></tr>
+        <tr>
+          <td><strong>Basic</strong></td>
+          <td>Continuity, pinout</td>
+          <td>$20-$50</td>
+          <td>Home, small office</td>
+        </tr>
+        <tr>
+          <td><strong>Advanced</strong></td>
+          <td>+ Length, wire map</td>
+          <td>$100-$300</td>
+          <td>Professional install</td>
+        </tr>
+        <tr>
+          <td><strong>Certifier</strong></td>
+          <td>+ Performance specs</td>
+          <td>$2,000-$8,000+</td>
+          <td>Certified install, datacenter</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>// Limitations</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Tests connectivity ONLY (not performance/speed)</li>
+      <li>Cannot certify cable Cat6/Cat6a standards (needs certifier)</li>
+      <li>Length measurement approximation (not precise)</li>
+    </ul>
+
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>Cable tester = first tool troubleshooting</strong>
+        Quick test : Cable good or bad (5 seconds).<br>
+        Identifies : Opens, shorts, miswires (80% cable problems).<br>
+        Inexpensive : Every network tech should have basic tester.
+      </div>
+    </div>
+  </div>
+
+  <!-- TONER PROBE -->
+  <div class="section">
+    <div class="section-label">Cable tracing</div>
+    <h2>Toner & Probe — Localiser câble</h2>
+
+    <p><strong>Toner (tone generator) + Probe (inductive amplifier)</strong> = Locate specific cable dans bundle/patch panel.</p>
+
+    <h3>// Principe fonctionnement</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Toner (Generator) :</strong><br>
+      → Connect to cable one end<br>
+      → Sends audio tone signal (audible frequency ~1 kHz)<br>
+      → Signal travels cable length<br><br>
+
+      <strong>Probe (Detector) :</strong><br>
+      → Inductive pickup (no contact needed)<br>
+      → Touch/hover cables → Detects tone<br>
+      → Speaker/LED indicates signal strength<br>
+      → Loudest tone = correct cable ✅
+    </div>
+
+    <h3>// Usage scenarios</h3>
+
+    <p><strong>1. Locate cable in patch panel</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Problem : 100 cables patch panel, which one goes Office 205 ?<br><br>
+
+      Solution :<br>
+      1. Connect toner → Wall jack Office 205<br>
+      2. Go patch panel → Use probe each cable<br>
+      3. Probe detects tone → Correct cable identified ✅<br>
+      4. Label cable (Office 205)
+    </div>
+
+    <p><strong>2. Trace cable in ceiling/walls</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Problem : Cable runs ceiling, where exactly ?<br><br>
+
+      Solution :<br>
+      1. Connect toner → Cable end<br>
+      2. Walk ceiling/wall with probe<br>
+      3. Follow tone signal → Trace cable path<br>
+      4. Identify exact location (install AP, troubleshoot break)
+    </div>
+
+    <h3>// Best practices</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Disconnect cables</strong> : Unplug from switch (avoid tone spreading network)</li>
+      <li><strong>Adjust sensitivity</strong> : Probe volume control (reduce false positives)</li>
+      <li><strong>Test multiple points</strong> : Confirm correct cable (not adjacent interference)</li>
+      <li><strong>Label immediately</strong> : Once identified, label both ends</li>
+    </ul>
+
+    <div class="callout ok">
+      <span class="callout-icon">🔍</span>
+      <div class="callout-body">
+        <strong>Toner & Probe = cable identification essential</strong>
+        Unlabeled patch panels = nightmare troubleshooting.<br>
+        Toner finds cable quickly (vs trial-and-error hours).<br>
+        Cost : $30-$100 (pays for itself first use).
+      </div>
+    </div>
+  </div>
+
+  <!-- CABLE CERTIFIER -->
+  <div class="section">
+    <div class="section-label">Performance testing</div>
+    <h2>Cable Certifier (Fluke) — Certification professionnelle</h2>
+
+    <p><strong>Cable certifier</strong> = Advanced tester certifies cable meets standards (Cat5e, Cat6, Cat6a). Mesure performance parameters.</p>
+
+    <h3>// Tests performed</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Wire map</strong> : Pinout correct (like basic tester)</li>
+      <li><strong>Length</strong> : Precise measurement (TDR - Time Domain Reflectometry)</li>
+      <li><strong>Attenuation</strong> : Signal loss over distance (dB)</li>
+      <li><strong>NEXT (Near-End Crosstalk)</strong> : Interference between pairs</li>
+      <li><strong>Return loss</strong> : Impedance mismatch reflections</li>
+      <li><strong>Propagation delay</strong> : Signal travel time</li>
+      <li><strong>Delay skew</strong> : Timing difference between pairs</li>
+    </ul>
+
+    <h3>// Certification standards</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Category</th><th>Bandwidth</th><th>Max Length</th><th>Usage</th></tr>
+        <tr><td>Cat5e</td><td>100 MHz</td><td>100m</td><td>1 Gbps Ethernet</td></tr>
+        <tr><td>Cat6</td><td>250 MHz</td><td>100m (55m 10G)</td><td>1/10 Gbps</td></tr>
+        <tr><td>Cat6a</td><td>500 MHz</td><td>100m</td><td>10 Gbps full distance</td></tr>
+        <tr><td>Cat7</td><td>600 MHz</td><td>100m</td><td>10 Gbps shielded</td></tr>
+      </table>
+    </div>
+
+    <h3>// Usage certification</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Certification workflow :</strong><br><br>
+
+      1. Select standard (Cat6, Cat6a, etc.)<br>
+      2. Connect certifier → Cable both ends<br>
+      3. Run automated test suite (~30-60 seconds)<br>
+      4. Certifier displays : <strong>PASS</strong> or <strong>FAIL</strong><br>
+      5. Print certification report (compliance documentation)<br><br>
+
+      <strong>PASS :</strong><br>
+      ✅ All parameters meet/exceed standard<br>
+      → Cable certified Cat6 (warranty compliant)<br><br>
+
+      <strong>FAIL :</strong><br>
+      ❌ One or more parameters outside spec<br>
+      → Shows which test failed (NEXT fail, attenuation high)<br>
+      → Re-terminate or replace cable
+    </div>
+
+    <h3>// Popular certifiers</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Fluke DSX-5000</strong> : Industry standard ($5,000-$8,000)</li>
+      <li><strong>Fluke Versiv</strong> : Modular platform (copper + fiber)</li>
+      <li><strong>Ideal LanTek</strong> : Budget option ($2,000-$4,000)</li>
+    </ul>
+
+    <h3>// When certification required ?</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>New installations</strong> : Structured cabling projects (building, datacenter)</li>
+      <li><strong>Warranty compliance</strong> : Cable manufacturer warranty requires certification</li>
+      <li><strong>High-speed networks</strong> : 10 Gbps (Cat6a required, must certify)</li>
+      <li><strong>Troubleshooting</strong> : Intermittent errors (certify cable meets spec)</li>
+    </ul>
+
+    <div class="callout warn">
+      <span class="callout-icon">💰</span>
+      <div class="callout-body">
+        <strong>Certifier = expensive professional tool</strong>
+        Cost : $2,000-$8,000+ (vs basic tester $50).<br>
+        Required : Professional installers, datacenters (warranty).<br>
+        Not needed : Home, small office (basic tester sufficient).
+      </div>
+    </div>
+  </div>
+
+  <!-- OTDR -->
+  <div class="section">
+    <div class="section-label">Fiber optic testing</div>
+    <h2>OTDR — Optical Time Domain Reflectometer</h2>
+
+    <p><strong>OTDR</strong> = Advanced fiber testing. Locates breaks, splices, connectors. Measures loss per segment (voir Cours TR06 rappel).</p>
+
+    <h3>// Principe OTDR (recap)</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      1. OTDR sends light pulse into fiber<br>
+      2. Light reflects back from imperfections<br>
+      3. OTDR measures time reflection → Calculate distance<br>
+      4. Display trace graph :<br>
+      &nbsp;&nbsp;&nbsp;X-axis : Distance (meters/km)<br>
+      &nbsp;&nbsp;&nbsp;Y-axis : Signal loss (dB)<br><br>
+
+      <strong>Trace shows :</strong><br>
+      → Gradual slope = fiber attenuation (normal loss distance)<br>
+      → Small drop = connector (0.3-0.5 dB)<br>
+      → Larger drop = splice (0.1-0.3 dB)<br>
+      → Sudden drop end = fiber break (repair needed)
+    </div>
+
+    <h3>// Usage OTDR</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Locate fiber breaks</strong> : Distance exact (repair crews)</li>
+      <li><strong>Measure total loss</strong> : Verify optical budget compliance</li>
+      <li><strong>Identify bad splice/connector</strong> : Excessive loss specific point</li>
+      <li><strong>Certification new fiber</strong> : Document baseline performance</li>
+      <li><strong>Troubleshoot intermittent</strong> : Detect microbends, stress points</li>
+    </ul>
+
+    <h3>// OTDR vs Light Meter</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Tool</th><th>Measures</th><th>Information</th><th>Cost</th></tr>
+        <tr>
+          <td><strong>Light Meter</strong></td>
+          <td>Total loss end-to-end</td>
+          <td>Total dB loss (no distance)</td>
+          <td>$200-$500</td>
+        </tr>
+        <tr>
+          <td><strong>OTDR</strong></td>
+          <td>Loss per segment</td>
+          <td>Distance + loss each event</td>
+          <td>$5,000-$20,000+</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>// When use OTDR ?</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Long haul fiber</strong> : Telco, ISP (km fiber runs)</li>
+      <li><strong>Complex installations</strong> : Multiple splices, connectors</li>
+      <li><strong>Troubleshooting breaks</strong> : Locate exact distance fault</li>
+    </ul>
+
+    <p><strong>When light meter sufficient ?</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Short distance datacenter (<500m)</li>
+      <li>Simple point-to-point links (no splices)</li>
+      <li>Total loss measurement only (pass/fail optical budget)</li>
+    </ul>
+  </div>
+
+  <!-- LOOPBACK ADAPTER -->
+  <div class="section">
+    <div class="section-label">Interface testing</div>
+    <h2>Loopback Adapter — Test interface NIC/port</h2>
+
+    <p><strong>Loopback adapter</strong> = Plug connects TX → RX (transmit loops back receive). Tests interface hardware isolated.</p>
+
+    <h3>// Types loopback</h3>
+
+    <p><strong>1. Ethernet loopback (RJ-45)</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Loopback wiring (RJ-45 plug) :<br>
+      Pin 1 (TX+) → Pin 3 (RX+)<br>
+      Pin 2 (TX-) → Pin 6 (RX-)<br><br>
+
+      → Data transmitted immediately received same port
+    </div>
+
+    <p><strong>2. Fiber loopback (LC/SC)</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Fiber loopback plug :<br>
+      TX fiber → Looped back → RX fiber<br><br>
+
+      → Light transmitted loops back receiver
+    </div>
+
+    <h3>// Usage loopback</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Test procedure :</strong><br><br>
+
+      1. Insert loopback adapter → NIC port<br>
+      2. Run diagnostic software :<br>
+      &nbsp;&nbsp;&nbsp;Windows : Device Manager → NIC properties → Diagnostics<br>
+      &nbsp;&nbsp;&nbsp;Linux : ethtool -t eth0<br>
+      3. Software sends test packets → Loopback<br>
+      4. Verify packets received correctly<br><br>
+
+      <strong>PASS :</strong> NIC hardware OK ✅<br>
+      <strong>FAIL :</strong> NIC defective (replace card) ❌
+    </div>
+
+    <h3>// Troubleshooting scenarios</h3>
+
+    <p><strong>Problem : No link on port</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Question : Is problem NIC or cable ?<br><br>
+
+      Test :<br>
+      1. Loopback adapter → NIC<br>
+      2. Run diagnostics<br><br>
+
+      If PASS → NIC OK, problem = cable/switch port<br>
+      If FAIL → NIC defective, replace
+    </div>
+
+    <p><strong>Problem : Intermittent errors</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Test : Loopback isolates NIC hardware<br>
+      → Errors in loopback = NIC fault<br>
+      → No errors loopback = External problem (cable, switch, EMI)
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">🔧</span>
+      <div class="callout-body">
+        <strong>Loopback = isolation testing</strong>
+        Removes variables : Cable, switch, other devices.<br>
+        Tests ONLY : NIC hardware transmit/receive.<br>
+        DIY : Can make loopback plug (wire RJ-45 connector pins 1→3, 2→6).
+      </div>
+    </div>
+  </div>
+
+  <!-- MULTIMETER -->
+  <div class="section">
+    <div class="section-label">Electrical testing</div>
+    <h2>Multimètre — Voltage, continuity, resistance</h2>
+
+    <p><strong>Multimètre</strong> = Electrical measurement tool. Tests voltage, current, resistance, continuity.</p>
+
+    <h3>// Network usage multimeter</h3>
+
+    <p><strong>1. PoE voltage test</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Problem : IP phone/AP not powering on<br><br>
+
+      Test PoE :<br>
+      1. Set multimeter → DC voltage<br>
+      2. Probe switch PoE port pins :<br>
+      &nbsp;&nbsp;&nbsp;Pins 1/2 (+) and 3/6 (-) — Mode A<br>
+      &nbsp;&nbsp;&nbsp;Pins 4/5 (+) and 7/8 (-) — Mode B<br>
+      3. Measure voltage :<br>
+      &nbsp;&nbsp;&nbsp;PoE (802.3af) : 44-57V DC<br>
+      &nbsp;&nbsp;&nbsp;PoE+ (802.3at) : 50-57V DC<br>
+      &nbsp;&nbsp;&nbsp;PoE++ (802.3bt) : 50-57V DC<br><br>
+
+      If voltage present → PoE works, device problem<br>
+      If no voltage → PoE not enabled or switch fault
+    </div>
+
+    <p><strong>2. Cable continuity test</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Test broken wire :<br>
+      1. Set multimeter → Continuity mode (beep icon)<br>
+      2. Probe both ends same wire<br>
+      3. Beep sound → Wire continuous ✅<br>
+      4. No beep → Wire broken ❌
+    </div>
+
+    <p><strong>3. Ground/earth test</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Verify equipment properly grounded :<br>
+      1. Measure voltage chassis → ground<br>
+      2. Should be 0V (or <1V)<br>
+      3. High voltage → Grounding fault (electrical hazard)
+    </div>
+
+    <h3>// Safety warnings</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>AC mains voltage</strong> : 120/240V dangerous (electrocution risk)</li>
+      <li><strong>PoE safe</strong> : 48-57V DC (low current, safe touch)</li>
+      <li><strong>Never probe live AC</strong> : Unless trained electrician</li>
+      <li><strong>Use correct setting</strong> : AC vs DC, voltage range</li>
+    </ul>
+  </div>
+
+  <!-- WIFI ANALYZER -->
+  <div class="section">
+    <div class="section-label">Wireless troubleshooting</div>
+    <h2>Wi-Fi Analyzer — Signal strength, channels, interference</h2>
+
+    <p><strong>Wi-Fi Analyzer</strong> = Software/app visualize Wi-Fi networks. Shows signal strength (RSSI), channel usage, interference (voir Cours TR14 rappel).</p>
+
+    <h3>// Features Wi-Fi Analyzer</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Network discovery</strong> : List all visible SSIDs</li>
+      <li><strong>Signal strength</strong> : RSSI (-30 to -90 dBm)</li>
+      <li><strong>Channel graph</strong> : Visualize channel congestion</li>
+      <li><strong>Best channel recommendation</strong> : Least crowded channel</li>
+      <li><strong>Speed test</strong> : Measure throughput</li>
+      <li><strong>Connection info</strong> : Frequency (2.4/5 GHz), security type, MAC address</li>
+    </ul>
+
+    <h3>// Popular Wi-Fi Analyzer apps</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>App</th><th>Platform</th><th>Cost</th></tr>
+        <tr><td>NetSpot</td><td>Windows, macOS</td><td>Free basic, $49-$149 pro</td></tr>
+        <tr><td>WiFi Analyzer</td><td>Android (Farproc)</td><td>Free</td></tr>
+        <tr><td>WiFiman</td><td>iOS, Android (Ubiquiti)</td><td>Free</td></tr>
+        <tr><td>inSSIDer</td><td>Windows, macOS</td><td>$20/year</td></tr>
+        <tr><td>Ekahau HeatMapper</td><td>Windows</td><td>Free</td></tr>
+      </table>
+    </div>
+
+    <h3>// Usage troubleshooting</h3>
+
+    <p><strong>1. Measure signal strength</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      User reports slow Wi-Fi<br><br>
+
+      Wi-Fi Analyzer shows :<br>
+      SSID : "CorpWiFi"<br>
+      RSSI : <strong style="color:var(--red)">-75 dBm</strong> (weak signal)<br><br>
+
+      → Signal weak (distance/obstacles)<br>
+      → Solution : Move closer AP, add AP, increase power
+    </div>
+
+    <p><strong>2. Identify channel congestion</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Channel graph shows :<br>
+      Channel 1 : 3 APs (-60, -65, -70 dBm)<br>
+      Channel 6 : <strong style="color:var(--red)">8 APs</strong> (-50 to -80 dBm) — CONGESTED<br>
+      Channel 11 : 2 APs (-75, -80 dBm) — Less congested<br><br>
+
+      → Recommendation : Change AP to channel 11<br>
+      → Reduce interference, improve performance
+    </div>
+
+    <p><strong>3. Detect rogue APs</strong></p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Network scan shows :<br>
+      SSID : "CorpWiFi"<br>
+      BSSID : aa:bb:cc:dd:ee:ff (authorized AP)<br><br>
+
+      SSID : "CorpWiFi" (duplicate)<br>
+      BSSID : <strong style="color:var(--red)">11:22:33:44:55:66</strong> (unauthorized - rogue!)<br><br>
+
+      → Evil Twin OR accidental duplicate<br>
+      → Investigate, locate, remove rogue AP
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">📱</span>
+      <div class="callout-body">
+        <strong>Wi-Fi Analyzer = smartphone essential</strong>
+        Free apps available (Android: WiFi Analyzer, iOS: WiFiman).<br>
+        Instant visibility : Signal, channels, interference.<br>
+        Every network tech : Install on phone (troubleshooting tool).
+      </div>
+    </div>
+  </div>
+
+  <!-- RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Cable tester</strong> : Test continuity, pinout, opens, shorts, split pairs. Basic ($20-$50) vs certifier ($2k-$8k). Quick test cable good/bad. Every tech needs basic tester</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Toner & Probe</strong> : Locate cable in bundle/patch panel. Toner generates tone, probe detects. Essential unlabeled installations. Cost $30-$100. Trace cable ceiling/walls</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Cable certifier (Fluke)</strong> : Certify Cat5e/6/6a performance. Tests attenuation, NEXT, return loss, delay. Pass/fail certification report. Required professional install, warranty, 10G networks</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>OTDR</strong> : Fiber optic testing. Locate breaks, measure loss per segment, distance precise. Cost $5k-$20k. Telco, long haul. Light meter ($200-$500) sufficient datacenter short distance</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Loopback adapter</strong> : Test NIC hardware isolated. TX loops RX. Pass = NIC OK, Fail = NIC defective. Isolates cable vs interface problem. DIY: Wire pins 1→3, 2→6</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Multimeter/Wi-Fi Analyzer</strong> : Multimeter test PoE voltage (44-57V), continuity, ground. Wi-Fi Analyzer (smartphone app free) signal strength RSSI, channel congestion, rogue APs. Essential wireless troubleshooting</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 16 : Commandes diagnostic</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">TR17 - Phase 5</span>
+    <a class="nav-btn next" href="#">Module 5.0 Complet ✅</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m5_tr17_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+initMastery();
+</script>
+  <div style="margin-top:40px;text-align:center;">
+  <a class="nav-btn" href="index.html">← Accueil — Plan de cours</a>
+</body>
+</html>

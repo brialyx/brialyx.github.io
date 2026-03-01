@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TR16 — Commandes de diagnostic · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 5.0 — Dépannage réseau</span> &nbsp;›&nbsp; Cours 16</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 5 · TR16</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-lab">🧪 LAB</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡☆ Moyen</span>
+  </div>
+
+  <h1><span>Commandes</span> de diagnostic</h1>
+  <span class="tagline">// Windows/Linux tools — ping, traceroute, pathping, nslookup, dig, ipconfig, netstat, arp, route, nmap</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je maîtrise ping/traceroute/pathping</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends nslookup/dig DNS</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je utilise ipconfig/ifconfig/ip</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je diagnostique avec netstat/arp/route/nmap</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- PING -->
+  <div class="section">
+    <div class="section-label">Connectivity test</div>
+    <h2>ping — Test reachability</h2>
+
+    <p><strong>ping</strong> = Send ICMP Echo Request → wait Echo Reply. Mesure connectivity, latency, packet loss.</p>
+
+    <h3>// Syntax Windows/Linux</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Windows :</strong><br>
+      C:\> ping google.com<br>
+      C:\> ping 8.8.8.8 -n 100 (send 100 packets)<br>
+      C:\> ping 8.8.8.8 -t (continuous until Ctrl+C)<br>
+      C:\> ping 8.8.8.8 -l 1400 (packet size 1400 bytes)<br>
+      C:\> ping 8.8.8.8 -f (Don't Fragment flag - MTU test)<br><br>
+
+      <strong>Linux :</strong><br>
+      $ ping google.com<br>
+      $ ping -c 100 8.8.8.8 (count 100 packets)<br>
+      $ ping -s 1400 8.8.8.8 (size 1400 bytes)<br>
+      $ ping -M do 8.8.8.8 (Don't Fragment)
+    </div>
+
+    <h3>// Output interpretation</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      C:\> ping 8.8.8.8<br><br>
+
+      Reply from 8.8.8.8: bytes=32 time=<strong style="color:var(--green)">10ms</strong> TTL=54<br>
+      Reply from 8.8.8.8: bytes=32 time=<strong style="color:var(--green)">12ms</strong> TTL=54<br>
+      Reply from 8.8.8.8: bytes=32 time=<strong style="color:var(--green)">11ms</strong> TTL=54<br><br>
+
+      Statistics:<br>
+      Packets: Sent = 4, Received = 4, Lost = 0 (<strong style="color:var(--green)">0% loss</strong>)<br>
+      Minimum = 10ms, Maximum = 12ms, Average = 11ms<br><br>
+
+      <strong>Good :</strong> Low latency (<20 ms), 0% loss ✅<br><br>
+
+      <strong style="color:var(--red)">Bad output :</strong><br>
+      Request timed out. (no response - host down or firewall)<br>
+      Destination host unreachable. (routing problem)<br>
+      TTL expired in transit. (routing loop)
+    </div>
+
+    <h3>// Common options</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Option</th><th>Windows</th><th>Linux</th><th>Purpose</th></tr>
+        <tr><td>Count</td><td>-n 10</td><td>-c 10</td><td>Send 10 packets</td></tr>
+        <tr><td>Continuous</td><td>-t</td><td>(default)</td><td>Until Ctrl+C</td></tr>
+        <tr><td>Size</td><td>-l 1400</td><td>-s 1400</td><td>Packet size bytes</td></tr>
+        <tr><td>Don't Fragment</td><td>-f</td><td>-M do</td><td>MTU test</td></tr>
+        <tr><td>Timeout</td><td>-w 5000</td><td>-W 5</td><td>Wait 5 seconds</td></tr>
+      </table>
+    </div>
+
+    <h3>// Usage troubleshooting</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Test connectivity</strong> : ping 8.8.8.8 (IP works?)</li>
+      <li><strong>Test DNS</strong> : ping google.com (DNS resolves?)</li>
+      <li><strong>Measure latency</strong> : Check RTT times (ms)</li>
+      <li><strong>Detect packet loss</strong> : ping -n 100 (% loss)</li>
+      <li><strong>MTU test</strong> : ping -f -l 1472 (fragmentation?)</li>
+    </ul>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Ping blocked = doesn't mean down</strong>
+        Many firewalls block ICMP (security policy).<br>
+        Ping timeout ≠ host down (may be blocking ICMP).<br>
+        Alternative : Try telnet/nc port test (TCP connection).
+      </div>
+    </div>
+  </div>
+
+  <!-- TRACEROUTE -->
+  <div class="section">
+    <div class="section-label">Path discovery</div>
+    <h2>traceroute / tracert — Trace network path</h2>
+
+    <p><strong>traceroute (tracert Windows)</strong> = Shows hops packet takes source → destination. Identifies routing path, locate delays/failures.</p>
+
+    <h3>// Syntax</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Windows :</strong><br>
+      C:\> tracert google.com<br>
+      C:\> tracert -d 8.8.8.8 (don't resolve hostnames - faster)<br>
+      C:\> tracert -h 20 8.8.8.8 (max 20 hops)<br><br>
+
+      <strong>Linux :</strong><br>
+      $ traceroute google.com<br>
+      $ traceroute -n 8.8.8.8 (no DNS lookups)<br>
+      $ traceroute -m 20 8.8.8.8 (max 20 hops)
+    </div>
+
+    <h3>// Output interpretation</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      C:\> tracert 8.8.8.8<br><br>
+
+      &nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;<strong style="color:var(--green)">1 ms</strong>&nbsp;&nbsp;&nbsp;&nbsp;1 ms&nbsp;&nbsp;&nbsp;&nbsp;1 ms&nbsp;&nbsp;&nbsp;&nbsp;192.168.1.1 (gateway)<br>
+      &nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;<strong style="color:var(--green)">10 ms</strong>&nbsp;&nbsp;&nbsp;9 ms&nbsp;&nbsp;&nbsp;&nbsp;10 ms&nbsp;&nbsp;&nbsp;10.0.0.1 (ISP router)<br>
+      &nbsp;3&nbsp;&nbsp;&nbsp;&nbsp;<strong style="color:var(--amber)">85 ms</strong>&nbsp;&nbsp;&nbsp;90 ms&nbsp;&nbsp;&nbsp;88 ms&nbsp;&nbsp;&nbsp;203.0.113.1 (ISP core - delay spike)<br>
+      &nbsp;4&nbsp;&nbsp;&nbsp;&nbsp;<strong style="color:var(--green)">90 ms</strong>&nbsp;&nbsp;&nbsp;89 ms&nbsp;&nbsp;&nbsp;91 ms&nbsp;&nbsp;&nbsp;8.8.8.8 (Google DNS)<br><br>
+
+      → Hop 3 shows high latency (85-90 ms) = bottleneck identified<br><br>
+
+      <strong style="color:var(--red)">Problem output :</strong><br>
+      &nbsp;3&nbsp;&nbsp;&nbsp;&nbsp;* * * Request timed out. (hop blocking ICMP OR routing problem)<br>
+      &nbsp;4&nbsp;&nbsp;&nbsp;&nbsp;Destination host unreachable. (routing failure)
+    </div>
+
+    <h3>// How traceroute works</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      1. Send packet TTL=1 → First router<br>
+      &nbsp;&nbsp;&nbsp;→ Router decrements TTL → 0 → Sends "Time Exceeded" ICMP<br>
+      &nbsp;&nbsp;&nbsp;→ Shows hop 1 IP address + latency<br><br>
+
+      2. Send packet TTL=2 → Second router<br>
+      &nbsp;&nbsp;&nbsp;→ Shows hop 2<br><br>
+
+      3. Increment TTL until reaches destination<br>
+      &nbsp;&nbsp;&nbsp;→ Maps entire path
+    </div>
+
+    <h3>// Usage troubleshooting</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Identify where failure occurs</strong> : Traceroute stops = problem hop</li>
+      <li><strong>Locate delay source</strong> : High latency specific hop = bottleneck</li>
+      <li><strong>Verify routing path</strong> : Check expected route vs actual</li>
+      <li><strong>ISP problems</strong> : Show ISP where loss/delay occurs (support ticket)</li>
+    </ul>
+
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>Traceroute * * * = not always a problem</strong>
+        Many routers configured not respond ICMP Time Exceeded (security).<br>
+        Asterisks (* * *) = hop doesn't respond, BUT forwards packet.<br>
+        If destination reached = path works (intermediate hops silent OK).
+      </div>
+    </div>
+  </div>
+
+  <!-- PATHPING -->
+  <div class="section">
+    <div class="section-label">Windows combined tool</div>
+    <h2>pathping — Combines ping + traceroute</h2>
+
+    <p><strong>pathping (Windows only)</strong> = Traceroute THEN ping each hop 100 times. Shows latency + packet loss per hop.</p>
+
+    <h3>// Syntax</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      C:\> pathping google.com<br>
+      C:\> pathping -n 8.8.8.8 (no DNS lookups - faster)<br>
+      C:\> pathping -q 50 8.8.8.8 (50 queries per hop instead 100)
+    </div>
+
+    <h3>// Output interpretation</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      C:\> pathping 8.8.8.8<br><br>
+
+      Computing statistics for 225 seconds...<br><br>
+
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Source to Here&nbsp;&nbsp;&nbsp;This Node/Link<br>
+      Hop&nbsp;&nbsp;RTT&nbsp;&nbsp;&nbsp;&nbsp;Lost/Sent = Pct&nbsp;&nbsp;Lost/Sent = Pct&nbsp;&nbsp;Address<br>
+      &nbsp;&nbsp;0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0/100 = 0%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;192.168.1.50<br>
+      &nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;1ms&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0/100 = 0%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0/100 = 0%&nbsp;&nbsp;&nbsp;192.168.1.1<br>
+      &nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;10ms&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0/100 = 0%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0/100 = 0%&nbsp;&nbsp;&nbsp;10.0.0.1<br>
+      &nbsp;&nbsp;3&nbsp;&nbsp;&nbsp;85ms&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong style="color:var(--red)">5/100 = 5%</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong style="color:var(--red)">5/100 = 5%</strong>&nbsp;&nbsp;&nbsp;203.0.113.1<br>
+      &nbsp;&nbsp;4&nbsp;&nbsp;&nbsp;90ms&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5/100 = 5%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0/100 = 0%&nbsp;&nbsp;&nbsp;8.8.8.8<br><br>
+
+      → Hop 3 : 5% packet loss (problem hop identified) ❌<br>
+      → Hop 4 : Inherited loss from hop 3 (not additional loss)
+    </div>
+
+    <h3>// Advantages vs traceroute</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Packet loss per hop</strong> : Traceroute doesn't measure loss</li>
+      <li><strong>Statistical accuracy</strong> : 100 pings vs traceroute 3</li>
+      <li><strong>One command</strong> : Instead traceroute + ping each hop</li>
+    </ul>
+
+    <h3>// Disadvantages</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Slow</strong> : Takes ~5 minutes complete (100 pings × hops)</li>
+      <li><strong>Windows only</strong> : Linux alternatives : mtr (My TraceRoute)</li>
+    </ul>
+  </div>
+
+  <!-- NSLOOKUP / DIG -->
+  <div class="section">
+    <div class="section-label">DNS queries</div>
+    <h2>nslookup / dig — DNS troubleshooting</h2>
+
+    <p><strong>nslookup (Windows/Linux)</strong> = Query DNS records. <strong>dig (Linux)</strong> = Advanced DNS query tool.</p>
+
+    <h3>// nslookup basic</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      C:\> nslookup google.com<br><br>
+
+      Server:&nbsp;&nbsp;dns.company.local<br>
+      Address:&nbsp;&nbsp;192.168.1.100<br><br>
+
+      Non-authoritative answer:<br>
+      Name:&nbsp;&nbsp;&nbsp;&nbsp;google.com<br>
+      Addresses:&nbsp;&nbsp;142.250.185.46<br><br>
+
+      → DNS server 192.168.1.100 responds<br>
+      → google.com resolves to 142.250.185.46 ✅
+    </div>
+
+    <h3>// nslookup specific DNS server</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      C:\> nslookup google.com 8.8.8.8<br><br>
+
+      Server:&nbsp;&nbsp;dns.google<br>
+      Address:&nbsp;&nbsp;8.8.8.8<br><br>
+
+      → Query Google DNS (8.8.8.8) instead default
+    </div>
+
+    <h3>// nslookup record types</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      C:\> nslookup -type=MX google.com (Mail records)<br>
+      C:\> nslookup -type=NS google.com (Name servers)<br>
+      C:\> nslookup -type=TXT google.com (TXT records)<br>
+      C:\> nslookup -type=AAAA google.com (IPv6 address)
+    </div>
+
+    <h3>// dig (Linux preferred)</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      $ dig google.com<br><br>
+
+      ;; ANSWER SECTION:<br>
+      google.com.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;300&nbsp;&nbsp;IN&nbsp;&nbsp;A&nbsp;&nbsp;&nbsp;&nbsp;142.250.185.46<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↑<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TTL 300 seconds<br><br>
+
+      ;; Query time: 15 msec<br>
+      ;; SERVER: 192.168.1.100#53(192.168.1.100)<br><br>
+
+      <strong>Specific record type :</strong><br>
+      $ dig google.com MX (mail)<br>
+      $ dig google.com NS (name servers)<br>
+      $ dig google.com AAAA (IPv6)<br><br>
+
+      <strong>Specific DNS server :</strong><br>
+      $ dig @8.8.8.8 google.com
+    </div>
+
+    <h3>// Usage troubleshooting</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Test DNS resolution</strong> : nslookup domain.com</li>
+      <li><strong>Verify DNS server</strong> : Which server responds?</li>
+      <li><strong>Compare DNS servers</strong> : nslookup domain 8.8.8.8 vs local</li>
+      <li><strong>Check record types</strong> : MX (email), NS (authoritative), TXT (SPF)</li>
+      <li><strong>TTL values</strong> : dig shows TTL (cache duration)</li>
+    </ul>
+  </div>
+
+  <!-- IPCONFIG / IFCONFIG / IP -->
+  <div class="section">
+    <div class="section-label">Interface configuration</div>
+    <h2>ipconfig / ifconfig / ip — Network config</h2>
+
+    <h3>// ipconfig (Windows)</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Basic info :</strong><br>
+      C:\> ipconfig<br><br>
+
+      Ethernet adapter Local Area Connection:<br>
+      &nbsp;&nbsp;&nbsp;IPv4 Address: 192.168.1.50<br>
+      &nbsp;&nbsp;&nbsp;Subnet Mask: 255.255.255.0<br>
+      &nbsp;&nbsp;&nbsp;Default Gateway: 192.168.1.1<br><br>
+
+      <strong>Detailed info :</strong><br>
+      C:\> ipconfig /all<br>
+      → Shows DNS, DHCP, MAC, lease times<br><br>
+
+      <strong>DHCP operations :</strong><br>
+      C:\> ipconfig /release (release DHCP lease)<br>
+      C:\> ipconfig /renew (request new lease)<br><br>
+
+      <strong>DNS cache :</strong><br>
+      C:\> ipconfig /displaydns (show DNS cache)<br>
+      C:\> ipconfig /flushdns (clear DNS cache)
+    </div>
+
+    <h3>// ifconfig (Linux legacy)</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      $ ifconfig<br><br>
+
+      eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;inet 192.168.1.50  netmask 255.255.255.0  broadcast 192.168.1.255<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ether aa:bb:cc:dd:ee:ff  txqueuelen 1000  (Ethernet)<br><br>
+
+      $ ifconfig eth0 down (disable interface)<br>
+      $ ifconfig eth0 up (enable interface)
+    </div>
+
+    <h3>// ip (Linux modern)</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Show interfaces :</strong><br>
+      $ ip addr show<br>
+      $ ip a (short)<br><br>
+
+      <strong>Show routes :</strong><br>
+      $ ip route show<br>
+      $ ip r (short)<br><br>
+
+      <strong>Show neighbors (ARP) :</strong><br>
+      $ ip neighbor show<br>
+      $ ip n (short)<br><br>
+
+      <strong>Enable/disable :</strong><br>
+      $ sudo ip link set eth0 down<br>
+      $ sudo ip link set eth0 up<br><br>
+
+      <strong>Add IP address :</strong><br>
+      $ sudo ip addr add 192.168.1.100/24 dev eth0
+    </div>
+  </div>
+
+  <!-- NETSTAT -->
+  <div class="section">
+    <div class="section-label">Network statistics</div>
+    <h2>netstat — Network connections & ports</h2>
+
+    <p><strong>netstat</strong> = Display active connections, listening ports, routing table, interface statistics.</p>
+
+    <h3>// Common usage</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Show active connections :</strong><br>
+      C:\> netstat -a (all connections + listening ports)<br>
+      C:\> netstat -n (numeric - no DNS lookups, faster)<br>
+      C:\> netstat -o (show process ID - Windows)<br>
+      C:\> netstat -b (show executable - Windows, requires admin)<br><br>
+
+      $ netstat -tulpn (Linux - TCP/UDP listening ports + process)<br><br>
+
+      <strong>Show routing table :</strong><br>
+      C:\> netstat -r<br><br>
+
+      <strong>Show interface statistics :</strong><br>
+      C:\> netstat -e (Ethernet stats)<br>
+      C:\> netstat -s (protocol stats - TCP, UDP, ICMP)
+    </div>
+
+    <h3>// Output example</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      C:\> netstat -ano<br><br>
+
+      Proto&nbsp;&nbsp;Local Address&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Foreign Address&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;State&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PID<br>
+      TCP&nbsp;&nbsp;&nbsp;&nbsp;192.168.1.50:49678&nbsp;&nbsp;&nbsp;8.8.8.8:443&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ESTABLISHED&nbsp;&nbsp;1234<br>
+      TCP&nbsp;&nbsp;&nbsp;&nbsp;0.0.0.0:80&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.0.0.0:0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LISTENING&nbsp;&nbsp;&nbsp;&nbsp;5678<br>
+      TCP&nbsp;&nbsp;&nbsp;&nbsp;192.168.1.50:50123&nbsp;&nbsp;&nbsp;203.0.113.10:22&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ESTABLISHED&nbsp;&nbsp;9012<br><br>
+
+      → Port 80 listening (web server)<br>
+      → Connection to 8.8.8.8:443 (HTTPS)<br>
+      → SSH connection to 203.0.113.10:22
+    </div>
+
+    <h3>// Usage troubleshooting</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Check port listening</strong> : netstat -an | findstr :80 (is web server running?)</li>
+      <li><strong>Identify process using port</strong> : netstat -ano (PID), then Task Manager</li>
+      <li><strong>Verify connections</strong> : Is application connected expected server?</li>
+      <li><strong>Detect malware</strong> : Unexpected connections (suspicious IPs/ports)</li>
+    </ul>
+  </div>
+
+  <!-- ARP -->
+  <div class="section">
+    <div class="section-label">Address resolution</div>
+    <h2>arp — ARP cache</h2>
+
+    <p><strong>arp</strong> = Display/modify ARP table (IP → MAC mappings).</p>
+
+    <h3>// Commands</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Windows :</strong><br>
+      C:\> arp -a (show ARP cache)<br>
+      C:\> arp -d (delete all entries)<br>
+      C:\> arp -d 192.168.1.100 (delete specific entry)<br>
+      C:\> arp -s 192.168.1.100 aa-bb-cc-dd-ee-ff (add static entry)<br><br>
+
+      <strong>Linux :</strong><br>
+      $ arp -a (show cache)<br>
+      $ sudo arp -d 192.168.1.100 (delete entry)<br>
+      $ sudo arp -s 192.168.1.100 aa:bb:cc:dd:ee:ff (add static)
+    </div>
+
+    <h3>// Output example</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      C:\> arp -a<br><br>
+
+      Interface: 192.168.1.50 --- 0x2<br>
+      &nbsp;&nbsp;Internet Address&nbsp;&nbsp;&nbsp;&nbsp;Physical Address&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Type<br>
+      &nbsp;&nbsp;192.168.1.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;aa-bb-cc-dd-ee-ff&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dynamic<br>
+      &nbsp;&nbsp;192.168.1.100&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;11-22-33-44-55-66&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dynamic<br>
+      &nbsp;&nbsp;192.168.1.255&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ff-ff-ff-ff-ff-ff&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;static (broadcast)<br><br>
+
+      → Gateway (.1) MAC = aa-bb-cc-dd-ee-ff<br>
+      → Server (.100) MAC = 11-22-33-44-55-66
+    </div>
+
+    <h3>// Usage troubleshooting</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Verify MAC addresses</strong> : Correct device responding?</li>
+      <li><strong>Detect IP conflicts</strong> : Same IP, different MACs (flapping)</li>
+      <li><strong>ARP poisoning detection</strong> : Gateway MAC changed unexpectedly?</li>
+      <li><strong>Clear stale entries</strong> : arp -d (force re-learn)</li>
+    </ul>
+  </div>
+
+  <!-- ROUTE -->
+  <div class="section">
+    <div class="section-label">Routing table</div>
+    <h2>route — View/modify routes</h2>
+
+    <h3>// Commands</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Windows :</strong><br>
+      C:\> route print (show routing table)<br>
+      C:\> route add 10.0.0.0 mask 255.0.0.0 192.168.1.1 (add route)<br>
+      C:\> route delete 10.0.0.0 (delete route)<br><br>
+
+      <strong>Linux :</strong><br>
+      $ route -n (show table numeric)<br>
+      $ sudo route add -net 10.0.0.0/8 gw 192.168.1.1 (add route)<br>
+      $ sudo route del -net 10.0.0.0/8 (delete route)<br><br>
+
+      <strong>OR modern ip command :</strong><br>
+      $ ip route show<br>
+      $ sudo ip route add 10.0.0.0/8 via 192.168.1.1<br>
+      $ sudo ip route del 10.0.0.0/8
+    </div>
+
+    <h3>// Output example</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      C:\> route print<br><br>
+
+      Network Destination&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Netmask&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Gateway&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Interface<br>
+      0.0.0.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.0.0.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;192.168.1.1&nbsp;&nbsp;&nbsp;&nbsp;192.168.1.50 (default)<br>
+      192.168.1.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;255.255.255.0&nbsp;&nbsp;&nbsp;On-link&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;192.168.1.50 (local)<br>
+      10.0.0.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;255.0.0.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;192.168.1.254&nbsp;&nbsp;192.168.1.50 (static)<br><br>
+
+      → Default route (0.0.0.0/0) via 192.168.1.1<br>
+      → Local network 192.168.1.0/24 direct<br>
+      → Static route 10.0.0.0/8 via 192.168.1.254
+    </div>
+
+    <h3>// Usage troubleshooting</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Verify default gateway</strong> : route print | findstr 0.0.0.0</li>
+      <li><strong>Check static routes</strong> : Missing route to remote network?</li>
+      <li><strong>Add temporary route</strong> : Testing connectivity specific path</li>
+    </ul>
+  </div>
+
+  <!-- NMAP -->
+  <div class="section">
+    <div class="section-label">Network scanner</div>
+    <h2>nmap — Port scanning</h2>
+
+    <p><strong>nmap</strong> = Network scanner. Discover hosts, scan ports, detect services/OS. (Requires installation - not built-in Windows)</p>
+
+    <h3>// Basic scans</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Ping scan (host discovery) :</strong><br>
+      $ nmap -sn 192.168.1.0/24<br>
+      → Discovers live hosts (no port scan)<br><br>
+
+      <strong>Port scan single host :</strong><br>
+      $ nmap 192.168.1.100<br>
+      → Scans top 1000 ports<br><br>
+
+      <strong>Scan specific ports :</strong><br>
+      $ nmap -p 80,443,22 192.168.1.100<br>
+      $ nmap -p 1-1000 192.168.1.100 (range)<br><br>
+
+      <strong>Service version detection :</strong><br>
+      $ nmap -sV 192.168.1.100<br>
+      → Detects software versions (Apache 2.4, OpenSSH 8.0)<br><br>
+
+      <strong>OS detection :</strong><br>
+      $ nmap -O 192.168.1.100<br>
+      → Guess operating system
+    </div>
+
+    <h3>// Output example</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      $ nmap 192.168.1.100<br><br>
+
+      PORT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STATE&nbsp;&nbsp;SERVICE<br>
+      22/tcp&nbsp;&nbsp;&nbsp;open&nbsp;&nbsp;&nbsp;ssh<br>
+      80/tcp&nbsp;&nbsp;&nbsp;open&nbsp;&nbsp;&nbsp;http<br>
+      443/tcp&nbsp;&nbsp;open&nbsp;&nbsp;&nbsp;https<br>
+      3306/tcp&nbsp;open&nbsp;&nbsp;&nbsp;mysql<br><br>
+
+      → Ports 22, 80, 443, 3306 open (SSH, HTTP, HTTPS, MySQL)
+    </div>
+
+    <h3>// Usage troubleshooting</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Verify port open</strong> : Is web server listening port 80?</li>
+      <li><strong>Discover devices</strong> : nmap -sn 192.168.1.0/24 (find all hosts)</li>
+      <li><strong>Security audit</strong> : What ports exposed? (vulnerability assessment)</li>
+      <li><strong>Service identification</strong> : What software running ports?</li>
+    </ul>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>nmap = security tool, use responsibly</strong>
+        Only scan networks you own/have permission.<br>
+        Unauthorized scanning = illegal (hacking laws).<br>
+        Corporate networks : Get approval before nmap.
+      </div>
+    </div>
+  </div>
+
+  <!-- RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>ping</strong> : Test connectivity, latency, loss. Options: -n count (Win), -c count (Linux), -t continuous (Win), -f Don't Fragment (MTU test). Firewall may block ICMP</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>traceroute/tracert</strong> : Show path hops. Identify delay/failure hop. * * * = hop silent (not always problem). Windows: tracert, Linux: traceroute. pathping (Win) = trace + ping 100×/hop (loss stats)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>nslookup/dig</strong> : DNS queries. nslookup (both OS), dig (Linux preferred shows TTL). Query specific server: nslookup domain 8.8.8.8. Record types: -type=MX/NS/TXT (nslookup), dig domain MX</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>ipconfig/ifconfig/ip</strong> : Show config. Windows: ipconfig /all, /release, /renew, /flushdns. Linux legacy: ifconfig. Modern: ip addr, ip route, ip neighbor. Show IPs, gateways, DNS</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>netstat</strong> : Connections, ports, stats. Windows: netstat -ano (numeric + PID). Linux: netstat -tulpn (TCP/UDP listening + process). Show routing: netstat -r. Interface stats: netstat -e</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>arp/route/nmap</strong> : arp -a (IP→MAC cache, detect conflicts/poisoning). route print/ip route (routing table, verify gateway). nmap (port scan, host discovery, requires permission). Security tools use responsibly</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 15 : WAN & VPN</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">TR16 - Phase 5</span>
+    <a class="nav-btn next" href="#">Cours 17 : Outils matériels →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m5_tr16_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+initMastery();
+</script>
+  <div style="margin-top:40px;text-align:center;">
+  <a class="nav-btn" href="index.html">← Accueil — Plan de cours</a>
+</body>
+</html>

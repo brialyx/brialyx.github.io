@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TR06 — Problèmes fibre optique · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 5.0 — Dépannage réseau</span> &nbsp;›&nbsp; Cours 06</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 5 · TR06</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-lab">🧪 LAB</span>
+    <span class="pill pill-diff">⚡⚡⚡ Difficile</span>
+  </div>
+
+  <h1><span>Problèmes</span> fibre optique</h1>
+  <span class="tagline">// Fiber troubleshooting — Connecteurs sales/cassés, SMF vs MMF, budget optique, OTDR</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je détecte connecteurs sales/cassés</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je différencie SMF vs MMF</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends budget optique</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je connais OTDR utilisation</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- CONNECTEURS -->
+  <div class="section">
+    <div class="section-label">Physical problems</div>
+    <h2>Connecteurs sales / cassés — Cause #1</h2>
+
+    <p><strong>Fibre optique</strong> = Signaux lumineux (photons) transmis core verre/plastique. <strong>Propreté critique</strong> : Poussière/saleté bloque lumière.</p>
+
+    <h3>// Connecteur sale (dirty connector)</h3>
+    <p><strong>Problème #1 fibre</strong> : Poussière, huile peau, résidus bloquent passage lumière → signal loss.</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Symptômes connecteur sale :</strong><br><br>
+
+      → No link (link down, LED OFF)<br>
+      → Intermittent link (flapping UP/DOWN)<br>
+      → High error rate (CRC errors, retransmissions)<br>
+      → Reduced throughput (signal weak, low SNR)
+    </div>
+
+    <h3>// Nettoyage connecteur</h3>
+    <p><strong>Procédure</strong> : Toujours nettoyer connecteurs AVANT troubleshooting avancé.</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Outils nettoyage :</strong><br><br>
+
+      <strong>1. Fiber cleaning pen</strong> (click-type cleaner)<br>
+      → Insert connector ferrule, click 2-3×, rotate<br>
+      → Removes dust, oil, debris<br><br>
+
+      <strong>2. Lint-free wipes + 99% isopropyl alcohol</strong><br>
+      → Dampen wipe alcohol, wipe ferrule gently<br>
+      → Let dry 30 sec (alcohol evaporates)<br><br>
+
+      <strong>3. Compressed air (canned air)</strong><br>
+      → Blow dust out connector (BEFORE insertion)<br>
+      → Hold can upright (avoid liquid spray)<br><br>
+
+      <strong>⚠️ NEVER :</strong><br>
+      → Touch ferrule fingers (oils contaminate)<br>
+      → Use regular tissues (lint remains)<br>
+      → Blow with mouth (moisture contamination)
+    </div>
+
+    <h3>// Connecteur cassé (broken connector)</h3>
+    <p><strong>Dommages physiques</strong> : Ferrule cracked, fiber core broken, alignment sleeve damaged.</p>
+
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Symptômes</strong> : Complete signal loss (no link), no recovery cleaning</li>
+      <li><strong>Causes</strong> : Drop connector, excessive insertion force, overtightening</li>
+      <li><strong>Diagnostic</strong> : Visual inspection (microscope fiber scope), swap connector</li>
+      <li><strong>Résolution</strong> : Replace connector (re-terminate fiber OU swap patch cable)</li>
+    </ul>
+
+    <div class="callout tip">
+      <span class="callout-icon">🔬</span>
+      <div class="callout-body">
+        <strong>Fiber inspection microscope = essential tool</strong>
+        Fiber microscope (portable, USB) examine ferrule end-face.<br>
+        Good : Clean, smooth surface, no scratches.<br>
+        Bad : Dust, cracks, pits, scratches visible.<br>
+        Rule : ALWAYS inspect + clean BEFORE troubleshoot electrical/optical.
+      </div>
+    </div>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Question fréquente examen</strong>
+        "Fiber link intermittent, LED flapping. FIRST troubleshooting step ?"<br>
+        A) Replace transceiver<br>
+        B) Check optical budget<br>
+        C) Clean connectors<br>
+        D) Run OTDR<br><br>
+        <strong>Réponse : C) Clean connectors</strong><br>
+        Dirty connector = cause #1 fiber problems (90%+). Clean first, advanced tests after.
+      </div>
+    </div>
+  </div>
+
+  <!-- SMF VS MMF -->
+  <div class="section">
+    <div class="section-label">Fiber types</div>
+    <h2>SMF vs MMF — Type mismatch</h2>
+
+    <p><strong>Incompatibilité type fibre</strong> = SMF transceiver + MMF cable (ou inverse) → No link OU performance terrible.</p>
+
+    <h3>// SMF (Single-Mode Fiber)</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Caractéristiques SMF :</strong><br><br>
+
+      <strong>Core diameter :</strong> 8-10 microns (très small)<br>
+      <strong>Light source :</strong> Laser (1310 nm, 1550 nm)<br>
+      <strong>Mode propagation :</strong> Single mode (straight path)<br>
+      <strong>Distance :</strong> Long (10-80+ km datacenter, 100+ km telco)<br>
+      <strong>Bandwidth :</strong> Very high (100 Gbps+)<br>
+      <strong>Cost :</strong> Higher (laser transceivers expensive)<br>
+      <strong>Color :</strong> Yellow jacket (OS2 standard)
+    </div>
+
+    <h3>// MMF (Multi-Mode Fiber)</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Caractéristiques MMF :</strong><br><br>
+
+      <strong>Core diameter :</strong> 50 ou 62.5 microns (larger)<br>
+      <strong>Light source :</strong> LED (850 nm, 1300 nm)<br>
+      <strong>Mode propagation :</strong> Multiple modes (bouncing paths)<br>
+      <strong>Distance :</strong> Short (300m-550m typical datacenter)<br>
+      <strong>Bandwidth :</strong> Moderate (10-40 Gbps)<br>
+      <strong>Cost :</strong> Lower (LED transceivers cheaper)<br>
+      <strong>Color :</strong> Orange/Aqua jacket (OM1/OM2 orange, OM3/OM4 aqua)
+    </div>
+
+    <h3>// Problèmes incompatibilité</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Scenario</th><th>Transceiver</th><th>Cable</th><th>Résultat</th></tr>
+        <tr>
+          <td>✅ <strong>Correct</strong></td>
+          <td>SMF (1000BASE-LX)</td>
+          <td>SMF (Yellow OS2)</td>
+          <td>✅ Works perfectly</td>
+        </tr>
+        <tr>
+          <td>✅ <strong>Correct</strong></td>
+          <td>MMF (1000BASE-SX)</td>
+          <td>MMF (Orange OM1/OM2)</td>
+          <td>✅ Works perfectly</td>
+        </tr>
+        <tr>
+          <td>❌ <strong>Mismatch</strong></td>
+          <td>SMF laser</td>
+          <td>MMF cable</td>
+          <td>⚠️ May work short distance (<100m), unreliable</td>
+        </tr>
+        <tr>
+          <td>❌ <strong>Mismatch</strong></td>
+          <td>MMF LED</td>
+          <td>SMF cable</td>
+          <td>❌ No link (core too small, light disperses)</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>// Diagnostic type mismatch</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Symptom :</strong> No link fiber connection<br><br>
+
+      <strong>Step 1 : Check cable jacket color</strong><br>
+      → Yellow = SMF<br>
+      → Orange/Aqua = MMF<br><br>
+
+      <strong>Step 2 : Check transceiver type</strong><br>
+      show interfaces transceiver (Cisco)<br>
+      → 1000BASE-LX, 10GBASE-LR = SMF (Long Range laser)<br>
+      → 1000BASE-SX, 10GBASE-SR = MMF (Short Range LED)<br><br>
+
+      <strong>Step 3 : Verify match</strong><br>
+      SMF transceiver + SMF cable ? ✅<br>
+      MMF transceiver + MMF cable ? ✅<br>
+      Mismatch ? ❌ → Replace cable OR transceiver
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>SMF laser into MMF = peut fonctionner short distance</strong>
+        SMF laser assez puissant → works MMF cable <100m (unreliable, not recommended).<br>
+        MMF LED into SMF = NEVER works (core trop small, light loss massive).<br>
+        Always match types correctly (safety + reliability).
+      </div>
+    </div>
+  </div>
+
+  <!-- BUDGET OPTIQUE -->
+  <div class="section">
+    <div class="section-label">Signal strength</div>
+    <h2>Budget optique — Power budget</h2>
+
+    <p><strong>Budget optique (Optical Power Budget)</strong> = Perte signal maximale acceptable entre transmitter → receiver. Détermine distance max fiber link.</p>
+
+    <h3>// Composants budget optique</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>TX Power (Transmit Power) :</strong><br>
+      → Puissance lumière transmitter (dBm)<br>
+      → Example : -3 dBm<br><br>
+
+      <strong>RX Sensitivity (Receiver Sensitivity) :</strong><br>
+      → Minimum puissance receiver detect signal (dBm)<br>
+      → Example : -20 dBm<br><br>
+
+      <strong>Power Budget :</strong><br>
+      → Power Budget = TX Power - RX Sensitivity<br>
+      → Example : -3 dBm - (-20 dBm) = <strong>17 dB budget</strong>
+    </div>
+
+    <h3>// Pertes signal (attenuation)</h3>
+    <p><strong>Atténuation</strong> = Perte signal le long fiber. Composants :</p>
+
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Fiber cable loss</strong> : 0.3-0.5 dB/km (SMF), 2-3 dB/km (MMF)</li>
+      <li><strong>Connector loss</strong> : 0.3-0.5 dB per connector (SC, LC)</li>
+      <li><strong>Splice loss</strong> : 0.1-0.3 dB per splice (fusion splice)</li>
+      <li><strong>Bend loss</strong> : Variable (excessive bends add loss)</li>
+    </ul>
+
+    <h3>// Calcul budget optique</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Example scenario :</strong><br><br>
+
+      Link : Building A ↔ Building B (5 km SMF)<br><br>
+
+      <strong>TX Power :</strong> -3 dBm<br>
+      <strong>RX Sensitivity :</strong> -20 dBm<br>
+      <strong>Power Budget :</strong> 17 dB<br><br>
+
+      <strong>Losses :</strong><br>
+      Fiber cable : 5 km × 0.4 dB/km = 2.0 dB<br>
+      Connectors : 4 × 0.5 dB = 2.0 dB<br>
+      Splices : 2 × 0.2 dB = 0.4 dB<br>
+      <strong>Total Loss :</strong> 4.4 dB<br><br>
+
+      <strong>Margin :</strong> 17 dB (budget) - 4.4 dB (loss) = <strong>12.6 dB margin</strong> ✅<br><br>
+
+      → Link viable (margin positive)
+    </div>
+
+    <h3>// Problème budget insuffisant</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Example problème :</strong><br><br>
+
+      Link : 10 km MMF (INCORRECT - MMF max ~500m)<br><br>
+
+      TX Power : -3 dBm<br>
+      RX Sensitivity : -18 dBm<br>
+      Power Budget : 15 dB<br><br>
+
+      Losses :<br>
+      Fiber cable : 10 km × 2.5 dB/km = 25 dB<br>
+      Connectors : 4 × 0.5 dB = 2 dB<br>
+      Total Loss : 27 dB<br><br>
+
+      Margin : 15 dB - 27 dB = <strong>-12 dB (NEGATIVE)</strong> ❌<br><br>
+
+      → Signal trop faible (no link OU intermittent errors)
+    </div>
+
+    <h3>// Solutions budget insuffisant</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Use SMF instead MMF (longer distance support)</li>
+      <li>Add fiber amplifier (EDFA - Erbium Doped Fiber Amplifier)</li>
+      <li>Reduce connectors/splices (minimize insertion loss)</li>
+      <li>Higher power transceiver (upgrade TX power)</li>
+    </ul>
+  </div>
+
+  <!-- OTDR -->
+  <div class="section">
+    <div class="section-label">Testing tool</div>
+    <h2>OTDR — Optical Time Domain Reflectometer</h2>
+
+    <p><strong>OTDR</strong> = Test equipment advanced localiser breaks, splices, connectors, measure loss fiber link.</p>
+
+    <h3>// Principe OTDR</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Workflow OTDR :</strong><br><br>
+
+      1. OTDR sends <strong>light pulse</strong> into fiber<br><br>
+
+      2. Light reflects back (backscatter) from :<br>
+      &nbsp;&nbsp;&nbsp;→ Fiber imperfections<br>
+      &nbsp;&nbsp;&nbsp;→ Connectors<br>
+      &nbsp;&nbsp;&nbsp;→ Splices<br>
+      &nbsp;&nbsp;&nbsp;→ Breaks (fiber end)<br><br>
+
+      3. OTDR measures <strong>time reflection returns</strong><br>
+      &nbsp;&nbsp;&nbsp;→ Calculate distance : Speed light × Time / 2<br><br>
+
+      4. OTDR displays <strong>trace graph</strong> :<br>
+      &nbsp;&nbsp;&nbsp;→ X-axis : Distance (meters/km)<br>
+      &nbsp;&nbsp;&nbsp;→ Y-axis : Signal loss (dB)<br>
+      &nbsp;&nbsp;&nbsp;→ Shows events (connectors, splices, breaks)
+    </div>
+
+    <h3>// OTDR trace interprétation</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;line-height:1.8;">
+      <strong>Typical OTDR trace :</strong><br><br>
+
+      Signal (dB)<br>
+      &nbsp;&nbsp;0 ─┐<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Gradual slope = fiber attenuation)<br>
+      -10 ─┤<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+      -20 ─┤&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼ (Small drop = connector 0.5 dB loss)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+      -30 ─┤&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼ (Splice 0.2 dB)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+      -40 ─┴─────────────────────────────────┐<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1 km&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2 km&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3 km&nbsp;&nbsp;(End reflection)<br><br>
+
+      <strong>Events visible :</strong><br>
+      → Connector @ 500m : 0.5 dB loss<br>
+      → Splice @ 1.5 km : 0.2 dB loss<br>
+      → Fiber end @ 3 km : Total link 3 km
+    </div>
+
+    <h3>// Usages OTDR</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Locate fiber break</strong> : Distance exact break (repair crews)</li>
+      <li><strong>Measure total loss</strong> : Verify optical budget compliance</li>
+      <li><strong>Identify bad splice/connector</strong> : Excessive loss specific point</li>
+      <li><strong>Certification new fiber install</strong> : Document baseline performance</li>
+      <li><strong>Troubleshoot intermittent issues</strong> : Detect microbends, stress points</li>
+    </ul>
+
+    <h3>// OTDR vs Light Meter</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Tool</th><th>Function</th><th>Information</th><th>Cost</th></tr>
+        <tr>
+          <td><strong>Light Meter</strong></td>
+          <td>Measure total loss end-to-end</td>
+          <td>Total dB loss (no distance info)</td>
+          <td>$$ (hundreds)</td>
+        </tr>
+        <tr>
+          <td><strong>OTDR</strong></td>
+          <td>Locate events, measure loss per segment</td>
+          <td>Distance + loss each event</td>
+          <td>$$$$ (thousands)</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="callout ok">
+      <span class="callout-icon">📡</span>
+      <div class="callout-body">
+        <strong>OTDR = advanced troubleshooting</strong>
+        Light meter : Simple total loss (quick test OK/NOK).<br>
+        OTDR : Detailed analysis (pinpoint exact location problems).<br>
+        Datacenter : Light meter sufficient most cases.<br>
+        Telco/Long haul : OTDR essential (locate breaks km fiber runs).
+      </div>
+    </div>
+  </div>
+
+  <!-- PIÈGES -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : SMF = always better (longer distance)</div>
+      <div class="trap-content">
+        <strong>NUANCE</strong>. SMF = longer distance MAIS higher cost.<br><br>
+        Short distance datacenter (<300m) : MMF sufficient, cheaper (LED transceivers).<br>
+        Long distance inter-building (>1 km) : SMF required (laser transceivers).<br><br>
+        Choose based distance requirements + budget.<br>
+        Examen : Match fiber type to scenario distance.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : Optical budget = transceiver power only</div>
+      <div class="trap-content">
+        <strong>INCOMPLET</strong>. Budget optique = <strong>TX Power - RX Sensitivity</strong>.<br><br>
+        Pas juste TX power → Need BOTH TX (transmit) + RX (receive sensitivity).<br>
+        Budget = maximum loss tolerable (TX to RX threshold).<br><br>
+        Example : TX -3 dBm, RX -20 dBm → Budget 17 dB.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : OTDR = only tool test fiber</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Multiple tools fiber testing.<br><br>
+        <strong>Light Meter</strong> : Measure total loss (simple, cheap).<br>
+        <strong>OTDR</strong> : Locate events, distance info (complex, expensive).<br>
+        <strong>Visual Fault Locator (VFL)</strong> : Red laser visible breaks/bends (<5 km).<br>
+        <strong>Fiber microscope</strong> : Inspect connector cleanliness.<br><br>
+        Choose appropriate tool task.
+      </div>
+    </div>
+  </div>
+
+  <!-- RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Connecteurs sales/cassés</strong> : Cause #1 fiber problems. Clean FIRST (fiber pen, alcohol wipes, compressed air). Inspect microscope. Never touch ferrule, use lint-free only</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>SMF</strong> : Core 8-10µm, laser 1310/1550nm, long distance 10-100km, yellow jacket. <strong>MMF</strong> : Core 50/62.5µm, LED 850/1300nm, short distance 300-550m, orange/aqua jacket</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Type mismatch</strong> : SMF transceiver + MMF cable = may work <100m unreliable. MMF transceiver + SMF cable = no link (core too small). Always match types</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Budget optique</strong> : Power Budget = TX Power - RX Sensitivity. Total Loss = fiber + connectors + splices. Margin = Budget - Loss (must be positive). SMF 0.3-0.5 dB/km, MMF 2-3 dB/km</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>OTDR</strong> : Optical Time Domain Reflectometer. Sends pulse, measures reflections, calculates distance. Trace shows events (connectors, splices, breaks) with distance + loss. Expensive, advanced troubleshooting</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Tools</strong> : Fiber microscope (inspect), Cleaning pen (clean), Light meter (total loss simple), OTDR (locate events detailed), VFL (visual red laser locate breaks). Choose appropriate tool scenario</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 05 : Duplex mismatch</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">TR06 - Phase 5</span>
+    <a class="nav-btn next" href="#">Module 5.0 en cours →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m5_tr06_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+initMastery();
+</script>
+  <div style="margin-top:40px;text-align:center;">
+  <a class="nav-btn" href="index.html">← Accueil — Plan de cours</a>
+</body>
+</html>

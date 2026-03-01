@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TR03 — Problèmes couche Physique · Network+</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Epilogue:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f; --bg2: #0d1117; --card: #111826;
+    --border: #1c2a3a; --text: #dde4f0; --muted: #536070;
+    --accent: #38bdf8; --green: #22d3a0; --amber: #fbbf24;
+    --red: #f87171; --purple: #a78bfa; --cyan: #06b6d4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; min-height: 100vh; line-height: 1.75; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(rgba(56,189,248,0.06) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; position: relative; z-index: 1; }
+
+  .breadcrumb { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span { color: var(--accent); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; font-weight: 600; }
+  .pill-phase { color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); }
+  .pill-key   { color: var(--purple); background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+  .pill-lab   { color: var(--green);  background: rgba(34,211,160,0.08);  border: 1px solid rgba(34,211,160,0.2); }
+  .pill-exam  { color: var(--red);    background: rgba(248,113,113,0.08);  border: 1px solid rgba(248,113,113,0.2); }
+  .pill-proto { color: var(--cyan);   background: rgba(6,182,212,0.08);   border: 1px solid rgba(6,182,212,0.2); }
+  .pill-new   { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+  .pill-diff  { color: var(--amber);  background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.2); }
+
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-bottom: 36px; display: block; }
+
+  .mastery-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+  .mastery-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .mastery-checks { display: flex; flex-direction: column; gap: 8px; }
+  .mcheck { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .mcheck:hover { background: rgba(56,189,248,0.04); }
+  .mcheck-box { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.18s; }
+  .mcheck-box.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .mcheck-label { font-size: 0.88rem; transition: color 0.2s; }
+  .mcheck.done .mcheck-label { color: var(--muted); text-decoration: line-through; }
+  .mastery-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; margin-top: 16px; overflow: hidden; }
+  .mastery-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 16px; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; font-family: 'IBM Plex Mono', monospace; }
+  p { margin-bottom: 14px; font-size: 0.92rem; }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 0.88rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .callout-body { flex: 1; line-height: 1.65; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+  .callout.analogy { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+  .callout.analogy .callout-body strong { color: var(--purple); }
+  .callout.tip  { background: rgba(56,189,248,0.06);  border: 1px solid rgba(56,189,248,0.18); }
+  .callout.tip .callout-body strong { color: var(--accent); }
+  .callout.warn { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .callout.warn .callout-body strong { color: var(--red); }
+  .callout.exam { background: rgba(251,191,36,0.07);  border: 1px solid rgba(251,191,36,0.2); }
+  .callout.exam .callout-body strong { color: var(--amber); }
+  .callout.ok   { background: rgba(34,211,160,0.07);  border: 1px solid rgba(34,211,160,0.2); }
+  .callout.ok .callout-body strong { color: var(--green); }
+
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--bg2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(28,42,58,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.02); }
+  td strong { color: var(--accent); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); background: rgba(56,189,248,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  .trap-box { background: rgba(248,113,113,0.05); border: 2px solid var(--red); border-radius: 10px; padding: 18px 22px; margin: 20px 0; }
+  .trap-title { font-family: 'IBM Plex Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .trap-content { font-size: 0.88rem; line-height: 1.8; }
+
+  .kp { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; padding: 9px 0; border-bottom: 1px solid rgba(28,42,58,0.5); }
+  .kp:last-child { border-bottom: none; }
+  .kp-dot { color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 10px 18px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .nav-btn.next { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent); }
+  .nav-btn.next:hover { background: rgba(56,189,248,0.15); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="breadcrumb">Network+ N10-009 &nbsp;›&nbsp; <span>Module 5.0 — Dépannage réseau</span> &nbsp;›&nbsp; Cours 03</div>
+
+  <div class="pills">
+    <span class="pill pill-phase">Phase 5 · TR03</span>
+    <span class="pill pill-key">🔑 KEY</span>
+    <span class="pill pill-lab">🧪 LAB</span>
+    <span class="pill pill-exam">⚠️ EXAM</span>
+    <span class="pill pill-diff">⚡⚡☆ Moyen</span>
+  </div>
+
+  <h1><span>Problèmes</span> couche Physique</h1>
+  <span class="tagline">// Layer 1 troubleshooting — Câbles défectueux, pinout incorrect, EMI, boucles réseau</span>
+
+  <div class="mastery-card">
+    <div class="mastery-title">Suivi de maîtrise</div>
+    <div class="mastery-checks">
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai lu ce cours en entier</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je détecte câbles défectueux symptômes</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je différencie straight-through vs crossover</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je reconnais problèmes EMI</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">Je comprends boucles réseau STP</span></div>
+      <div class="mcheck" onclick="toggleCheck(this)"><div class="mcheck-box">✓</div><span class="mcheck-label">J'ai réussi tous les exercices sans regarder le cours</span></div>
+    </div>
+    <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="mastBar"></div></div>
+  </div>
+
+  <!-- CABLES DEFECTUEUX -->
+  <div class="section">
+    <div class="section-label">Physical connectivity</div>
+    <h2>Câbles défectueux — Cause #1 problèmes L1</h2>
+
+    <p><strong>Câbles défectueux</strong> = Cause la plus fréquente problèmes Layer 1 (30-40% tickets support).</p>
+
+    <h3>// Symptômes câble défectueux</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>No link</strong> : LED NIC OFF, LED switch port OFF</li>
+      <li><strong>Intermittent connectivity</strong> : Link flapping (UP/DOWN cycles)</li>
+      <li><strong>Slow performance</strong> : 1 Gbps negocié → throughput 10 Mbps (degraded)</li>
+      <li><strong>Packet loss</strong> : Ping 50% loss</li>
+    </ul>
+
+    <h3>// Causes câbles défectueux</h3>
+    <p><strong>1. Physical damage</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Câble écrasé (door, chair wheels, heavy equipment)</li>
+      <li>Bend radius excessive (courbure trop serrée, internal wires cassés)</li>
+      <li>Connecteur RJ45 cassé (clip broken, pins bent)</li>
+    </ul>
+
+    <p><strong>2. Poor termination</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Wires pas complètement insérées RJ45 connector</li>
+      <li>Crimp faible (connector pas bien serti)</li>
+      <li>Wires exposition (jacket pas assez stripped, outer jacket crushed by crimp)</li>
+    </ul>
+
+    <p><strong>3. Cable degradation</strong></p>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>Age (10+ years, insulation brittle)</li>
+      <li>Environmental (humidity, temperature extremes)</li>
+      <li>Rodents (rats/mice chew cables datacenter)</li>
+    </ul>
+
+    <h3>// Diagnostic câble défectueux</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Step 1 : Visual inspection</strong><br>
+      → Check cable physical damage (kinks, cuts, crushed)<br>
+      → Check RJ45 connectors (clip intact, pins straight)<br>
+      → Check connection seated fully (push firmly both ends)<br><br>
+
+      <strong>Step 2 : LED check</strong><br>
+      → NIC LED : OFF = no link (cable or port problem)<br>
+      → Switch port LED : OFF = no link, AMBER = error/disabled<br><br>
+
+      <strong>Step 3 : Swap cable</strong><br>
+      → Replace suspect cable known-good cable<br>
+      → Link UP ? → Original cable defective ✅<br>
+      → Link still DOWN ? → Problem elsewhere (NIC, switch port)<br><br>
+
+      <strong>Step 4 : Cable tester (if available)</strong><br>
+      → Simple tester : Continuity test (all 8 wires intact ?)<br>
+      → Advanced tester : TDR (Time Domain Reflectometer) locate break exact distance
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">🔌</span>
+      <div class="callout-body">
+        <strong>Cable swap = quickest diagnostic</strong>
+        Simple tester continuity utile, MAIS swap cable known-good = fastest.<br>
+        Toujours avoir spare cables (Cat5e, Cat6, différentes longueurs).<br>
+        Production : Swap first, test defective cable later (minimize downtime).
+      </div>
+    </div>
+  </div>
+
+  <!-- PINOUT -->
+  <div class="section">
+    <div class="section-label">Cable standards</div>
+    <h2>Pinout incorrect — Straight-through vs Crossover</h2>
+
+    <p><strong>Pinout</strong> = Ordre wires (pins) RJ45 connector. Incorrect pinout = no connectivity OU degraded.</p>
+
+    <h3>// T568A vs T568B standards</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;line-height:1.8;">
+      <strong>T568A :</strong> Pin 1 → Green/White, Pin 2 → Green, Pin 3 → Orange/White...<br>
+      <strong>T568B :</strong> Pin 1 → Orange/White, Pin 2 → Orange, Pin 3 → Green/White...<br><br>
+
+      Différence : Pins 1,2 ↔ 3,6 swapped (TX ↔ RX)<br><br>
+
+      <strong>IMPORTANT</strong> : T568A vs T568B = both valid standards.<br>
+      Consistency matters (choose one, use everywhere).
+    </div>
+
+    <h3>// Straight-Through cable</h3>
+    <p><strong>Définition</strong> : MÊME pinout both ends (T568B ↔ T568B OU T568A ↔ T568A).</p>
+
+    <p><strong>Usage</strong> : Connecter devices DIFFÉRENTS types (PC ↔ Switch, Router ↔ Switch).</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Straight-Through pinout :</strong><br><br>
+
+      End A : T568B<br>
+      End B : T568B<br><br>
+
+      Pin 1 (O/W) → Pin 1 (O/W)<br>
+      Pin 2 (O) → Pin 2 (O)<br>
+      Pin 3 (G/W) → Pin 3 (G/W)<br>
+      ...<br><br>
+
+      TX (pins 1,2) End A → TX (pins 1,2) End B<br>
+      RX (pins 3,6) End A → RX (pins 3,6) End B
+    </div>
+
+    <h3>// Crossover cable</h3>
+    <p><strong>Définition</strong> : DIFFÉRENT pinout ends (T568B ↔ T568A). TX/RX pins swapped.</p>
+
+    <p><strong>Usage</strong> : Connecter devices MÊME type (PC ↔ PC, Switch ↔ Switch, Router ↔ Router).</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Crossover pinout :</strong><br><br>
+
+      End A : T568B<br>
+      End B : T568A<br><br>
+
+      Pin 1 (O/W) → Pin 3 (G/W)<br>
+      Pin 2 (O) → Pin 6 (G)<br>
+      Pin 3 (G/W) → Pin 1 (O/W)<br>
+      Pin 6 (G) → Pin 2 (O)<br><br>
+
+      <strong>Result : TX End A → RX End B (crossed)</strong>
+    </div>
+
+    <h3>// Auto-MDIX (Modern NICs)</h3>
+    <p><strong>Auto-MDIX</strong> = Automatic Medium-Dependent Interface Crossover. NIC détecte cable type, auto-adjust TX/RX.</p>
+
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>✅ Modern NICs (2005+) : Auto-MDIX enabled → Straight-through OU Crossover = both work</li>
+      <li>⚠️ Legacy NICs (pre-2005) : Require correct cable type</li>
+    </ul>
+
+    <div class="callout exam">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <strong>Question TRÈS fréquente examen</strong>
+        "Cable type connecter PC directement PC (no switch) ?"<br>
+        <strong>Réponse : Crossover</strong><br><br>
+        "Cable type connecter PC switch ?"<br>
+        <strong>Réponse : Straight-through</strong><br><br>
+        Mémo : SAME device type = Crossover, DIFFERENT device type = Straight-through<br>
+        (MAIS modern Auto-MDIX = both work, examen assume legacy)
+      </div>
+    </div>
+
+    <h3>// Symptômes pinout incorrect</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li>No link (LED OFF) : Legacy NIC, wrong cable type</li>
+      <li>Link UP mais no data : Partial pinout error (some pins correct, others not)</li>
+      <li>Modern Auto-MDIX : Usually works regardless (but verify if issues)</li>
+    </ul>
+  </div>
+
+  <!-- EMI -->
+  <div class="section">
+    <div class="section-label">Electromagnetic interference</div>
+    <h2>EMI — Interférences électromagnétiques</h2>
+
+    <p><strong>EMI (Electromagnetic Interference)</strong> = Signaux électromagnétiques externes perturbent signaux réseau câbles.</p>
+
+    <h3>// Sources EMI communes</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Fluorescent lights</strong> : Ballasts génèrent EMI (especially old T12 fixtures)</li>
+      <li><strong>Electric motors</strong> : HVAC, fans, elevators</li>
+      <li><strong>Power cables</strong> : High-voltage AC lines proximité câbles réseau</li>
+      <li><strong>Radio transmitters</strong> : Walkie-talkies, cell towers</li>
+      <li><strong>Microwaves</strong> : Kitchen appliances (2.4 GHz interfere WiFi also)</li>
+    </ul>
+
+    <h3>// Symptômes EMI</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Intermittent connectivity</strong> : Works sometimes, drops randomly</li>
+      <li><strong>Slow performance</strong> : Throughput degraded (retransmissions)</li>
+      <li><strong>Packet loss</strong> : Errors spike specific times (ex: lunchtime microwave usage)</li>
+      <li><strong>CRC errors</strong> : Frame Check Sequence failures (corrupted data)</li>
+    </ul>
+
+    <h3>// Diagnostic EMI</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Pattern recognition :</strong><br>
+      → Errors specific times ? (Ex: 12-1 PM lunch = microwave)<br>
+      → Errors specific location ? (Near HVAC room, elevator shaft)<br>
+      → Multiple cables affected ? (EMI source affects area, not single cable)<br><br>
+
+      <strong>Physical inspection :</strong><br>
+      → Cable proximity power lines ? (< 12 inches = risk)<br>
+      → Cable parallel fluorescent lights ? (run perpendicular if possible)<br>
+      → Cable near motors/transformers ?<br><br>
+
+      <strong>Test :</strong><br>
+      → Relocate cable away suspected EMI source → Errors stop ? ✅<br>
+      → Swap cable shielded (STP) → Errors reduce ? ✅
+    </div>
+
+    <h3>// Mitigation EMI</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Shielded cables (STP)</strong> : Metal foil/braid shield blocks EMI (vs UTP unshielded)</li>
+      <li><strong>Conduit</strong> : Metal conduit protects cables (bonus: physical protection)</li>
+      <li><strong>Distance</strong> : Keep 12+ inches separation power cables, EMI sources</li>
+      <li><strong>Perpendicular crossing</strong> : If must cross power cable, cross 90° (not parallel)</li>
+      <li><strong>Fiber optic</strong> : Immune EMI (light signals, no electrical)</li>
+    </ul>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚡</span>
+      <div class="callout-body">
+        <strong>EMI = frustrating troubleshoot</strong>
+        Symptômes intermittent, timing unpredictable.<br>
+        Clé : Pattern recognition (time-based, location-based).<br>
+        Exemple classique : Errors 12-1 PM daily → Kitchen microwave lunchtime.
+      </div>
+    </div>
+  </div>
+
+  <!-- BOUCLE RESEAU -->
+  <div class="section">
+    <div class="section-label">Switching loops</div>
+    <h2>Boucles réseau — Broadcast storms</h2>
+
+    <p><strong>Boucle réseau (Switching loop)</strong> = Chemin redondant Layer 2 (switches) sans STP → Broadcast storm catastrophique.</p>
+
+    <h3>// Cause boucle réseau</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Scénario boucle :</strong><br><br>
+
+      Switch A ←→ Switch B (link 1)<br>
+      &nbsp;&nbsp;↓&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+      &nbsp;&nbsp;└────────┘ (link 2 - redundant path)<br><br>
+
+      PC-A sends broadcast (ARP request) → Switch A<br>
+      → Switch A forwards ALL ports (including both links to Switch B)<br>
+      → Switch B receives broadcast BOTH links<br>
+      → Switch B forwards ALL ports (including both links back to Switch A)<br>
+      → Switch A receives broadcast again → Forwards again → LOOP ∞<br><br>
+
+      → Broadcast multiplies exponentially (2→4→8→16...)<br>
+      → Network saturated seconds (broadcast storm)<br>
+      → <strong>All devices unresponsive (CPU 100% processing broadcasts)</strong>
+    </div>
+
+    <h3>// Symptômes boucle réseau</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>Network meltdown soudain</strong> : Everything stops working instantly</li>
+      <li><strong>Switch CPU 100%</strong> : Processing infinite broadcasts</li>
+      <li><strong>MAC address table flapping</strong> : Same MAC seen multiple ports (unstable)</li>
+      <li><strong>LED switch ports rapid blinking</strong> : Massive traffic flood</li>
+      <li><strong>Timeouts everywhere</strong> : Ping, web, email = all timeout</li>
+    </ul>
+
+    <h3>// Spanning Tree Protocol (STP)</h3>
+    <p><strong>STP (802.1D)</strong> = Protocol prevents loops. Logically blocks redundant paths, maintains topology loop-free.</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>STP workflow :</strong><br><br>
+
+      1. Elect Root Bridge (switch lowest Bridge ID)<br>
+      2. Calculate best path each switch → Root Bridge<br>
+      3. <strong>Block redundant ports</strong> (Blocking state, no forwarding)<br>
+      4. If primary link fails → Blocked port activates (Forwarding state)<br><br>
+
+      → STP maintains single active path (loop-free)<br>
+      → Redundancy available failover (convergence ~30-50 sec)
+    </div>
+
+    <h3>// Diagnostic boucle réseau</h3>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;line-height:1.8;">
+      <strong>Symptom : Network sudden total failure, all devices timeout</strong><br><br>
+
+      <strong>Step 1 : Identify loop</strong><br>
+      → Check switch logs : "STP topology change" messages<br>
+      → Check MAC address table : Same MAC multiple ports (flapping)<br>
+      → Physical inspection : Redundant cables switch ↔ switch ?<br><br>
+
+      <strong>Step 2 : Break loop</strong><br>
+      → Unplug ONE redundant cable → Network recovers instantly ✅<br>
+      → Identify root cause : STP disabled ? New cable added ?<br><br>
+
+      <strong>Step 3 : Fix permanent</strong><br>
+      → Enable STP all switches (if disabled)<br>
+      → Verify STP convergence (<code>show spanning-tree</code>)<br>
+      → Remove unauthorized cables (user plugged both ports PC → switch loop)
+    </div>
+
+    <h3>// Causes boucles production</h3>
+    <ul style="margin:10px 0 16px 24px;line-height:1.9">
+      <li><strong>STP disabled</strong> : Admin disabled STP (bad idea, legacy reasons)</li>
+      <li><strong>User error</strong> : User branche BOTH ports laptop → switch (2 cables)</li>
+      <li><strong>Rogue switch</strong> : User branche personal switch (creates loop)</li>
+      <li><strong>Misconfiguration</strong> : STP priority incorrect, root bridge wrong</li>
+    </ul>
+
+    <div class="callout ok">
+      <span class="callout-icon">🔁</span>
+      <div class="callout-body">
+        <strong>STP = always enable production</strong>
+        Redundancy good (failover) MAIS requires STP prevent loops.<br>
+        Modern variants : RSTP (Rapid STP, convergence <5 sec), MSTP (Multiple STP).<br>
+        Never disable STP unless très specific reason + understanding risks.
+      </div>
+    </div>
+  </div>
+
+  <!-- PIÈGES -->
+  <div class="section">
+    <div class="section-label">⚠️ Pièges d'examen</div>
+    <h2>Ce qui trompe les candidats</h2>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #1 : Crossover cable = obsolète (Auto-MDIX everywhere)</div>
+      <div class="trap-content">
+        <strong>NUANCE</strong>. Auto-MDIX = modern NICs (2005+), MAIS examen assume <strong>legacy</strong>.<br><br>
+        Examen questions : "Which cable type PC-to-PC ?" → Réponse = Crossover.<br>
+        Real world : Modern devices Auto-MDIX → Straight-through works aussi.<br><br>
+        Examen : Assume NO Auto-MDIX unless stated. Follow classic rules (SAME type = Crossover).
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #2 : EMI affect fiber optic cables</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Fiber optic = <strong>immune EMI</strong>.<br><br>
+        Fiber = light signals (photons), pas electrical signals.<br>
+        EMI = electromagnetic interference → affects electrical only.<br><br>
+        Fiber advantages : Immune EMI, longer distance, higher bandwidth.<br>
+        Examen : "Solution EMI environment ?" → Fiber optic = correct answer.
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-title">❌ Piège #3 : Boucle réseau = problème Layer 3 routing</div>
+      <div class="trap-content">
+        <strong>FAUX</strong>. Boucle réseau = <strong>Layer 2 switching</strong> problem.<br><br>
+        Layer 2 : Switches, broadcast frames, STP, MAC address tables.<br>
+        Layer 3 : Routers, IP packets, routing protocols (TTL prevents routing loops).<br><br>
+        Broadcast storm = L2 phenomenon (switches forward broadcasts all ports).<br>
+        Examen : "Broadcast storm cause ?" → Switching loop (L2), not routing loop (L3).
+      </div>
+    </div>
+  </div>
+
+  <!-- RÉSUMÉ -->
+  <div class="section">
+    <div class="section-label">Résumé</div>
+    <h2>🔑 Ce que tu dois retenir absolument</h2>
+    <div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Câbles défectueux</strong> : Symptômes = no link (LED OFF), intermittent, slow, packet loss. Causes = damage, poor termination, degradation. Diagnostic = visual, LED, swap cable, tester</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Straight-through</strong> : Same pinout both ends (T568B↔T568B). Usage = different device types (PC↔Switch). <strong>Crossover</strong> : Different pinout (T568B↔T568A). Usage = same types (PC↔PC, Switch↔Switch)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Auto-MDIX</strong> : Modern NICs auto-detect cable type. Examen assume legacy (no Auto-MDIX) → follow classic rules</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>EMI</strong> : Sources = fluorescent lights, motors, power cables, radio. Symptoms = intermittent, CRC errors, pattern (time/location). Mitigation = STP cables, conduit, distance 12"+, fiber (immune)</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>Boucles réseau</strong> : Redundant L2 paths no STP → broadcast storm. Symptoms = instant network meltdown, CPU 100%, MAC flapping. STP prevents (blocks redundant ports). Fix = unplug cable, enable STP</span></div>
+      <div class="kp"><span class="kp-dot">→</span><span><strong>L1 diagnostic tools</strong> : Visual inspection, LED indicators (link status), cable swap (quick test), cable tester (continuity, TDR), fiber: OTDR (Optical TDR)</span></div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="nav-btn" href="#">← Cours 02 : Approches troubleshooting</a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--muted)">TR03 - Phase 5</span>
+    <a class="nav-btn next" href="#">Cours 04 : Erreurs interface Ethernet →</a>
+  </div>
+
+</div>
+<script>
+const MKEY = 'netplus_m5_tr03_mastery';
+let mastery = [];
+try { mastery = JSON.parse(localStorage.getItem(MKEY) || '[]'); } catch(e) {}
+function initMastery() {
+  document.querySelectorAll('.mcheck').forEach((el, i) => {
+    if(mastery[i]) { el.classList.add('done'); el.querySelector('.mcheck-box').classList.add('done'); }
+  });
+  updateBar();
+}
+function toggleCheck(el) {
+  const i = Array.from(document.querySelectorAll('.mcheck')).indexOf(el);
+  const isDone = el.classList.contains('done');
+  const box = el.querySelector('.mcheck-box');
+  isDone ? (el.classList.remove('done'), box.classList.remove('done'), mastery[i] = false)
+         : (el.classList.add('done'), box.classList.add('done'), mastery[i] = true);
+  localStorage.setItem(MKEY, JSON.stringify(mastery));
+  updateBar();
+}
+function updateBar() {
+  const total = document.querySelectorAll('.mcheck').length;
+  const done  = document.querySelectorAll('.mcheck.done').length;
+  document.getElementById('mastBar').style.width = Math.round(done/total*100) + '%';
+}
+initMastery();
+</script>
+  <div style="margin-top:40px;text-align:center;">
+  <a class="nav-btn" href="index.html">← Accueil — Plan de cours</a>
+</body>
+</html>
